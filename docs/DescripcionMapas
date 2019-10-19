@@ -1,0 +1,49 @@
+OBSOLETO!!! SE DEBE ACTUALIZAR
+
+
+
+# Las lineas que empiezan por "#" son comentarios, serán ignoradas por el programa
+# La primera linea no comentada será el nombre del mapa
+Nombre del mapa
+
+# La segunda linea no comentada será el numero de segmentos
+5
+
+# La tercera linea indica respecto a donde gira el mapa
+(0=camara, 1=punto_fijo)
+
+# La siguientes 2 lineas no comentadas son las coordenadas del punto de giro
+# Unicamente se tiene en cuenta para el caso de giro alrededor de un punto fijo
+2.587
+3.598
+
+# Las siguientes linea no comentada es el limites de giro del mapa (angulo maximo y angulo minimo con el signo contrario)
+# Nota: el origen es arriba
+# Nota: la unidad son grados
+30
+
+# Posicion inicial de la moneda
+0
+300
+
+# Gravedad (aceleracion hacia abajo)
+100
+
+
+# A partir de este punto nos encontraremos los segmentos uno a uno, con la siguiente estructura repetida.
+# Punto inicial, coordenada X (double)
+# Punto inicial, coordenada Y (double)
+# Punto final, coordenada X (double)
+# Punto final, coordenada Y (double)
+# Tipo de segmento (0=wall, 1=goal, 2=death)
+25
+13
+43
+72
+0
+
+
+
+
+# Nota: ara hacer esto bien, esto pide un formato XML con etiquetas
+Nota: ver "minixml", "libxml", "expat", "xerces", etc.

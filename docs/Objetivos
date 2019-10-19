@@ -1,0 +1,46 @@
+Descripción del proyecto:
+Hacer un videojuego basado en las máquinas de la moneda y la carretera.
+Generalizarlo no solo para ese caso, sino para un caso general
+(extensible a mapas guardados en ficheros).
+Los mapas estarán compuestos por conjuntos de segmentos.
+Normalmente estos segmentos serán paredes, pero también 
+habrá otros tipos de segmentos (ganar y perder).
+
+El mapa se girará (o bien con el ratón o con el joystick),
+y el jugardor debe llevar la moneda a la meta.
+
+
+Objetivos del proyecto para la versión v0.1:
+
+[ ] Portable UNIX / Windows con el mismo código.
+[ ] Que el bucle principal funcione.
+[ ] Que se pueda jugar, aunque le falte realismo.
+[ ] Movimiento independiente del "framerate".
+[ ] Gráficos cutres, lineas y circulos.
+[ ] Hardware accelerated.
+[ ] Ser capaz de cargar mapas desde ficheros guarros.
+[ ] Que funcione el giro con el ratón.
+[ ] Calcular y mostrar FPS (para ver que estamos haciendo).
+
+
+
+Objetivos para siguientes versiones:
+[ ] Cámara movil (para hacer niveles grandes)
+[ ] Rotacion de la moneda.
+[ ] Menú elegante.
+[ ] Pasar mapas de ficheos guarros a ficheros XML elegantes.
+[ ] Joystick.
+[ ] Sonidos (golpes de la moneda).
+[ ] Imagen de la moneda.
+[ ] Mapas con graficos con texturas y un fondo (que no den ganas de llorar
+     al ver la pantalla).
+[ ] Musica de verbena de pueblo.
+[ ] Cuenta atrás, para poner nervioso al jugador y que falle.
+[ ] Sistema de puntos (score).
+[ ] Premios que den puntos y que sean dificiles de coger
+     (como las guindas del comecocos).
+[ ] Editor de niveles.
+[ ] Que los golpes de la moneda provoquen vibraciones joystick.
+[ ] Quelos golpes de la moneda puedan hacer girar el mapa (esto poner de los nervios).
+[ ] Plataformas móviles (esto tambien poner de los nervios).
+.... ETC
