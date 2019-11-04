@@ -1,6 +1,6 @@
 #include "physics.h"
 #include "camera.h"
-
+#include "maps.h"
 
 
 //void CalculaCamara(	double pos_real_moneda_x, int* pos_pant_moneda_x,
@@ -12,7 +12,8 @@
 //
 //}
 
-struct posicion_camara CalculaCamara( struct posicion pos_real )
+
+struct posicion_camara CalculaCamara( struct punto pos_real )
 {
 	struct posicion_camara pos_cam;
 	//DE MOMENTO ESTO, FALTA IMPLEMENTAR LOS CALCULOS DE LA CAMARA

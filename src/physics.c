@@ -1,12 +1,14 @@
+
+#include "maps.h"
 #include "physics.h"
 
 
 //struct vector_velocidad SumaVelocidad (struct vector_velocidad vel1, struct vector_velocidad vel2);
 
-struct posicion Velocidad2Posicion(struct posicion pos_inicial, struct vector_velocidad vel, float delta_tiempo)
+struct punto Velocidad2Posicion(struct punto pos_inicial, struct vector_velocidad vel, float delta_tiempo)
 {
 	// pos_final = pos_inicial + vel * tiempo
-	struct posicion pos_final;
+	struct punto pos_final;
 
 	pos_final.x = pos_inicial.x + vel.vx * delta_tiempo;
 	pos_final.y = pos_inicial.y + vel.vy * delta_tiempo;

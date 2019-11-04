@@ -1,4 +1,4 @@
-
+#include <stdbool.h>
 
 #define LIMITE_SEGMENTOS 50
 

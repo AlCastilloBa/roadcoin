@@ -351,7 +351,7 @@ void bucle_principal_juego( void )
 	float angulo;
 	float mouse_sensibility = 0.1f;
 
-	struct posicion pos_real_moneda;			// Posicion de centro de la moneda (unidades del juego)
+	struct punto pos_real_moneda;			// Posicion de centro de la moneda (unidades del juego)
 	struct posicion_camara pos_pant_moneda;			// Posicion de centro de la moneda (pixeles de la pantalla)
 
 	struct vector_velocidad velocidad_real_moneda;
@@ -478,6 +478,26 @@ void bucle_principal_juego( void )
 		{
 			GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
 		}
+
+
+
+		////////////////////////////////////////////////////////////////////////////////////
+
+		#ifdef DEBUG_INFO
+		for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
+		{
+			if ( CirculoTocaSegmento(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end ) )
+			{
+				printf("Info: moneda toca segmento %d \n", segmento_actual);
+			}
+		}
+		#endif
+
+		////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 
 		// Actualiza velocidad

@@ -9,5 +9,6 @@ struct posicion_camara
 
 
 //void CalculaCamara(double , int*, double , int*  );
-struct posicion_camara CalculaCamara( struct posicion );
+
+struct posicion_camara CalculaCamara( struct punto );
 

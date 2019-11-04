@@ -1,10 +1,5 @@
 
-struct posicion
-{
-	double x;
-	double y;
-};
-
+// Nota: como "posicion" se usa "punto", definido en "maps.h".
 
 struct vector_velocidad
 {
@@ -27,6 +22,6 @@ struct vector_fuerza
 
 struct vector_velocidad SumaVelocidad (struct vector_velocidad vel1, struct vector_velocidad vel2);
 
-struct posicion Velocidad2Posicion(struct posicion, struct vector_velocidad, float );
+struct punto Velocidad2Posicion(struct punto, struct vector_velocidad, float );
 
 struct vector_velocidad Aceleracion2Velocidad(struct vector_velocidad, struct vector_aceleracion, float );

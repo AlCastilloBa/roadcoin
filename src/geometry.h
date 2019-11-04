@@ -6,10 +6,20 @@ struct punto GiraPunto ( struct punto, struct punto, double);
 
 void GiraMapaCompleto( struct segmento*, struct segmento*, struct punto, int, double  );
 
+double ProductoEscalar2D (struct punto, struct punto);
 
+double ProductoEscalarPerpendicular2D (struct punto, struct punto);
 
+bool ProyeccionEstaEnSegmento( struct punto, struct punto, struct punto);
 
+bool PuntoEstaEnSegmento (struct punto, struct punto, struct punto);
 
-struct punto ProyeccionPuntoSobreSegmento ( struct punto punto_a_proyectar, struct segmento segmento_sobre_el_que_se_proyecta);
+struct punto PuntoProyectadoSobreRecta( struct punto, struct punto, struct punto);
 
-bool InterferenciaCircSegmento( struct punto centro_circ, double radio_circ, struct segmento segmento_actual );
+double LongitudVector_Cuadrado( struct punto v, struct punto w);
+
+double DistanciaPuntoRecta_Cuadrado( struct punto , struct punto , struct punto );
+
+bool ProyeccionCirculoTocaSegmento( struct punto, double , struct punto, struct punto);
+
+bool CirculoTocaSegmento( struct punto, double, struct punto, struct punto);
