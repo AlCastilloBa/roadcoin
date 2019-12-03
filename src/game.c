@@ -360,6 +360,11 @@ void bucle_principal_juego( void )
 	struct mapa mapa_original;		// Mapa cargado desde archivo
 	struct segmento* segmentos_girados;
 
+	//bool* interferencia_segmento;		// Vector que indica si hay interferencia entre moneda y segmento
+	enum tipo_interseccion_circulo_segmento* tipo_interferencia_segmento;
+
+	struct vector_fuerza* fuerzas_normales_segmentos;	// Vector que guarda las fuerzas normales de apoyo sobre segmentos en el fotograma actual
+
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	//Leer mapa
@@ -379,6 +384,10 @@ void bucle_principal_juego( void )
 		printf ( "Error: no se puede reservar memoria para segmentos girados\n");
 		exit(-1);
 	}
+
+	//interferencia_segmento = calloc(mapa_original.NumeroSegmentos, sizeof(bool) );
+	tipo_interferencia_segmento = calloc(mapa_original.NumeroSegmentos, sizeof(enum tipo_interseccion_circulo_segmento) );
+	fuerzas_normales_segmentos = calloc(mapa_original.NumeroSegmentos, sizeof(struct vector_fuerza) );
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 
@@ -473,32 +482,50 @@ void bucle_principal_juego( void )
 		}
 
 		/////////////////////////////////////////////////////////////////////////////////////	
-		
+		// Giramos el mapa
 		if ( mapa_original.TipoGiro == punto_fijo )
 		{
 			GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
 		}
-
+		// Nota: falta implementar otros casos
 
 
 		////////////////////////////////////////////////////////////////////////////////////
-
-		#ifdef DEBUG_INFO
+		// Determinamos intersecciones
+		// PROVISIONAL
+		
 		for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
 		{
+			/*
 			if ( CirculoTocaSegmento(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end ) )
+			//if (CirculoTocaSegmentoExcluyendoExtremos(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end ) )
+			//if ( ProyeccionEstaEnSegmento(pos_real_moneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end ) )
 			{
+				#ifdef DEBUG_INFO
 				printf("Info: moneda toca segmento %d \n", segmento_actual);
+				#endif
+				interferencia_segmento[segmento_actual] = true;
 			}
+			else
+			{
+				interferencia_segmento[segmento_actual] = false;
+			}
+			*/
+
+			tipo_interferencia_segmento[segmento_actual] =  CirculoTocaSegmento(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end );
+
+			// Nota: hay que meter la comprobacion de segmentos contando con la posicion anterior (PENDIENTE)
+
 		}
-		#endif
+		////////////////////////////////////////////////////////////////////////////////////
+		// En caso de intersección:
+		// Anulamos componente velocidad normal al segmento
+		// Calculamos posicion tangente
+		// Calculamos fuerzas normales
+		// TODO ESTO ES LO DIFICIL !!!!
+
 
 		////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
 
 		// Actualiza velocidad
 		velocidad_real_moneda = Aceleracion2Velocidad( velocidad_real_moneda, aceleracion_real_moneda, tiempo_imagen);
@@ -540,6 +567,34 @@ void bucle_principal_juego( void )
 						mapa_original.Mapa[segmento_actual].start.y , 
 						mapa_original.Mapa[segmento_actual].end.x , 
 						mapa_original.Mapa[segmento_actual].end.y );	*/ // Sin giros
+			#ifdef DEBUG_INFO
+			/*if ( interferencia_segmento[segmento_actual] )
+			{
+				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
+			}
+			else
+			{
+				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
+			}*/
+			switch ( tipo_interferencia_segmento[segmento_actual] )
+			{
+				case sin_interseccion:
+					SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
+					break;
+				case interseccion_extremo_start:
+					SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0x00 );	// Verde
+					break;
+				case interseccion_central:
+					SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
+					break;
+				case interseccion_extremo_end:
+					SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0xFF, 0x00 );	// Azul
+					break;
+				default:
+					break;
+			}
+			
+			#endif
 			SDL_RenderDrawLine( 	gRenderer, 
 						segmentos_girados[segmento_actual].start.x ,
 						segmentos_girados[segmento_actual].start.y , 
@@ -569,6 +624,9 @@ void bucle_principal_juego( void )
 	// Liberamos memoria dinamica
 	free(mapa_original.Mapa);
 	free(segmentos_girados);
+	//free(interferencia_segmento);
+	free(fuerzas_normales_segmentos);
+	free(tipo_interferencia_segmento);
 }
 
 

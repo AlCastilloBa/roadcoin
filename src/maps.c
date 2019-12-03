@@ -11,6 +11,7 @@
 struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 {
 	struct mapa mapa_a_cargar;
+	struct punto punto_auxiliar;
 	char linea_leida[200];
 	bool nombre_ok, num_segmentos_ok, modo_giro_mapa_ok, punto_giro_ok, angulo_max_ok, pos_inicial_ok, gravedad_ok;
 	bool segmento_ok[LIMITE_SEGMENTOS];
@@ -214,6 +215,22 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 		}
 	}
 	
+	// Para simplificar los calculos futuros, vamos a hacer que el punto de inicio (start) siempre esté a la izquierda.
+	for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
+	{
+		if ( mapa_a_cargar.Mapa[segmento_actual].start.x > mapa_a_cargar.Mapa[segmento_actual].end.x )
+		{
+			// Intercambiamos start y end
+			punto_auxiliar = mapa_a_cargar.Mapa[segmento_actual].end;
+			mapa_a_cargar.Mapa[segmento_actual].end = mapa_a_cargar.Mapa[segmento_actual].start;
+			mapa_a_cargar.Mapa[segmento_actual].start = punto_auxiliar;
+			#ifdef DEBUG_INFO
+			printf("Se han intercambiado start y end en segmento %d\n", segmento_actual);
+			#endif
+		}
+	}
+
+
 	#ifdef DEBUG_INFO
 	printf("Mapa %s cargado. Continuamos.\n", nombre_archivo );
 	#endif

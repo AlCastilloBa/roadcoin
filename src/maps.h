@@ -52,6 +52,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo );
 
 bool VerificarMapa( int num_puntos, struct punto *mapa  );
 
-bool GiraMapa( int num_puntos, struct segmento * mapa_original, struct segmento * mapa_girado, double angulo );
+//bool GiraMapa( int num_puntos, struct segmento * mapa_original, struct segmento * mapa_girado, double angulo );
 // Nota: esta función debe calcular los valores de seno y coseno al principio, para no cargar la CPU
+// Ya declarado en geometry.c, asi que borrar esto
 
