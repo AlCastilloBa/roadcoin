@@ -1,0 +1,32 @@
+# Mapa de prueba
+#################################################
+# Nombre del mapa
+nombre=TESTMAP
+
+#Numero de segmentos
+num_segmentos=6
+
+# Giro mapa respecto a punto fijo
+modo_giro_mapa=1
+
+# Posicion del punto de giro del mapa
+punto_giro=(400,300)
+
+# Angulo maximo (en grados)
+angulo_max=30
+
+# Posicion inicial de la moneda
+pos_inicial_moneda=(400,20)
+
+# Gravedad
+gravedad=100
+
+#Segmentos
+#segmento[0]=((25,25),(100,25),0)
+segmento[0]=((100,25),(25,25),0)
+segmento[1]=((100,100),(200,200),0)
+segmento[2]=((400,400),(200,300),0)
+segmento[3]=((000,500),(800,500),0)
+segmento[4]=((000,200),(800,200),0)
+segmento[5]=((700,200),(500,400),0)
+
