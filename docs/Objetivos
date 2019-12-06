@@ -12,15 +12,15 @@ y el jugardor debe llevar la moneda a la meta.
 
 Objetivos del proyecto para la versión v0.1:
 
-[ ] Portable UNIX / Windows con el mismo código.
-[ ] Que el bucle principal funcione.
-[ ] Que se pueda jugar, aunque le falte realismo.
-[ ] Movimiento independiente del "framerate".
-[ ] Gráficos cutres, lineas y circulos.
-[ ] Hardware accelerated.
-[ ] Ser capaz de cargar mapas desde ficheros guarros.
-[ ] Que funcione el giro con el ratón.
-[ ] Calcular y mostrar FPS (para ver que estamos haciendo).
+[      ] Portable UNIX / Windows con el mismo código.
+[ BOOM ] Que el bucle principal funcione.
+[      ] Que se pueda jugar, aunque le falte realismo.
+[ BOOM ] Movimiento independiente del "framerate".
+[ BOOM ] Gráficos cutres, lineas y circulos.
+[ BOOM ] Hardware accelerated.
+[ BOOM ] Ser capaz de cargar mapas desde ficheros guarros.
+[ BOOM ] Que funcione el giro con el ratón.
+[ BOOM ] Calcular y mostrar FPS (para ver que estamos haciendo).
 
 
 
@@ -43,4 +43,10 @@ Objetivos para siguientes versiones:
 [ ] Que los golpes de la moneda provoquen vibraciones joystick.
 [ ] Quelos golpes de la moneda puedan hacer girar el mapa (esto poner de los nervios).
 [ ] Plataformas móviles (esto tambien poner de los nervios).
+[ ] Otros origenes de fuerzas.
+	[ ] Agujeros negros
+	[ ] Muelles
+	[ ] Imanes
+	[ ] Viento
+	...etc
 .... ETC
