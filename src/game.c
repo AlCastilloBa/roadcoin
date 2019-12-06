@@ -11,8 +11,8 @@
 #include "geometry.h"
 
 
-// Si definido DEBUG_INFO, mostrar textos de informacion por la terminal
-#define DEBUG_INFO
+// Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
+//#define DEBUG_INFO
 
 //Screen dimension constants 
 const int INTRO_SCREEN_WIDTH = 500; 
@@ -177,7 +177,8 @@ bool loadGameMedia()
 	#ifdef DEBUG_INFO 
 	printf("Radio moneda: %d\n", gRadioMoneda);
 	#endif
-	gTexturaFondo = CargaTextura( "images/fondo_nubes.png" , NULL, NULL, false ); 
+	//gTexturaFondo = CargaTextura( "images/fondo_nubes.png" , NULL, NULL, false );
+	gTexturaFondo = CargaTextura( "images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg" , NULL, NULL, false );
 	if( gTexturaFondo == NULL ) 
 	{ 
 		printf( "Failed to load texture image!\n" ); 
@@ -363,19 +364,24 @@ void bucle_principal_juego( void )
 	//bool* interferencia_segmento;		// Vector que indica si hay interferencia entre moneda y segmento
 	enum tipo_interseccion_circulo_segmento* tipo_interferencia_segmento;
 
+	struct vector_fuerza gravedad;	
 	struct vector_fuerza* fuerzas_normales_segmentos;	// Vector que guarda las fuerzas normales de apoyo sobre segmentos en el fotograma actual
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	//Leer mapa
-	mapa_original = CargarMapaDesdeArchivo( "maps/test_map" );
+	//mapa_original = CargarMapaDesdeArchivo( "maps/test_map" );
+	mapa_original = CargarMapaDesdeArchivo( "maps/test_map_2" );
 	// DATOS INCIALES, A BORRAR CUANDO SE LEA EL FICHERO
 	pos_real_moneda.x = mapa_original.PuntoInicialMoneda.x;			//Pixeles
 	pos_real_moneda.y = mapa_original.PuntoInicialMoneda.y;			//Pixeles
 	velocidad_real_moneda.vx = 0;						//Pixeles/segundo
 	velocidad_real_moneda.vy = 0;						//Pixeles/segundo
 	aceleracion_real_moneda.ax = 0;						//Pixeles/segundo²
-	aceleracion_real_moneda.ay = mapa_original.Gravedad;			//Pixeles/segundo²
+	aceleracion_real_moneda.ay = 0;	/*mapa_original.Gravedad*/		//Pixeles/segundo²
+	gravedad.fx = 0;							//Pixeles/segundo²
+	gravedad.fy = mapa_original.Gravedad;					//Pixeles/segundo²
+
 	angulo = 0;
 	// Reservamos memoria para los segmentos girados
 	segmentos_girados = calloc(mapa_original.NumeroSegmentos, sizeof(struct segmento) );
@@ -519,14 +525,64 @@ void bucle_principal_juego( void )
 		}
 		////////////////////////////////////////////////////////////////////////////////////
 		// En caso de intersección:
-		// Anulamos componente velocidad normal al segmento
-		// Calculamos posicion tangente
-		// Calculamos fuerzas normales
-		// TODO ESTO ES LO DIFICIL !!!!
+		// ESTO ES LO DIFICIL !!!!
+		for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
+		{
+			if ( tipo_interferencia_segmento[segmento_actual] != 0 )	// Si hay interferencia
+			{
+				float angulo_segmento_actual;
 
+				angulo_segmento_actual = AnguloSegmento( segmentos_girados[segmento_actual] );
+
+
+				// Anulamos componente velocidad normal al segmento
+				velocidad_real_moneda = AnulaVelocidadNormalASegmento( velocidad_real_moneda, angulo_segmento_actual );
+
+				// Calculamos posicion tangente (TODO)
+				// Calculamos fuerzas normales (TODO)
+				switch (tipo_interferencia_segmento[segmento_actual])
+				{
+					case interseccion_central:
+						fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalCentroSegmento( angulo_segmento_actual, gravedad.fy, 1 );	// Masa = 1  de momento
+						break;
+					case interseccion_extremo_start:
+						// TODO
+						break;
+					case interseccion_extremo_end:
+						// TODO
+						break;
+					default:
+						#ifdef DEBUG_INFO
+						printf("No posible, error de programacion o de concepto.\n");
+						#endif
+						break;
+				}
+
+				// 
+
+
+				#ifdef DEBUG_INFO
+				printf("Interferencia tipo %d con segmento %d. \n", tipo_interferencia_segmento[segmento_actual],segmento_actual); 
+				printf("Angulo Segmento: %f \n", angulo_segmento_actual*360/(2*3.1416));
+				printf("Velocidad tras anulacion: vx=%f, vy=%f \n", velocidad_real_moneda.vx, velocidad_real_moneda.vy );
+				printf("Fx = %f, Fy = %f \n", fuerzas_normales_segmentos[segmento_actual].fx, fuerzas_normales_segmentos[segmento_actual].fy );
+				#endif
+
+			}
+			else
+			{
+				// Sin interferencia
+				fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
+			}
+
+		}
+
+		// Nota: (TODO) Los dos bucles anteriores se pueden combinar
 
 		////////////////////////////////////////////////////////////////////////////////////
 
+		// Suma fuerzas
+		aceleracion_real_moneda = Fuerza2Aceleracion( SumaFuerzas( gravedad, fuerzas_normales_segmentos, mapa_original.NumeroSegmentos ), 1 ); //Masa = 1 de momento (TODO)
 		// Actualiza velocidad
 		velocidad_real_moneda = Aceleracion2Velocidad( velocidad_real_moneda, aceleracion_real_moneda, tiempo_imagen);
 		//Actualiza posición
@@ -619,6 +675,11 @@ void bucle_principal_juego( void )
 
 		}
 		///////////////////////////////////////////////////////////////////////////////////////
+
+		#ifdef DEBUG_INFO
+		system("clear");		// Borra la terminal para leer el estado actual (MUY LENTO)
+		#endif
+
 	}
 	
 	// Liberamos memoria dinamica

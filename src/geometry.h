@@ -12,6 +12,8 @@ struct punto GiraPunto ( struct punto, struct punto, double);
 
 void GiraMapaCompleto( struct segmento*, struct segmento*, struct punto, int, double  );
 
+float AnguloSegmento (struct segmento );
+
 double ProductoEscalar2D (struct punto, struct punto);
 
 double ProductoEscalarPerpendicular2D (struct punto, struct punto);

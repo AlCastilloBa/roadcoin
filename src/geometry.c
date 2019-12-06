@@ -44,6 +44,15 @@ void GiraMapaCompleto( struct segmento* inicial, struct segmento* girado, struct
 
 }
 
+float AnguloSegmento (struct segmento segm )
+{
+	// Nota: Criterio de signos. Angulo positivo si va de X+ a Y+
+	// Nota: (TODO) Pendiente de probar.
+	return atan2( segm.end.y - segm.start.y , segm.end.x - segm.start.x );
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 double ProductoEscalar2D (struct punto A, struct punto B)
 {
