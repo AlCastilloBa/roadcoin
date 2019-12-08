@@ -13,7 +13,7 @@ modo_giro_mapa=1
 punto_giro=(400,300)
 
 # Angulo maximo (en grados)
-angulo_max=30
+angulo_max=720
 
 # Posicion inicial de la moneda
 pos_inicial_moneda=(20,0)
