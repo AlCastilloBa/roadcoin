@@ -7,4 +7,4 @@ The mazes are composed of a set of line segments. Normally these segments will b
 The maze can be rotated using the keyboard, a mouse or a joystick.
 This program uses the SDL2 library, and no additional libraries or engines. Everithing is implemented using simple vector operations and simple mechanics equations.
 ## Current state
-Work in progress. The basic game physics have been implemented. It is minimally playable, but a lot of features are still not programmed.
+Work in progress. The basic game physics have been implemented. It is minimally playable, but a lot of features are still to be programmed.
