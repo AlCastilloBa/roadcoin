@@ -15,7 +15,7 @@ COMPILER_FLAGS = `sdl2-config --cflags`
 LINKER_FLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_mixer
 
 #OBJ_NAME specifies the name of our exectuable 
-OBJ_NAME = juego 
+OBJ_NAME = roadcoin 
 
 #This is the target that compiles our executable 
 all : $(OBJS) 
