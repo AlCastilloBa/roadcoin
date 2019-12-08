@@ -5,6 +5,7 @@
 #include <stdio.h> 
 #include <stdbool.h>
 
+
 #include "physics.h"
 #include "camera.h"
 #include "maps.h"
@@ -19,6 +20,7 @@ const int INTRO_SCREEN_WIDTH = 500;
 const int INTRO_SCREEN_HEIGHT = 851;
 const int GAME_SCREEN_WIDTH = 800; 
 const int GAME_SCREEN_HEIGHT = 600;
+
 
 
 //GLOBAL VARIABLES
@@ -49,12 +51,15 @@ int gRadioMoneda;
 float inc_angulo_teclado = 1.0f;
 
 
+
 bool inicializar_intro(void);
 bool inicializar_juego(void);
 bool loadMedia(void);
 bool cerrar_intro(void);
 bool close_program(void);
 SDL_Texture* CargaTextura( char*, int*, int*, bool );
+
+
 void bucle_principal_juego(void);
 
 
@@ -349,7 +354,7 @@ void bucle_principal_juego( void )
 	float tiempo_imagen;	//Tiempo de cada imagen, en segundos
 	float framerate_deseado = 30;
 	int segmento_actual;
-	float angulo;
+	float angulo, angulo_anterior;
 	float mouse_sensibility = 0.1f;
 
 	struct punto pos_real_moneda;			// Posicion de centro de la moneda (unidades del juego)
@@ -371,7 +376,8 @@ void bucle_principal_juego( void )
 
 	//Leer mapa
 	//mapa_original = CargarMapaDesdeArchivo( "maps/test_map" );
-	mapa_original = CargarMapaDesdeArchivo( "maps/test_map_2" );
+	//mapa_original = CargarMapaDesdeArchivo( "maps/test_map_2" );
+	mapa_original = CargarMapaDesdeArchivo( "maps/monza_1" );
 	// DATOS INCIALES, A BORRAR CUANDO SE LEA EL FICHERO
 	pos_real_moneda.x = mapa_original.PuntoInicialMoneda.x;			//Pixeles
 	pos_real_moneda.y = mapa_original.PuntoInicialMoneda.y;			//Pixeles
@@ -382,7 +388,9 @@ void bucle_principal_juego( void )
 	gravedad.fx = 0;							//Pixeles/segundo²
 	gravedad.fy = mapa_original.Gravedad;					//Pixeles/segundo²
 
-	angulo = 0;
+	angulo = 0; angulo_anterior = 0;
+
+	// Reserva memoria dinámica
 	// Reservamos memoria para los segmentos girados
 	segmentos_girados = calloc(mapa_original.NumeroSegmentos, sizeof(struct segmento) );
 	if ( segmentos_girados == NULL )
@@ -393,7 +401,17 @@ void bucle_principal_juego( void )
 
 	//interferencia_segmento = calloc(mapa_original.NumeroSegmentos, sizeof(bool) );
 	tipo_interferencia_segmento = calloc(mapa_original.NumeroSegmentos, sizeof(enum tipo_interseccion_circulo_segmento) );
+	if ( tipo_interferencia_segmento == NULL )
+	{
+		printf ( "Error: no se puede reservar memoria para tipo_interferencia_segmento\n");
+		exit(-1);
+	}
 	fuerzas_normales_segmentos = calloc(mapa_original.NumeroSegmentos, sizeof(struct vector_fuerza) );
+	if ( fuerzas_normales_segmentos == NULL )
+	{
+		printf ( "Error: no se puede reservar memoria para fuerzas_normales_segmentos\n");
+		exit(-1);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 
@@ -502,25 +520,30 @@ void bucle_principal_juego( void )
 		
 		for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
 		{
-			/*
-			if ( CirculoTocaSegmento(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end ) )
-			//if (CirculoTocaSegmentoExcluyendoExtremos(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end ) )
-			//if ( ProyeccionEstaEnSegmento(pos_real_moneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end ) )
-			{
-				#ifdef DEBUG_INFO
-				printf("Info: moneda toca segmento %d \n", segmento_actual);
-				#endif
-				interferencia_segmento[segmento_actual] = true;
-			}
-			else
-			{
-				interferencia_segmento[segmento_actual] = false;
-			}
-			*/
-
 			tipo_interferencia_segmento[segmento_actual] =  CirculoTocaSegmento(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end );
 
-			// Nota: hay que meter la comprobacion de segmentos contando con la posicion anterior (PENDIENTE)
+			// Nota: hay que meter la comprobacion de segmentos contando con la posicion anterior (PENDIENTE, TODO)
+			// Si hay interferencia, calculamos posicion tangente (primera vez)
+			if ( tipo_interferencia_segmento[segmento_actual] != 0 )	// Si hay interferencia
+			{
+				switch (tipo_interferencia_segmento[segmento_actual])
+				{
+					case interseccion_central:
+						pos_real_moneda = CalculaPosTangenteACentroSegmento ( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
+						break;
+					case interseccion_extremo_start:
+						pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].start, pos_real_moneda, gRadioMoneda);
+						break;
+					case interseccion_extremo_end:
+						pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
+						break;
+					default:
+						#ifdef DEBUG_INFO
+						printf("En primer calculo pos tangente. No posible, error de programacion o de concepto.\n");
+						#endif
+						break;
+				}
+			}
 
 		}
 		////////////////////////////////////////////////////////////////////////////////////
@@ -538,18 +561,51 @@ void bucle_principal_juego( void )
 				// Anulamos componente velocidad normal al segmento
 				velocidad_real_moneda = AnulaVelocidadNormalASegmento( velocidad_real_moneda, angulo_segmento_actual );
 
-				// Calculamos posicion tangente (TODO)
-				// Calculamos fuerzas normales (TODO)
+				// Calculamos posicion tangente (segunda vez)
+				switch (tipo_interferencia_segmento[segmento_actual])
+				{
+					case interseccion_central:
+						pos_real_moneda = CalculaPosTangenteACentroSegmento ( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
+						break;
+					case interseccion_extremo_start:
+						pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].start, pos_real_moneda, gRadioMoneda);
+						break;
+					case interseccion_extremo_end:
+						pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
+						break;
+					default:
+						#ifdef DEBUG_INFO
+						printf("En segundo calculo pos tangente. No posible, error de programacion o de concepto.\n");
+						#endif
+						break;
+				}
+
+				// En caso de giro del mapa:
+				if ( angulo != angulo_anterior )
+				{
+					// hacemos que tambien gire la moneda
+					// (TODO) Adecuar para otros tipos de giro
+					pos_real_moneda = GiraPunto ( mapa_original.PuntoGiroFijo, pos_real_moneda, angulo - angulo_anterior);
+
+					// Calculamos y sumamos una velocidad debida al giro
+					// (TODO) Esto no está bien, aparce una velocidad muy grande (¡¡¡REVISAR!!!!)
+					if ( abs( angulo-angulo_anterior) >= 10 /*grados*/)
+					{
+						velocidad_real_moneda = SumaVelocidad( velocidad_real_moneda,  VelAngular2VelLineal( mapa_original.PuntoGiroFijo, pos_real_moneda /*Inexacto, mejor punto contacto (TODO)*/, (angulo-angulo_anterior), tiempo_imagen ) );
+					}
+				}
+
+				// Calculamos fuerzas normales
 				switch (tipo_interferencia_segmento[segmento_actual])
 				{
 					case interseccion_central:
 						fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalCentroSegmento( angulo_segmento_actual, gravedad.fy, 1 );	// Masa = 1  de momento
 						break;
 					case interseccion_extremo_start:
-						// TODO
+						fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].start, gravedad.fy, 1 );
 						break;
 					case interseccion_extremo_end:
-						// TODO
+						fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].end, gravedad.fy, 1 );
 						break;
 					default:
 						#ifdef DEBUG_INFO
@@ -557,17 +613,12 @@ void bucle_principal_juego( void )
 						#endif
 						break;
 				}
-
-				// 
-
-
 				#ifdef DEBUG_INFO
 				printf("Interferencia tipo %d con segmento %d. \n", tipo_interferencia_segmento[segmento_actual],segmento_actual); 
 				printf("Angulo Segmento: %f \n", angulo_segmento_actual*360/(2*3.1416));
 				printf("Velocidad tras anulacion: vx=%f, vy=%f \n", velocidad_real_moneda.vx, velocidad_real_moneda.vy );
 				printf("Fx = %f, Fy = %f \n", fuerzas_normales_segmentos[segmento_actual].fx, fuerzas_normales_segmentos[segmento_actual].fy );
 				#endif
-
 			}
 			else
 			{
@@ -589,6 +640,7 @@ void bucle_principal_juego( void )
 		pos_real_moneda = Velocidad2Posicion( pos_real_moneda, velocidad_real_moneda, tiempo_imagen);
 
 
+		angulo_anterior = angulo;
 
 		/////////////////////////////////////////////////////////////////////////////////////
 

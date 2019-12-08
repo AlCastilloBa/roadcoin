@@ -5,7 +5,7 @@
 #include "geometry.h"
 
 
-#define PI 3.1416
+//#define PI 3.1416
 
 #define MIN(a,b) (((a)<(b))?(a):(b))		// Nota: no validas con operadores ++, -- , etc
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -19,7 +19,7 @@ struct punto GiraPunto ( struct punto centro_giro, struct punto punto_inicial, d
 	//	[ y' ] = [ sin a     cos a ] [ y ]
 	// Como no es respecto al origen:
 	//	[ x' - xo ]   [ cos a   - sin a ] [ x - xo ]	((Revisar))
-	//	[ y' - xo ] = [ sin a     cos a ] [ y - yo ]
+	//	[ y' - yo ] = [ sin a     cos a ] [ y - yo ]
 	struct punto punto_final;
 	double coseno, seno;
 
@@ -151,6 +151,13 @@ double LongitudVector_Cuadrado( struct punto v, struct punto w)
 	return (w.x-v.x)*(w.x-v.x) + (w.y-v.y)*(w.y-v.y);
 }
 
+double LongitudVector( struct punto v, struct punto w)
+{
+	// Calcula el modulo de un vector
+	// Es lenta, por tener una raiz cuadrada. Intentar evitar y usar LongitudVector_Cuadrado en su lugar cuando sea posible.
+	return sqrt(  (w.x-v.x)*(w.x-v.x) + (w.y-v.y)*(w.y-v.y)  );
+}
+
 
 double DistanciaPuntoRecta_Cuadrado( struct punto P, struct punto A, struct punto B)
 {
@@ -271,4 +278,41 @@ bool doIntersect(struct punto p1, struct punto q1, struct punto p2, struct punto
   
     return false; // Doesn't fall in any of the above cases 
 } 
+
+
+
+//-----------------------------------------------------------------------------------------------------
+
+struct punto CalculaPosTangenteACentroSegmento ( struct punto A, struct punto B, struct punto centro_circulo, double radio)
+{ 
+	// Calcula la posición tangente al centro del segmento
+
+	struct punto nuevo_centro_tangente, proyeccion_centro_sobre_recta;
+	double distancia_centro_recta;
+
+	proyeccion_centro_sobre_recta = PuntoProyectadoSobreRecta( centro_circulo, A, B);
+	distancia_centro_recta = sqrt( DistanciaPuntoRecta_Cuadrado( centro_circulo, A, B) );
+	
+	nuevo_centro_tangente.x = proyeccion_centro_sobre_recta.x + ((centro_circulo.x - proyeccion_centro_sobre_recta.x )/distancia_centro_recta)* radio;
+	nuevo_centro_tangente.y = proyeccion_centro_sobre_recta.y + ((centro_circulo.y - proyeccion_centro_sobre_recta.y )/distancia_centro_recta)* radio;
+
+	return nuevo_centro_tangente;
+}
+
+
+struct punto CalculaPosTangenteAExtremoSegmento ( struct punto extremo, struct punto centro_circulo, double radio)
+{ 
+	// Calcula la posición tangente al extremo del segmento
+
+	struct punto nuevo_centro_tangente;
+	double distancia_centrocirculo_extremosegmento;
+
+	distancia_centrocirculo_extremosegmento = LongitudVector( extremo, centro_circulo);
+	
+	nuevo_centro_tangente.x = extremo.x + ((centro_circulo.x - extremo.x )/distancia_centrocirculo_extremosegmento)* radio;
+	nuevo_centro_tangente.y = extremo.y + ((centro_circulo.y - extremo.y )/distancia_centrocirculo_extremosegmento)* radio;
+
+	return nuevo_centro_tangente;
+}
+
 

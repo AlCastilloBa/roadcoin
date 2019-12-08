@@ -1,3 +1,5 @@
+#define PI 3.1416
+
 // Tipos de interseccion circulo - segmento
 enum tipo_interseccion_circulo_segmento 
 { 	
@@ -26,6 +28,8 @@ struct punto PuntoProyectadoSobreRecta( struct punto, struct punto, struct punto
 
 double LongitudVector_Cuadrado( struct punto v, struct punto w);
 
+double LongitudVector( struct punto v, struct punto w);
+
 double DistanciaPuntoRecta_Cuadrado( struct punto , struct punto , struct punto );
 
 //bool ProyeccionCirculoTocaSegmento( struct punto, double , struct punto, struct punto);
@@ -39,3 +43,7 @@ bool onSegment(struct punto, struct punto, struct punto);
 int orientation(struct punto, struct punto, struct punto);
 
 bool doIntersect(struct punto, struct punto, struct punto, struct punto);
+
+struct punto CalculaPosTangenteACentroSegmento ( struct punto, struct punto, struct punto, double);
+
+struct punto CalculaPosTangenteAExtremoSegmento ( struct punto, struct punto, double);
