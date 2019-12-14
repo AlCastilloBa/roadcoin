@@ -1,21 +1,49 @@
 OBSOLETO!!! SE DEBE ACTUALIZAR
 
 
+# Las lineas que empiezan por "#" son comentarios, serán ignoradas por el programa.
+# Todas las líneas tendrán una estructura determinada.
+#    palabra_clave = valor
+# El programa buscará esta palabra clave e intentara leer el valor y guardarlo en memoria.
+# A continuación se listan los tipos de campos.
 
-# Las lineas que empiezan por "#" son comentarios, serán ignoradas por el programa
-# La primera linea no comentada será el nombre del mapa
-Nombre del mapa
 
-# La segunda linea no comentada será el numero de segmentos
-5
+# Lines beginning with the character "#" are remarks. They will be ignored by the program.
+# All the lines will have this structure.
+#     keyword = value
+# This program will searth for a keyword and will try to read the value and store it into memory.
+# The keyword list can be found below.
 
-# La tercera linea indica respecto a donde gira el mapa
-(0=camara, 1=punto_fijo)
 
-# La siguientes 2 lineas no comentadas son las coordenadas del punto de giro
+
+# Nombre del mapa
+# Map name
+nombre=Nombre del mapa
+
+
+
+# Numero de segmentos
+# Number of line segments
+num_segmentos=27
+
+
+
+# Modo de giro de mapa. indica respecto a que punto gira el mapa 
+   (0=camara, 1=punto_fijo)
+# Map rotating mode, determines the point the map will rotate around.
+   (0=camera, 1=fixed point)
+modo_giro_mapa=1
+
+
+
+# Posicion del punto de giro del mapa
+# La siguientes linea son las coordenadas del punto de giro.
 # Unicamente se tiene en cuenta para el caso de giro alrededor de un punto fijo
-2.587
-3.598
+# Fixed point rotating point. This line indicates rotating point coordinates, only in the case the map rotates around a fixed point.
+punto_giro=(416,355)
+
+
+# ;ME LLEGO AQUIIIIIII
 
 # Las siguientes linea no comentada es el limites de giro del mapa (angulo maximo y angulo minimo con el signo contrario)
 # Nota: el origen es arriba
