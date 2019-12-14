@@ -21,6 +21,12 @@ pos_inicial_moneda=(530,0)
 # Gravedad
 gravedad=1000
 
+# Ruta imagen de la moneda
+imagen_moneda=images/moneda2.png
+
+# Ruta imagen del fondo
+imagen_fondo=images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg
+
 #Segmentos
 # Nivel Salida
 segmento[0]=((559,0),(558,31),0)
