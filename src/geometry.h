@@ -47,3 +47,13 @@ bool doIntersect(struct punto, struct punto, struct punto, struct punto);
 struct punto CalculaPosTangenteACentroSegmento ( struct punto, struct punto, struct punto, double);
 
 struct punto CalculaPosTangenteAExtremoSegmento ( struct punto, struct punto, double);
+
+double WrapAngle_0_2pi (double);
+
+double WrapAngle_0_360 (double);
+
+double WrapAngle_mpi_pi (double);
+
+double WrapAngle_m180_180 (double );
+
+

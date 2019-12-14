@@ -55,6 +55,7 @@ float inc_angulo_teclado = 1.0f;
 bool inicializar_intro(void);
 bool inicializar_juego(void);
 bool loadMedia(void);
+bool loadMainGameLoopMedia(char*, char*);
 bool cerrar_intro(void);
 bool close_program(void);
 SDL_Texture* CargaTextura( char*, int*, int*, bool );
@@ -158,12 +159,12 @@ bool loadIntroMedia()
 }
 
 
-bool loadGameMedia() 
+bool loadMainGameLoopMedia( char* ruta_imagen_moneda, char* ruta_imagen_fondo ) 
 { 
 	bool success = true; 	//Loading success flag 
 
-	 //Load PNG texture 
-	gTexturaMoneda = CargaTextura( "images/moneda1.png" , &gDimMonedaX, &gDimMonedaY, true ); 
+	 //Load PNG texture - Moneda 
+	gTexturaMoneda = CargaTextura( ruta_imagen_moneda , &gDimMonedaX, &gDimMonedaY, true ); 
 	if( gTexturaMoneda == NULL ) 
 	{ 
 		printf( "Failed to load texture image!\n" ); 
@@ -182,8 +183,9 @@ bool loadGameMedia()
 	#ifdef DEBUG_INFO 
 	printf("Radio moneda: %d\n", gRadioMoneda);
 	#endif
-	//gTexturaFondo = CargaTextura( "images/fondo_nubes.png" , NULL, NULL, false );
-	gTexturaFondo = CargaTextura( "images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg" , NULL, NULL, false );
+
+	 //Load PNG texture - Fondo
+	gTexturaFondo = CargaTextura( ruta_imagen_fondo , NULL, NULL, false );
 	if( gTexturaFondo == NULL ) 
 	{ 
 		printf( "Failed to load texture image!\n" ); 
@@ -322,15 +324,6 @@ int main( int argc, char* args[] )
 		exit(-1);
 	} 
 
-	//Load media 
-	#ifdef DEBUG_INFO
-	printf("Cargando archivos juego...\n");
-	#endif
-	if( !loadGameMedia() ) 
-	{ 
-		printf( "Failed to load media!\n" ); 
-		exit(-1);
-	} 
 	#ifdef DEBUG_INFO
 	printf("Comenzando bucle principal del juego...\n");
 	#endif
@@ -356,6 +349,9 @@ void bucle_principal_juego( void )
 	int segmento_actual;
 	float angulo, angulo_anterior;
 	float mouse_sensibility = 0.1f;
+
+	float angulo_rotacion_moneda = 0.0f;	// En radianes
+	float vel_angular_moneda = 0.0f;	// En rad/s
 
 	struct punto pos_real_moneda;			// Posicion de centro de la moneda (unidades del juego)
 	struct posicion_camara pos_pant_moneda;			// Posicion de centro de la moneda (pixeles de la pantalla)
@@ -413,18 +409,30 @@ void bucle_principal_juego( void )
 		exit(-1);
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// Cargamos archivos del juego - Load Game media 
+	#ifdef DEBUG_INFO
+	printf("Cargando archivos juego...\n");
+	#endif
+	if( !loadMainGameLoopMedia( mapa_original.RutaImagenMoneda, mapa_original.RutaImagenFondo ) ) 
+	{ 
+		printf( "Failed to load media!\n" ); 
+		exit(-1);
+	} 
+
 	//////////////////////////////////////////////////////////////////////////////////////////
 
-	//Reseteamos contador de tiempo (para no tener en cuenta todo lo anterior)
-	lastTime = currentTime;
-	currentTime = SDL_GetTicks();	
-
-	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Activar variables ratón
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	//SDL_WarpMouseInWindow(gGameWindow, GAME_SCREEN_WIDTH / 2, GAME_SCREEN_HEIGHT / 2 );
+
+	///////////////////////////////////////////////////////////////////////////////////////////
+
+	//Reseteamos contador de tiempo (para no tener en cuenta todo lo anterior)
+	lastTime = currentTime;
+	currentTime = SDL_GetTicks();	
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -507,11 +515,29 @@ void bucle_principal_juego( void )
 
 		/////////////////////////////////////////////////////////////////////////////////////	
 		// Giramos el mapa
-		if ( mapa_original.TipoGiro == punto_fijo )
+		//if ( mapa_original.TipoGiro == punto_fijo )
+		//{
+		//	GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
+		//}
+		switch (mapa_original.TipoGiro)
 		{
-			GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
+			case punto_fijo:
+				GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
+				break;
+			case camara:
+				// (TODO)
+				printf("ERROR: TODAVIA NO IMPLEMENTADO\n");
+				exit(-1);
+				break;
+			case moneda:
+				GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, pos_real_moneda, mapa_original.NumeroSegmentos, angulo );
+				break;
+			default:
+				printf("Al proceder a girar el mapa, error de programacion o error de concepto\n");
+				exit(-1);
+				break;
 		}
-		// Nota: falta implementar otros casos
+		// Nota: (TODO) falta implementar otros casos
 
 
 		////////////////////////////////////////////////////////////////////////////////////
@@ -561,6 +587,9 @@ void bucle_principal_juego( void )
 				// Anulamos componente velocidad normal al segmento
 				velocidad_real_moneda = AnulaVelocidadNormalASegmento( velocidad_real_moneda, angulo_segmento_actual );
 
+				// Calculamos la nueva velocidad de giro de la moneda provocada por el contacto
+				vel_angular_moneda = CalculaVelGiroSobreSegmento( velocidad_real_moneda, angulo_segmento_actual, gRadioMoneda);
+
 				// Calculamos posicion tangente (segunda vez)
 				switch (tipo_interferencia_segmento[segmento_actual])
 				{
@@ -583,16 +612,34 @@ void bucle_principal_juego( void )
 				// En caso de giro del mapa:
 				if ( angulo != angulo_anterior )
 				{
-					// hacemos que tambien gire la moneda
 					// (TODO) Adecuar para otros tipos de giro
-					pos_real_moneda = GiraPunto ( mapa_original.PuntoGiroFijo, pos_real_moneda, angulo - angulo_anterior);
-
-					// Calculamos y sumamos una velocidad debida al giro
-					// (TODO) Esto no está bien, aparce una velocidad muy grande (¡¡¡REVISAR!!!!)
-					if ( abs( angulo-angulo_anterior) >= 10 /*grados*/)
+					switch (mapa_original.TipoGiro)
 					{
-						velocidad_real_moneda = SumaVelocidad( velocidad_real_moneda,  VelAngular2VelLineal( mapa_original.PuntoGiroFijo, pos_real_moneda /*Inexacto, mejor punto contacto (TODO)*/, (angulo-angulo_anterior), tiempo_imagen ) );
+						case punto_fijo:
+							// hacemos que tambien gire la moneda
+							pos_real_moneda = GiraPunto ( mapa_original.PuntoGiroFijo, pos_real_moneda, angulo - angulo_anterior);
+
+							// Calculamos y sumamos una velocidad debida al giro
+							// (TODO) Esto no está bien, aparce una velocidad muy grande (¡¡¡REVISAR!!!!)
+							if ( abs( angulo-angulo_anterior) >= 10 /*grados*/)
+							{
+								velocidad_real_moneda = SumaVelocidad( velocidad_real_moneda,  VelAngular2VelLineal( mapa_original.PuntoGiroFijo, pos_real_moneda /*Inexacto, mejor punto contacto (TODO)*/, (angulo-angulo_anterior), tiempo_imagen ) );
+							}
+							break;
+						case moneda:
+							// En este caso, no es necesario hacer nada.
+							break;
+						case camara:
+							// (TODO)
+							printf("ERROR: TODAVIA NO IMPLEMENTADO\n");
+							exit(-1);
+							break;
+						default:
+							printf("Al proceder a calcular efectos del giro sobre moneda, error de programacion o error de concepto\n");
+							exit(-1);
+							break;
 					}
+
 				}
 
 				// Calculamos fuerzas normales
@@ -628,8 +675,6 @@ void bucle_principal_juego( void )
 
 		}
 
-		// Nota: (TODO) Los dos bucles anteriores se pueden combinar
-
 		////////////////////////////////////////////////////////////////////////////////////
 
 		// Suma fuerzas
@@ -638,7 +683,8 @@ void bucle_principal_juego( void )
 		velocidad_real_moneda = Aceleracion2Velocidad( velocidad_real_moneda, aceleracion_real_moneda, tiempo_imagen);
 		//Actualiza posición
 		pos_real_moneda = Velocidad2Posicion( pos_real_moneda, velocidad_real_moneda, tiempo_imagen);
-
+		// Actualiza angulo de giro de la moneda
+		angulo_rotacion_moneda = VelAng2Angulo( angulo_rotacion_moneda, vel_angular_moneda, tiempo_imagen); 
 
 		angulo_anterior = angulo;
 
@@ -659,10 +705,12 @@ void bucle_principal_juego( void )
 		//Dibuja fondo
 		SDL_RenderCopy( gRenderer, gTexturaFondo, NULL, NULL );		//Imagen estirada a toda la ventana
 
-		//Render texture to screen 
+		//Render texture to screen - Dibuja moneda
 		// No entiendo ¿esto es C o C++? (ACLARAR) (Puede ser un array de C99)
 		SDL_Rect renderQuad = { pos_pant_moneda.x-gRadioMoneda, pos_pant_moneda.y-gRadioMoneda, gDimMonedaX, gDimMonedaY }; 	//Crea un rectangulo en la posicion desesada de la moneda
-		SDL_RenderCopy( gRenderer, gTexturaMoneda, NULL, &renderQuad ); 
+		//SDL_RenderCopy( gRenderer, gTexturaMoneda, NULL, &renderQuad ); 	// Version sin rotacion de la moneda
+		SDL_RenderCopyEx( gRenderer, gTexturaMoneda, NULL, &renderQuad, angulo_rotacion_moneda*180/PI, NULL /*Rota alrededor del centro*/, SDL_FLIP_NONE );
+
 
 
 		//Dibuja lineas

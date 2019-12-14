@@ -316,3 +316,38 @@ struct punto CalculaPosTangenteAExtremoSegmento ( struct punto extremo, struct p
 }
 
 
+//--------------------------------------------------------------------------------------------
+
+double WrapAngle_0_2pi (double angulo)
+{
+	// Entrada en radianes, salida en radianes entre 0 y 2*pi
+	angulo = fmod(angulo,2*PI);
+	if (angulo < 0)
+        	angulo += 2*PI;
+    	return angulo;
+}
+
+double WrapAngle_0_360 (double angulo)
+{
+	// Entrada en grados, salida en grados entre 0 y 360
+	angulo = fmod(angulo,360);
+	if (angulo < 0)
+        	angulo += 360;
+    	return angulo;
+}
+
+double WrapAngle_mpi_pi ( double angulo)
+{
+	angulo = fmod(angulo + 180,360);
+	if (angulo < 0)
+		angulo += 360;
+	return angulo - 180;
+}
+
+double WrapAngle_m180_180 (double angulo)
+{
+	angulo = fmod(angulo + 180,360);
+	if (angulo < 0)
+		angulo += 360;
+	return angulo - 180;
+}

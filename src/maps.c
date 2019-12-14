@@ -13,7 +13,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	struct mapa mapa_a_cargar;
 	struct punto punto_auxiliar;
 	char linea_leida[200];
-	bool nombre_ok, num_segmentos_ok, modo_giro_mapa_ok, punto_giro_ok, angulo_max_ok, pos_inicial_ok, gravedad_ok;
+	bool nombre_ok, num_segmentos_ok, modo_giro_mapa_ok, punto_giro_ok, angulo_max_ok, pos_inicial_ok, gravedad_ok, imagen_moneda_ok, imagen_fondo_ok;
 	bool segmento_ok[LIMITE_SEGMENTOS];
 	bool vector_segmentos_inicializado =false;
 	FILE *archivo;
@@ -141,6 +141,36 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 					exit(-1);
 				}
 			}
+			else if (strstr(linea_leida, "imagen_moneda") != NULL )
+			{
+				if ( sscanf(linea_leida, "imagen_moneda=%s", mapa_a_cargar.RutaImagenMoneda ) == 1 )
+				{
+					imagen_moneda_ok = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, imagen_moneda=%f\n", linea, mapa_a_cargar.RutaImagenMoneda );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, imagen_moneda --> No se han podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
+			else if (strstr(linea_leida, "imagen_fondo") != NULL )
+			{
+				if ( sscanf(linea_leida, "imagen_fondo=%s", mapa_a_cargar.RutaImagenFondo ) == 1 )
+				{
+					imagen_fondo_ok = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, imagen_fondo=%f\n", linea, mapa_a_cargar.RutaImagenFondo );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, imagen_fondo --> No se han podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
 			else if (strstr(linea_leida, "segmento") != NULL )
 			{
 				if (vector_segmentos_inicializado==false)
@@ -190,7 +220,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 
 	fclose(archivo);
 
-
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Verificamos que lo tengamos todo (que al archivo no le faltasen datos)
 	if (nombre_ok == false) 		printf("Falta el nombre del mapa.\n");
 	if (num_segmentos_ok == false) 		printf("Falta el número de segmentos.\n");	
@@ -200,8 +230,10 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	if (angulo_max_ok == false) 		printf("Falta el angulo máximo.\n");
 	if (pos_inicial_ok == false) 		printf("Falta el la posición inicial.\n");
 	if (gravedad_ok == false) 		printf("Falta la gravedad.\n");
+	if (imagen_moneda_ok == false)		printf("Falta el la ruta de la imagen de la moneda.\n");
+	if (imagen_fondo_ok == false)		printf("Falta el la ruta de la imagen del fondo.\n");
 
-	if (nombre_ok==false || num_segmentos_ok==false || modo_giro_mapa_ok==false || punto_giro_ok==false || angulo_max_ok==false || pos_inicial_ok==false || gravedad_ok==false)
+	if (nombre_ok==false || num_segmentos_ok==false || modo_giro_mapa_ok==false || punto_giro_ok==false || angulo_max_ok==false || pos_inicial_ok==false || gravedad_ok==false || imagen_moneda_ok==false || imagen_fondo_ok==false)
 	{
 		printf("Archivo de mapa incompleto\n");
 		exit(-1);
@@ -215,6 +247,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 		}
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// Para simplificar los calculos futuros, vamos a hacer que el punto de inicio (start) siempre esté a la izquierda.
 	for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
 	{

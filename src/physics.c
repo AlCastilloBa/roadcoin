@@ -189,3 +189,45 @@ struct vector_velocidad VelAngular2VelLineal ( struct punto centro_giro, struct 
 	return vel_lineal;
 }
 
+
+double VelAng2Angulo ( double angulo_inicial, double omega, double delta_tiempo )
+{
+	// phi_final = phi_inicial + omega * delta_tiempo
+	//     phi en rad
+	//     omega en rad/s
+	//     delta_tiempo en s
+	return angulo_inicial + omega * delta_tiempo;
+
+}
+
+double CalculaVelGiroSobreSegmento ( struct vector_velocidad velocidad_inicial, double angulo_segmento, double radio_moneda )
+{
+	// omega = Velocidad tangencial / radio moneda
+	// (TODO) Optimizacion, esto se calcula en VelAngular2VelLineal, se pueden reducir calculos
+
+	struct punto vector_unitario_normal, vector_velocidad_inicial;
+	struct vector_velocidad velocidad_tangencial;
+	double prod_escalar_v_n;
+
+	//Convertimos velocidad desde struct vector_velocidad a struct punto
+	vector_velocidad_inicial.x = velocidad_inicial.vx;
+	vector_velocidad_inicial.y = velocidad_inicial.vy;
+
+	vector_unitario_normal.x = sin(angulo_segmento);	// Resultado debe ser positivo
+	vector_unitario_normal.y = -cos(angulo_segmento);	// Resultado debe ser negativo
+
+	prod_escalar_v_n = ProductoEscalar2D (vector_velocidad_inicial, vector_unitario_normal);
+	
+	velocidad_tangencial.vx = velocidad_inicial.vx - prod_escalar_v_n * vector_unitario_normal.x;
+	velocidad_tangencial.vy = velocidad_inicial.vy - prod_escalar_v_n * vector_unitario_normal.y;
+
+	if (velocidad_tangencial.vx >= 0)	// Giro hacia la derecha, omega positivo
+	{
+		return (sqrt( velocidad_tangencial.vx*velocidad_tangencial.vx + velocidad_tangencial.vy*velocidad_tangencial.vy )) / radio_moneda;
+	}
+	if (velocidad_tangencial.vx < 0)	// Giro hacia la izquierda, omega negativo
+	{
+		return -(sqrt( velocidad_tangencial.vx*velocidad_tangencial.vx + velocidad_tangencial.vy*velocidad_tangencial.vy )) / radio_moneda;
+	}
+}
+

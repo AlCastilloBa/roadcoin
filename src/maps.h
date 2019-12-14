@@ -13,7 +13,8 @@ enum tipo_segmento
 enum tipo_giro
 {
 	camara,		// El mapa gira alrededor de la cámara
-	punto_fijo	// El mapa gira alrededor de un punto fijo
+	punto_fijo,	// El mapa gira alrededor de un punto fijo
+	moneda		// El mapa gira alrededor de la moneda
 };
 
 // Punto en 2D
@@ -34,6 +35,7 @@ struct segmento
 struct mapa
 {
 	char NombreMapa[100];
+	char DescripcionMapa[200];
 	int NumeroSegmentos;
 	enum tipo_giro TipoGiro;
 	struct punto PuntoGiroFijo;
@@ -41,6 +43,8 @@ struct mapa
 	struct punto PuntoInicialMoneda;
 	float Gravedad;
 	struct segmento *Mapa;
+	char RutaImagenMoneda[255];
+	char RutaImagenFondo[255];
 };
 
 
