@@ -1,0 +1,18 @@
+
+
+v0.1-beta.0
+
+- Minimal gameplay achieved.
+- Framerate independent movement.
+- Hardware acceleration.
+- Mouse and keyboard input implemented.
+- Simple physics implemented.
+- Load maps from plain text files.
+- Simple graphics.
+
+v0.1-beta.1
+- Added coin rotation
+- Game media paths is now stored inside the map files (not the source code)
+- Added rotate map around the coin itself.
+
+

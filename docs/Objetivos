@@ -14,7 +14,7 @@ Objetivos del proyecto para la versión v0.1:
 
 [      ] Portable UNIX / Windows con el mismo código.
 [ BOOM ] Que el bucle principal funcione.
-[      ] Que se pueda jugar, aunque le falte realismo.
+[ BOOM ] Que se pueda jugar, aunque le falte realismo.
 [ BOOM ] Movimiento independiente del "framerate".
 [ BOOM ] Gráficos cutres, lineas y circulos.
 [ BOOM ] Hardware accelerated.
@@ -25,28 +25,32 @@ Objetivos del proyecto para la versión v0.1:
 
 
 Objetivos para siguientes versiones:
-[ ] Cámara movil (para hacer niveles grandes)
-[ ] Rotacion de la moneda.
-[ ] Menú elegante.
-[ ] Pasar mapas de ficheos guarros a ficheros XML elegantes.
-[ ] Joystick.
-[ ] Sonidos (golpes de la moneda).
-[ ] Imagen de la moneda.
-[ ] Mapas con graficos con texturas y un fondo (que no den ganas de llorar
+[      ] Cámara movil (para hacer niveles grandes)
+[ BOOM ] Rotacion de la moneda.
+[      ] Menú elegante.
+[      ] Pasar mapas de ficheos guarros a ficheros XML elegantes.
+[      ] Joystick.
+[      ] Sonidos (golpes de la moneda).
+[      ] Imagen de la moneda.
+[      ] Mapas con graficos con texturas y un fondo (que no den ganas de llorar
      al ver la pantalla).
-[ ] Musica de verbena de pueblo.
-[ ] Cuenta atrás, para poner nervioso al jugador y que falle.
-[ ] Sistema de puntos (score).
-[ ] Premios que den puntos y que sean dificiles de coger
+[      ] Musica de verbena de pueblo.
+[      ] Cuenta atrás, para poner nervioso al jugador y que falle.
+[      ] Sistema de puntos (score).
+[      ] Premios que den puntos y que sean dificiles de coger
      (como las guindas del comecocos).
-[ ] Editor de niveles.
-[ ] Que los golpes de la moneda provoquen vibraciones joystick.
-[ ] Quelos golpes de la moneda puedan hacer girar el mapa (esto poner de los nervios).
-[ ] Plataformas móviles (esto tambien poner de los nervios).
-[ ] Otros origenes de fuerzas.
-	[ ] Agujeros negros
-	[ ] Muelles
-	[ ] Imanes
-	[ ] Viento
+[      ] Editor de niveles.
+[      ] Que los golpes de la moneda provoquen vibraciones joystick.
+[      ] Quelos golpes de la moneda puedan hacer girar el mapa (esto poner de los nervios).
+[      ] Plataformas móviles (esto tambien poner de los nervios).
+[      ] Otros origenes de fuerzas.
+	[      ] Agujeros negros
+	[      ] Muelles
+	[      ] Imanes
+	[      ] Viento
 	...etc
+[      ] Eliminar botes molestos que quitan realismo.
+[      ] Para eliminar "enganches" en los puntos de interseccion entre segmentos continuos, definir
+          alguna forma de indicar que los segmentos están contiguos, de tal
+          forma que no se calculen las fuerzas normales en los extremos.
 .... ETC
