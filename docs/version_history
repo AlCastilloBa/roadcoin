@@ -12,7 +12,13 @@ v0.1-beta.0
 
 v0.1-beta.1
 - Added coin rotation
-- Game media paths is now stored inside the map files (not the source code)
+- Game media paths are now stored inside the map files (not the source code).
 - Added rotate map around the coin itself.
+------------------
+- Added a settings file.
+- Added a simple menu structure with play and exit buttons. Operable with mouse and keyboard.
+- Added fullscreen toggle.
+- When line segments are next to each other, start and end forces are not applied. This makes the behaviour a little more realistic.
+
 
 

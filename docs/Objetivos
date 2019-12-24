@@ -31,7 +31,7 @@ Objetivos para siguientes versiones:
 [      ] Pasar mapas de ficheos guarros a ficheros XML elegantes.
 [      ] Joystick.
 [      ] Sonidos (golpes de la moneda).
-[      ] Imagen de la moneda.
+[ BOOM ] Imagen de la moneda.
 [      ] Mapas con graficos con texturas y un fondo (que no den ganas de llorar
      al ver la pantalla).
 [      ] Musica de verbena de pueblo.
@@ -41,8 +41,8 @@ Objetivos para siguientes versiones:
      (como las guindas del comecocos).
 [      ] Editor de niveles.
 [      ] Que los golpes de la moneda provoquen vibraciones joystick.
-[      ] Quelos golpes de la moneda puedan hacer girar el mapa (esto poner de los nervios).
-[      ] Plataformas móviles (esto tambien poner de los nervios).
+[      ] Quelos golpes de la moneda puedan hacer girar el mapa (esto pone de los nervios).
+[      ] Plataformas móviles (esto tambien pone de los nervios).
 [      ] Otros origenes de fuerzas.
 	[      ] Agujeros negros
 	[      ] Muelles
@@ -50,7 +50,8 @@ Objetivos para siguientes versiones:
 	[      ] Viento
 	...etc
 [      ] Eliminar botes molestos que quitan realismo.
-[      ] Para eliminar "enganches" en los puntos de interseccion entre segmentos continuos, definir
+[ BOOM ] Para eliminar "enganches" en los puntos de interseccion entre segmentos continuos, definir
           alguna forma de indicar que los segmentos están contiguos, de tal
           forma que no se calculen las fuerzas normales en los extremos.
+[      ] En el mapa, especificar textos en segmentos, que sean mostrados al tocarlos.
 .... ETC
