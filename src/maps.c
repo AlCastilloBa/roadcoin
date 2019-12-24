@@ -6,7 +6,7 @@
 #include "maps.h"
 
 
-#define DEBUG_INFO
+//#define DEBUG_INFO
 
 struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 {
@@ -18,7 +18,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	bool vector_segmentos_inicializado =false;
 	FILE *archivo;
 	int linea=0;
-	int segmento_actual, i;
+	int segmento_actual, i, otro_segmento_actual;
 
 	archivo = fopen( nombre_archivo, "r" );
 	if (archivo == NULL)
@@ -263,6 +263,36 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 		}
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	//  Detectamos adyacencias
+	for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
+	{
+		mapa_a_cargar.Mapa[segmento_actual].start_adyacente_a_otro = false;
+		mapa_a_cargar.Mapa[segmento_actual].end_adyacente_a_otro = false;
+		for (otro_segmento_actual=0; otro_segmento_actual<mapa_a_cargar.NumeroSegmentos; otro_segmento_actual++)
+		{
+			if ( segmento_actual == otro_segmento_actual )
+			{
+				continue;
+			}		
+			if ( ( mapa_a_cargar.Mapa[segmento_actual].start.x == mapa_a_cargar.Mapa[otro_segmento_actual].start.x ) && ( mapa_a_cargar.Mapa[segmento_actual].start.y == mapa_a_cargar.Mapa[otro_segmento_actual].start.y ) || 
+				( mapa_a_cargar.Mapa[segmento_actual].start.x == mapa_a_cargar.Mapa[otro_segmento_actual].end.x ) && ( mapa_a_cargar.Mapa[segmento_actual].start.y == mapa_a_cargar.Mapa[otro_segmento_actual].end.y ) )
+			{
+				mapa_a_cargar.Mapa[segmento_actual].start_adyacente_a_otro = true;
+				#ifdef DEBUG_INFO
+				printf("Detectada adyacencia en extremo start en segmento %d, con segmento %d\n", segmento_actual, otro_segmento_actual);
+				#endif
+			}
+			if ( ( mapa_a_cargar.Mapa[segmento_actual].end.x == mapa_a_cargar.Mapa[otro_segmento_actual].start.x ) && ( mapa_a_cargar.Mapa[segmento_actual].end.y == mapa_a_cargar.Mapa[otro_segmento_actual].start.y ) || 
+				( mapa_a_cargar.Mapa[segmento_actual].end.x == mapa_a_cargar.Mapa[otro_segmento_actual].end.x ) && ( mapa_a_cargar.Mapa[segmento_actual].end.y == mapa_a_cargar.Mapa[otro_segmento_actual].end.y ) )
+			{
+				mapa_a_cargar.Mapa[segmento_actual].end_adyacente_a_otro = true;
+				#ifdef DEBUG_INFO
+				printf("Detectada adyacencia en extremo end en segmento %d, con segmento %d\n", segmento_actual, otro_segmento_actual);
+				#endif
+			}		
+		}
+	}
 
 	#ifdef DEBUG_INFO
 	printf("Mapa %s cargado. Continuamos.\n", nombre_archivo );

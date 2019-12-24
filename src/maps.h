@@ -30,6 +30,8 @@ struct segmento
 	struct punto start;
 	struct punto end;
 	enum tipo_segmento type;
+	bool start_adyacente_a_otro;	// Starting point is next to another one
+	bool end_adyacente_a_otro;	// Ending point is next to another one
 };
 
 struct mapa

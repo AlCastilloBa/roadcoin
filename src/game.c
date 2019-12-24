@@ -10,6 +10,9 @@
 #include "camera.h"
 #include "maps.h"
 #include "geometry.h"
+#include "options.h"
+#include "menu.h"
+#include "graphics.h"
 
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
@@ -18,11 +21,11 @@
 //Screen dimension constants 
 const int INTRO_SCREEN_WIDTH = 500; 
 const int INTRO_SCREEN_HEIGHT = 851;
-const int GAME_SCREEN_WIDTH = 800; 
-const int GAME_SCREEN_HEIGHT = 600;
+//const int GAME_SCREEN_WIDTH = 800; 	// Incluido en opciones
+//const int GAME_SCREEN_HEIGHT = 600;	// Incluido en opciones
 
 
-
+////////////////////////////////////////////////////////////////////////////////////////////
 //GLOBAL VARIABLES
 //The window we'll be rendering to 
 SDL_Window* gIntroWindow = NULL; 
@@ -50,16 +53,23 @@ int gRadioMoneda;
 //Variables globales control
 float inc_angulo_teclado = 1.0f;
 
+// Variables globales opciones
+struct opciones opciones_juego;
+
+// Variables globales menu (ver menu.c)
+struct pantalla_menu* pantallas_menu_principal;
 
 
+/*
+// Declaración de funciones
 bool inicializar_intro(void);
-bool inicializar_juego(void);
+bool inicializar_ventana_juego(void);
 bool loadMedia(void);
 bool loadMainGameLoopMedia(char*, char*);
 bool cerrar_intro(void);
 bool close_program(void);
-SDL_Texture* CargaTextura( char*, int*, int*, bool );
-
+void bucle_principal_juego( void );
+*/
 
 void bucle_principal_juego(void);
 
@@ -87,6 +97,15 @@ bool inicializar_intro()
 		exit(-1);
 	}
 
+
+	// Inicializa SDL_ttf
+	if( TTF_Init() == -1 )
+	{
+		printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
+		success = false;
+	}
+
+
 	// Inicializa SDL_mixer
 	// PENDIENTE
  
@@ -111,14 +130,14 @@ bool inicializar_intro()
 }
 
 
-bool inicializar_juego() 
+bool inicializar_ventana_juego() 
 {
 	bool success = true;
 	gGameWindow = SDL_CreateWindow( 	"Juego", 
 					SDL_WINDOWPOS_UNDEFINED, 
 					SDL_WINDOWPOS_UNDEFINED, 
-					GAME_SCREEN_WIDTH, 
-					GAME_SCREEN_HEIGHT, 
+					/*GAME_SCREEN_WIDTH*/ opciones_juego.screen_x_resolution, 
+					/*GAME_SCREEN_HEIGHT*/ opciones_juego.screen_y_resolution, 
 					SDL_WINDOW_SHOWN ); 
 
 	if( gGameWindow == NULL ) 
@@ -139,7 +158,11 @@ bool inicializar_juego()
 	//Initialize renderer color 
 	SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF ); 
 
-
+	// Si el archivo de opciones decia pantalla completa, activar pantalla completa --- If options file said fullscreen mode, then enable fullscreen
+	if ( opciones_juego.fullscreen == true )
+	{
+		CambiarModoPantallaCompleta( true, gGameWindow );
+	}
 	return success;
 }
 
@@ -234,54 +257,15 @@ bool close_program()
 }
 
 
-
-
-// Función "carga textura". Carga una textura en memoria lista para utilizar con un "renderer"
-// Argumentos:
-//    - ruta_textura: cadena de caracteres, con la ruta a la imagen.
-//    - dim_x: puntero a variable "int" donde se guardará el tamaño en dirección X.
-//    - dim_y: puntero a variable "int" donde se guardará el tamaño en dirección Y.
-//    - transparente: Indica si el color cyan será transparente
-SDL_Texture* CargaTextura( char* ruta_textura, int* dim_x, int* dim_y, bool transparente) 
-{ 
-	SDL_Texture* newTexture = NULL; 		//The final texture
-	SDL_Surface* loadedSurface = NULL;
-
-	//Load image at specified path 
-	loadedSurface = IMG_Load( ruta_textura ); 
-	if( loadedSurface == NULL ) 
-	{ 
-		printf( "Unable to load image %s! SDL_image Error: %s\n", ruta_textura, IMG_GetError() );
-		exit(-1);
-	} 
-	////Color key image 
-	if (transparente=true)
-	{
-		SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 0, 0xFF, 0xFF ) );  // Color cyan es transparente
-	}
-	//Create texture from surface pixels 
-	newTexture = SDL_CreateTextureFromSurface( gRenderer, loadedSurface ); 
-	if( newTexture == NULL ) 
-	{ 
-		printf( "Unable to create texture from %s! SDL Error: %s\n", ruta_textura, SDL_GetError() );
-	} 
-	//Dimensiones de la textura
-	if (dim_x != NULL || dim_y != NULL)
-	{
-		*dim_x = loadedSurface->w; 
-		*dim_y = loadedSurface->h;
-	}
-	//Get rid of old loaded surface 
-	SDL_FreeSurface( loadedSurface ); 
-
-	return newTexture; 
-}
-
-
-
-
 int main( int argc, char* args[] ) 
 { 
+	#ifdef DEBUG_INFO
+	printf("Cargando opciones...\n");
+	#endif
+
+	opciones_juego = CargarArchivoOpciones();
+
+
 	//Start up SDL and create window 
 	#ifdef DEBUG_INFO
 	printf("Inicializando intro...\n");
@@ -315,22 +299,59 @@ int main( int argc, char* args[] )
 	
 	cerrar_intro();
 
+
 	#ifdef DEBUG_INFO
-	printf("Inicializando juego...\n");
+	printf("Inicializando ventana del juego...\n");
 	#endif
-	if( !inicializar_juego() ) 
+	if( !inicializar_ventana_juego() ) 
+	{ 
+		printf( "Failed to initialize!\n" );
+		exit(-1);
+	} 
+
+
+	////////////
+	#ifdef DEBUG_INFO
+	printf("Inicializando menu...\n");
+	#endif
+	if( !inicializar_menu_principal( /*pantallas_menu_principal ,*/ NUM_TOTAL_PANTALLAS_MENU ) ) 
 	{ 
 		printf( "Failed to initialize!\n" );
 		exit(-1);
 	} 
 
 	#ifdef DEBUG_INFO
+	printf("Comenzando bucle principal del menu...\n");
+	#endif
+	bucle_principal_menu_principal();
+
+	/////////////////
+
+
+/*
+
+	#ifdef DEBUG_INFO
 	printf("Comenzando bucle principal del juego...\n");
 	#endif
 	bucle_principal_juego();
 
+*/
+
+
+	// Liberar memoria del menu
+	liberar_memoria_menu_principal( NUM_TOTAL_PANTALLAS_MENU );
+
+	
+	#ifdef DEBUG_INFO
+	printf("Liberando recursos de SDL y cerrando SDL...\n");
+	#endif
+
 	//Free resources and close SDL 
-	close_program(); 
+	close_program();
+
+	#ifdef DEBUG_INFO
+	printf("Saliendo del programa...\n");
+	#endif 
 	return 0; 
 }
 
@@ -367,6 +388,8 @@ void bucle_principal_juego( void )
 
 	struct vector_fuerza gravedad;	
 	struct vector_fuerza* fuerzas_normales_segmentos;	// Vector que guarda las fuerzas normales de apoyo sobre segmentos en el fotograma actual
+
+	SDL_Rect renderQuad;		// Rectangulo de SDL para indicar la posicion de los objetos a renderizar
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 
@@ -423,7 +446,7 @@ void bucle_principal_juego( void )
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 
-	//Activar variables ratón
+	//Ajustar variables ratón
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	//SDL_WarpMouseInWindow(gGameWindow, GAME_SCREEN_WIDTH / 2, GAME_SCREEN_HEIGHT / 2 );
@@ -649,10 +672,38 @@ void bucle_principal_juego( void )
 						fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalCentroSegmento( angulo_segmento_actual, gravedad.fy, 1 );	// Masa = 1  de momento
 						break;
 					case interseccion_extremo_start:
-						fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].start, gravedad.fy, 1 );
+						if (mapa_original.Mapa[segmento_actual].start_adyacente_a_otro == false )
+						{
+							// No es adyacente a otro, podemos calcular su fuerza
+							fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].start, gravedad.fy, 1 );
+							#ifdef DEBUG_INFO
+							printf("Se aplica fuerza normal en extremo start de segmento %d.\n", segmento_actual);
+							#endif
+						}
+						else
+						{
+							fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
+							#ifdef DEBUG_INFO
+							printf("Segmento %d tiene extremo start adyacente a otro. No se calcula su fuerza normal en extremo.\n", segmento_actual);
+							#endif
+						}	
 						break;
 					case interseccion_extremo_end:
-						fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].end, gravedad.fy, 1 );
+						if (mapa_original.Mapa[segmento_actual].end_adyacente_a_otro == false )
+						{
+							// No es adyacente a otro, podemos calcular su fuerza
+							fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].end, gravedad.fy, 1 );
+							#ifdef DEBUG_INFO
+							printf("Se aplica fuerza normal en extremo end de segmento %d.\n", segmento_actual);
+							#endif
+						}
+						else
+						{
+							fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
+							#ifdef DEBUG_INFO
+							printf("Segmento %d tiene extremo end adyacente a otro. No se calcula su fuerza normal en extremo.\n", segmento_actual);
+							#endif
+						}
 						break;
 					default:
 						#ifdef DEBUG_INFO
@@ -694,8 +745,9 @@ void bucle_principal_juego( void )
 		// Convertimos posiciones "reales" en posiciones de la pantalla
 		pos_pant_moneda = CalculaCamara(pos_real_moneda );
 
-		//PENDIENTE DE HACER, TRANSFORMAR MAPA A LA PANTALLA		
+		//PENDIENTE DE HACER, TRANSFORMAR MAPA A LA PANTALLA (TODO)		
 
+		/////////////////////////////////////////////////////////////////////////////////////
 		// Representa todo por pantalla
 
 		 //Clear screen 
@@ -706,8 +758,11 @@ void bucle_principal_juego( void )
 		SDL_RenderCopy( gRenderer, gTexturaFondo, NULL, NULL );		//Imagen estirada a toda la ventana
 
 		//Render texture to screen - Dibuja moneda
-		// No entiendo ¿esto es C o C++? (ACLARAR) (Puede ser un array de C99)
-		SDL_Rect renderQuad = { pos_pant_moneda.x-gRadioMoneda, pos_pant_moneda.y-gRadioMoneda, gDimMonedaX, gDimMonedaY }; 	//Crea un rectangulo en la posicion desesada de la moneda
+		//Crea un rectangulo en la posicion desesada de la moneda // Nota: SDL_Rect es un struct
+		renderQuad.x = pos_pant_moneda.x-gRadioMoneda;		// Coord X de esquina superior izquierda
+		renderQuad.y = pos_pant_moneda.y-gRadioMoneda;		// Coord Y de esquina superior izquierda
+		renderQuad.w = gDimMonedaX;				// Ancho
+		renderQuad.h = gDimMonedaY;				// Alto
 		//SDL_RenderCopy( gRenderer, gTexturaMoneda, NULL, &renderQuad ); 	// Version sin rotacion de la moneda
 		SDL_RenderCopyEx( gRenderer, gTexturaMoneda, NULL, &renderQuad, angulo_rotacion_moneda*180/PI, NULL /*Rota alrededor del centro*/, SDL_FLIP_NONE );
 
@@ -777,7 +832,7 @@ void bucle_principal_juego( void )
 		///////////////////////////////////////////////////////////////////////////////////////
 
 		#ifdef DEBUG_INFO
-		system("clear");		// Borra la terminal para leer el estado actual (MUY LENTO)
+		//system("clear");		// Borra la terminal para leer el estado actual (MUY LENTO)
 		#endif
 
 	}
