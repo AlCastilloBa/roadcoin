@@ -1,0 +1,40 @@
+# Makefoile for MinGW compiler under Windows
+
+#OBJS specifies which files to compile as part of the project 
+OBJS = src/game.c src/camera.c src/physics.c src/maps.c src/geometry.c src/options.c src/menu.c src/graphics.c
+
+#CC specifies which compiler we're using 
+CC = gcc
+
+#INCLUDE_PATHS specifies the additional include paths we'll need
+# Please correct the paths to:
+# - MinGW include directory
+# - SDL2 include directory
+# - SDL2_image include directory
+# - SDL2_ttf include directoty
+# - SDL2_mixer include directory
+INCLUDE_PATHS = -IC:\Users\alberto\Programas\SDL2-2.0.10\i686-w64-mingw32\include\SDL2 -IC:\Users\alberto\Programas\MinGW\include -IC:\Users\alberto\Programas\SDL2_image-2.0.5\i686-w64-mingw32\include\SDL2 -IC:\Users\alberto\Programas\SDL2_mixer-2.0.4\i686-w64-mingw32\include\SDL2 -IC:\Users\alberto\Programas\SDL2_ttf-2.0.15\i686-w64-mingw32\include\SDL2
+
+#LIBRARY_PATHS specifies the additional library paths we'll need
+# Please correct the paths to:
+# - MinGW lib directory
+# - SDL2 lib directory
+# - SDL2_image lib directory
+# - SDL2_ttf lib directoty
+# - SDL2_mixer lib directory
+LIBRARY_PATHS = -LC:\Users\alberto\Programas\MinGW\lib -LC:\Users\alberto\Programas\SDL2-2.0.10\i686-w64-mingw32\lib -LC:\Users\alberto\Programas\SDL2_image-2.0.5\i686-w64-mingw32\lib -LC:\Users\alberto\Programas\SDL2_mixer-2.0.4\i686-w64-mingw32\lib -LC:\Users\alberto\Programas\SDL2_ttf-2.0.15\i686-w64-mingw32\lib
+
+#COMPILER_FLAGS specifies the additional compilation options we're using 
+# -w suppresses all warnings 
+COMPILER_FLAGS = -w -Wl,-subsystem,windows
+
+#LINKER_FLAGS specifies the libraries we're linking against 
+LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+
+#OBJ_NAME specifies the name of our exectuable 
+OBJ_NAME = roadcoin 
+
+#This is the target that compiles our executable 
+all : $(OBJS) 
+	$(CC) $(OBJS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+
