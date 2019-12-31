@@ -4,7 +4,7 @@
 nombre=MONZA_1
 
 #Numero de segmentos
-num_segmentos=40
+num_segmentos=41
 
 # Giro mapa respecto a punto fijo
 modo_giro_mapa=1
@@ -22,7 +22,7 @@ pos_inicial_moneda=(530,0)
 gravedad=1000
 
 # Ruta imagen de la moneda
-imagen_moneda=images/moneda2.png
+imagen_moneda=images/moneda4.png
 
 # Ruta imagen del fondo
 imagen_fondo=images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg
@@ -78,18 +78,20 @@ segmento[31]=((339,509),(215,544),0)
 segmento[32]=((159,656),(294,607),0)
 segmento[33]=((294,607),(411,583),0)
 segmento[34]=((411,583),(515,576),0)
-segmento[35]=((515,576),(520,580),0)
+segmento[35]=((515,576),(620,580),0)
 
 # Meta
-segmento[36]=((659,657),(464,655),0)
-segmento[37]=((464,655),(455,739),0)
+segmento[36]=((659,657),(484,655),0)
+segmento[37]=((484,655),(455,739),0)
 segmento[38]=((424,584),(388,740),0)
 
 # Segmento META
-segmento[39]=((455,739),(388,740),0)
+segmento[39]=((455,739),(388,740),1)
+
+# Segmento MUERTE
+segmento[40]=((-5000,1000),(5000,1000),2)
 
 
-#segmento[]=((,),(,),0)
 #segmento[]=((,),(,),0)
 #segmento[]=((,),(,),0)
 #segmento[]=((,),(,),0)
