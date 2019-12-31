@@ -19,6 +19,10 @@ v0.1-beta.1
 - Added a simple menu structure with play and exit buttons. Operable with mouse and keyboard.
 - Added fullscreen toggle.
 - When line segments are next to each other, start and end forces are not applied. This makes the behaviour a little more realistic.
+------------------
+- Mouse sensibility is now included in settings.
+- Pause button with pause image.
+- Added basic win and lose scenes.
 
 
 
