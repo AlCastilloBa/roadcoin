@@ -9,6 +9,8 @@ struct opciones
 	bool fullscreen;
 	int screen_x_resolution;
 	int screen_y_resolution;
+
+	float mouse_sensitivity;
 };
 
 // Opciones por defecto
@@ -17,6 +19,7 @@ struct opciones
 #define OPTIONS_DEFAULT_SCREEN_X_RESOLUTION 800;
 #define OPTIONS_DEFAULT_SCREEN_Y_RESOLUTION 600;
 
+#define OPTIONS_DEFAULT_MOUSE_SENSIVITY 0.1f;
 
 
 

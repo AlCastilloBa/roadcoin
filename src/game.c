@@ -2,6 +2,7 @@
 #include <SDL.h> 
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 #include <stdio.h> 
 #include <stdbool.h>
 
@@ -40,15 +41,28 @@ SDL_Surface* gscreenIntro = NULL;
 //The window renderer 
 SDL_Renderer* gRenderer = NULL;
 
-//Texturas 
-SDL_Texture* gTexturaMoneda = NULL;
-SDL_Texture* gTexturaFondo = NULL;
+//Texturas del juego --- Game textures
+SDL_Texture* gTexturaMoneda = NULL;		// Coin texture
+SDL_Texture* gTexturaFondo = NULL;		// Background texture
+SDL_Texture* gTexturaPausa = NULL;		// Pause texture
+SDL_Texture* gPulseTecla = NULL;		// Press any key texture
+SDL_Texture* gNombreMapa = NULL;		// Map name texture
+SDL_Texture* gDescripcionMapa = NULL;		// Map description texture
+SDL_Texture* gIconoVictoria = NULL;		// Victory icon texture
+SDL_Texture* gIconoPierde = NULL;		// Lose icon texture
+SDL_Texture* gTextoVictoria = NULL;		// Victory text texture
+SDL_Texture* gTextoPierde = NULL;		// Lose text texture
+
+TTF_Font *gFuenteTextoJuego = NULL;
+SDL_Color gColorBlanco = { 255 , 255 , 255 }; 	// Blanco
 
 
 //Variables globales moneda
-int gDimMonedaX;
-int gDimMonedaY;
+int gDimMonedaX; int gDimMonedaY;
 int gRadioMoneda;
+//Dimensiones texturas --- Texture dimensions
+int gDimIconoVictoriaX; int gDimIconoVictoriaY;
+int gDimIconoPierdeX; int gDimIconoPierdeY;
 
 //Variables globales control
 float inc_angulo_teclado = 1.0f;
@@ -59,19 +73,8 @@ struct opciones opciones_juego;
 // Variables globales menu (ver menu.c)
 struct pantalla_menu* pantallas_menu_principal;
 
+///////////////////////////////////////////////////////////////////////////
 
-/*
-// Declaración de funciones
-bool inicializar_intro(void);
-bool inicializar_ventana_juego(void);
-bool loadMedia(void);
-bool loadMainGameLoopMedia(char*, char*);
-bool cerrar_intro(void);
-bool close_program(void);
-void bucle_principal_juego( void );
-*/
-
-void bucle_principal_juego(void);
 
 
 
@@ -182,8 +185,14 @@ bool loadIntroMedia()
 }
 
 
-bool loadMainGameLoopMedia( char* ruta_imagen_moneda, char* ruta_imagen_fondo ) 
+bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda, 
+				char* ruta_imagen_fondo,
+				char* nombre_mapa,
+				char* descripcion_mapa ) 
 { 
+	// Esta función carga las texturas, sonidos, etc asociados al mapa que se va a jugar.
+	// This function loads textures, sounds, etc related to the currend map to be played.
+
 	bool success = true; 	//Loading success flag 
 
 	 //Load PNG texture - Moneda 
@@ -207,7 +216,7 @@ bool loadMainGameLoopMedia( char* ruta_imagen_moneda, char* ruta_imagen_fondo )
 	printf("Radio moneda: %d\n", gRadioMoneda);
 	#endif
 
-	 //Load PNG texture - Fondo
+	 //Load PNG texture - Fondo --- Background
 	gTexturaFondo = CargaTextura( ruta_imagen_fondo , NULL, NULL, false );
 	if( gTexturaFondo == NULL ) 
 	{ 
@@ -215,7 +224,62 @@ bool loadMainGameLoopMedia( char* ruta_imagen_moneda, char* ruta_imagen_fondo )
 		success = false; 
 	} 
 
+	// Cargar la fuente de los textos del juego
+	#ifdef DEBUG_INFO
+	printf("Inicializando la fuente de los textos del juego...\n");
+	#endif
+	gFuenteTextoJuego = TTF_OpenFont( "fonts/lunasol.ttf", 28 );
+	if( gFuenteTextoJuego == NULL )
+	{
+		printf( "Failed to load font! SDL_ttf Error: %s\n", TTF_GetError() );
+		success = false;
+	}
+
+	//Cargar textura de pausa --- Load pause texture
+	gTexturaPausa = RenderizaTextoEnTextura("Pausa", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	// Cargar textura de pulse cualquier tecla --- Load texture Press any key
+	gPulseTecla = RenderizaTextoEnTextura("Pulse cualquier tecla", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	// Cargar textura de Nombre Mapa --- Load Map Name texture
+	gNombreMapa = RenderizaTextoEnTextura(nombre_mapa, gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	// Cargar textura de Descripcion Mapa --- Load Map Description texture
+	gDescripcionMapa = RenderizaTextoEnTextura(descripcion_mapa, gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	// Cargar textura de icono de victoria
+	gIconoVictoria = CargaTextura( "images/finish.png" , &gDimIconoVictoriaX, &gDimIconoVictoriaY, false );
+	if( gIconoVictoria == NULL ) 
+	{ 
+		printf( "Failed to load texture image!\n" ); 
+		success = false; 
+	} 
+	// Cargar textura de icono de victoria
+	gIconoPierde = CargaTextura( "images/cry.png" , &gDimIconoPierdeX, &gDimIconoPierdeY, false );
+	if( gIconoPierde == NULL ) 
+	{ 
+		printf( "Failed to load texture image!\n" ); 
+		success = false; 
+	} 
+	//Cargar textura de texto de victoria --- Load victory text texture
+	gTextoVictoria = RenderizaTextoEnTextura("Completado        ", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	//Cargar textura de texto de perder --- Load lose text texture
+	gTextoPierde = RenderizaTextoEnTextura("Pierdes una moneda", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
 	return success;
+}
+
+
+bool freeMainGameLoopMedia()
+{
+	// Esta función libera los sonidos, texturas, etc, asociados al mapa que se acaba de jugar
+	// This funcion frees sounds, textures, etc, related to the map that as been played
+	//Free loaded image 
+	SDL_DestroyTexture( gTexturaMoneda ); 
+	gTexturaMoneda = NULL;
+	gDimMonedaX=0; gDimMonedaY=0; gRadioMoneda=0;
+	SDL_DestroyTexture( gTexturaFondo ); gTexturaFondo = NULL;
+	SDL_DestroyTexture( gTexturaPausa ); gTexturaPausa = NULL;
+	SDL_DestroyTexture( gPulseTecla ); gPulseTecla = NULL;
+	SDL_DestroyTexture( gDescripcionMapa ); gDescripcionMapa = NULL;
+	SDL_DestroyTexture( gIconoVictoria ); gIconoVictoria = NULL;
+	SDL_DestroyTexture( gIconoPierde ); gIconoPierde = NULL;
+	SDL_DestroyTexture( gTexturaPausa ); gTexturaPausa = NULL;
 }
 
 
@@ -231,16 +295,14 @@ bool cerrar_intro()
 	gIntroWindow = NULL;  
 }
 
+
+
+
 bool close_program() 
 {
 	//Deallocate surface 
 	SDL_FreeSurface( gscreenIntro ); 
 	gscreenIntro = NULL; 
-
-	//Free loaded image 
-	SDL_DestroyTexture( gTexturaMoneda ); 
-	gTexturaMoneda = NULL; 
-
 
 	//Destroy window and renderers
 	SDL_DestroyRenderer( gRenderer );
@@ -358,10 +420,16 @@ int main( int argc, char* args[] )
 
 
 
-void bucle_principal_juego( void )
+enum resultado bucle_principal_juego( void )
 {
 	 
-	bool quit = false;	 //Main loop flag
+	bool quit = false;		//Main loop flag
+	bool pause = false;	 	// Game is paused
+	bool intro_mapa = true;		// Game is in "intro map scene", showing map and description
+	bool win = false;		// Player won, and the game is frozen displaying results
+	bool lose = false;		// Player lost, and the game is frozen displaying results
+	enum resultado resultado_final = abortado;
+
 	int contador_frames = 0;
 	SDL_Event e;		 //Event handler 
 	Uint32 currentTime = 0, lastTime, deltaTime, tiempo_imagen_sobrante; //Current time start time (milisegundos)
@@ -369,7 +437,7 @@ void bucle_principal_juego( void )
 	float framerate_deseado = 30;
 	int segmento_actual;
 	float angulo, angulo_anterior;
-	float mouse_sensibility = 0.1f;
+	//float mouse_sensibility = 0.1f;
 
 	float angulo_rotacion_moneda = 0.0f;	// En radianes
 	float vel_angular_moneda = 0.0f;	// En rad/s
@@ -437,7 +505,7 @@ void bucle_principal_juego( void )
 	#ifdef DEBUG_INFO
 	printf("Cargando archivos juego...\n");
 	#endif
-	if( !loadMainGameLoopMedia( mapa_original.RutaImagenMoneda, mapa_original.RutaImagenFondo ) ) 
+	if( !loadMainGameLoopMedia( mapa_original.RutaImagenMoneda, mapa_original.RutaImagenFondo, mapa_original.NombreMapa, mapa_original.DescripcionMapa ) ) 
 	{ 
 		printf( "Failed to load media!\n" ); 
 		exit(-1);
@@ -505,25 +573,59 @@ void bucle_principal_juego( void )
 						#endif
 						quit = true; 
 						break; 
+					case SDLK_p:
+						pause = !pause;
+						break;
 					case SDLK_LEFT:
-						angulo -= inc_angulo_teclado;
+						if ( !pause && !intro_mapa && !win && !lose )
+						{
+							angulo -= inc_angulo_teclado;
+						}
 						break;
 					case SDLK_RIGHT:
-						angulo += inc_angulo_teclado;
+						if ( !pause && !intro_mapa && !win && !lose )
+						{
+							angulo += inc_angulo_teclado;
+						}
 						break;
 					default:  
 						break; 
 				}
+				if ( intro_mapa )
+				{
+					//Se ha pulsado cualquier tecla estando en la intro del mapa
+					intro_mapa = false;
+				}
+				if (win || lose)
+				{
+					//Se ha pulsado cualquier tecla estando en las pantallas de victoria o derrota
+					quit = true;
+				}
+
 			}
 			else if ( e.type  == SDL_MOUSEMOTION )
 			{
-				if (contador_frames != 1)
+				if (contador_frames != 1     && !pause && !intro_mapa && !win && !lose )
 				{
-					angulo += (float)(e.motion.xrel) * mouse_sensibility;
+					angulo += (float)(e.motion.xrel) * opciones_juego.mouse_sensitivity;
 					//printf ("Mov raton: %f\n", e.motion.xrel);
 					//SDL_WarpMouseInWindow(gGameWindow, GAME_SCREEN_WIDTH / 2, GAME_SCREEN_HEIGHT / 2 );
 				}
 			}
+			if ( e.type == SDL_MOUSEBUTTONDOWN )
+			{
+				if ( intro_mapa )
+				{
+					//Se ha pulsado el raton estando en la intro del mapa
+					intro_mapa = false;
+				}
+				if (win || lose)
+				{
+					//Se ha pulsado el raton estando en las pantallas de victoria o derrota
+					quit = true;
+				}
+			}
+
 		}
 
 		// Limites de angulos
@@ -536,211 +638,227 @@ void bucle_principal_juego( void )
 			angulo = mapa_original.AnguloMax;
 		}
 
-		/////////////////////////////////////////////////////////////////////////////////////	
-		// Giramos el mapa
-		//if ( mapa_original.TipoGiro == punto_fijo )
-		//{
-		//	GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
-		//}
-		switch (mapa_original.TipoGiro)
+		if ( !pause && !intro_mapa && !win && !lose )
 		{
-			case punto_fijo:
-				GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
-				break;
-			case camara:
-				// (TODO)
-				printf("ERROR: TODAVIA NO IMPLEMENTADO\n");
-				exit(-1);
-				break;
-			case moneda:
-				GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, pos_real_moneda, mapa_original.NumeroSegmentos, angulo );
-				break;
-			default:
-				printf("Al proceder a girar el mapa, error de programacion o error de concepto\n");
-				exit(-1);
-				break;
-		}
-		// Nota: (TODO) falta implementar otros casos
 
-
-		////////////////////////////////////////////////////////////////////////////////////
-		// Determinamos intersecciones
-		// PROVISIONAL
-		
-		for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
-		{
-			tipo_interferencia_segmento[segmento_actual] =  CirculoTocaSegmento(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end );
-
-			// Nota: hay que meter la comprobacion de segmentos contando con la posicion anterior (PENDIENTE, TODO)
-			// Si hay interferencia, calculamos posicion tangente (primera vez)
-			if ( tipo_interferencia_segmento[segmento_actual] != 0 )	// Si hay interferencia
+			/////////////////////////////////////////////////////////////////////////////////////	
+			// Giramos el mapa
+			//if ( mapa_original.TipoGiro == punto_fijo )
+			//{
+			//	GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
+			//}
+			switch (mapa_original.TipoGiro)
 			{
-				switch (tipo_interferencia_segmento[segmento_actual])
-				{
-					case interseccion_central:
-						pos_real_moneda = CalculaPosTangenteACentroSegmento ( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
-						break;
-					case interseccion_extremo_start:
-						pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].start, pos_real_moneda, gRadioMoneda);
-						break;
-					case interseccion_extremo_end:
-						pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
-						break;
-					default:
-						#ifdef DEBUG_INFO
-						printf("En primer calculo pos tangente. No posible, error de programacion o de concepto.\n");
-						#endif
-						break;
-				}
+				case punto_fijo:
+					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
+					break;
+				case camara:
+					// (TODO)
+					printf("ERROR: TODAVIA NO IMPLEMENTADO\n");
+					exit(-1);
+					break;
+				case moneda:
+					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, pos_real_moneda, mapa_original.NumeroSegmentos, angulo );
+					break;
+				default:
+					printf("Al proceder a girar el mapa, error de programacion o error de concepto\n");
+					exit(-1);
+					break;
 			}
+			// Nota: (TODO) falta implementar otros casos
 
-		}
-		////////////////////////////////////////////////////////////////////////////////////
-		// En caso de intersección:
-		// ESTO ES LO DIFICIL !!!!
-		for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
-		{
-			if ( tipo_interferencia_segmento[segmento_actual] != 0 )	// Si hay interferencia
+
+			////////////////////////////////////////////////////////////////////////////////////
+			// Determinamos intersecciones
+			// PROVISIONAL
+		
+			for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
 			{
-				float angulo_segmento_actual;
+				tipo_interferencia_segmento[segmento_actual] =  CirculoTocaSegmento(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end );
 
-				angulo_segmento_actual = AnguloSegmento( segmentos_girados[segmento_actual] );
-
-
-				// Anulamos componente velocidad normal al segmento
-				velocidad_real_moneda = AnulaVelocidadNormalASegmento( velocidad_real_moneda, angulo_segmento_actual );
-
-				// Calculamos la nueva velocidad de giro de la moneda provocada por el contacto
-				vel_angular_moneda = CalculaVelGiroSobreSegmento( velocidad_real_moneda, angulo_segmento_actual, gRadioMoneda);
-
-				// Calculamos posicion tangente (segunda vez)
-				switch (tipo_interferencia_segmento[segmento_actual])
+				// Nota: hay que meter la comprobacion de segmentos contando con la posicion anterior (PENDIENTE, TODO)
+				// Si hay interferencia, calculamos posicion tangente (primera vez)
+				if ( tipo_interferencia_segmento[segmento_actual] != 0 )	// Si hay interferencia
 				{
-					case interseccion_central:
-						pos_real_moneda = CalculaPosTangenteACentroSegmento ( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
-						break;
-					case interseccion_extremo_start:
-						pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].start, pos_real_moneda, gRadioMoneda);
-						break;
-					case interseccion_extremo_end:
-						pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
-						break;
-					default:
-						#ifdef DEBUG_INFO
-						printf("En segundo calculo pos tangente. No posible, error de programacion o de concepto.\n");
-						#endif
-						break;
-				}
-
-				// En caso de giro del mapa:
-				if ( angulo != angulo_anterior )
-				{
-					// (TODO) Adecuar para otros tipos de giro
-					switch (mapa_original.TipoGiro)
+					switch (tipo_interferencia_segmento[segmento_actual])
 					{
-						case punto_fijo:
-							// hacemos que tambien gire la moneda
-							pos_real_moneda = GiraPunto ( mapa_original.PuntoGiroFijo, pos_real_moneda, angulo - angulo_anterior);
-
-							// Calculamos y sumamos una velocidad debida al giro
-							// (TODO) Esto no está bien, aparce una velocidad muy grande (¡¡¡REVISAR!!!!)
-							if ( abs( angulo-angulo_anterior) >= 10 /*grados*/)
-							{
-								velocidad_real_moneda = SumaVelocidad( velocidad_real_moneda,  VelAngular2VelLineal( mapa_original.PuntoGiroFijo, pos_real_moneda /*Inexacto, mejor punto contacto (TODO)*/, (angulo-angulo_anterior), tiempo_imagen ) );
-							}
+						case interseccion_central:
+							pos_real_moneda = CalculaPosTangenteACentroSegmento ( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
 							break;
-						case moneda:
-							// En este caso, no es necesario hacer nada.
+						case interseccion_extremo_start:
+							pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].start, pos_real_moneda, gRadioMoneda);
 							break;
-						case camara:
-							// (TODO)
-							printf("ERROR: TODAVIA NO IMPLEMENTADO\n");
-							exit(-1);
+						case interseccion_extremo_end:
+							pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
 							break;
 						default:
-							printf("Al proceder a calcular efectos del giro sobre moneda, error de programacion o error de concepto\n");
-							exit(-1);
+							#ifdef DEBUG_INFO
+							printf("En primer calculo pos tangente. No posible, error de programacion o de concepto.\n");
+							#endif
 							break;
 					}
 
+					if ( mapa_original.Mapa[segmento_actual].type == meta )
+					{
+						win = true;
+						resultado_final = victoria;
+					}
+					if ( mapa_original.Mapa[segmento_actual].type == muerte )
+					{
+						lose = true;
+						resultado_final = derrota;
+					}
 				}
 
-				// Calculamos fuerzas normales
-				switch (tipo_interferencia_segmento[segmento_actual])
-				{
-					case interseccion_central:
-						fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalCentroSegmento( angulo_segmento_actual, gravedad.fy, 1 );	// Masa = 1  de momento
-						break;
-					case interseccion_extremo_start:
-						if (mapa_original.Mapa[segmento_actual].start_adyacente_a_otro == false )
-						{
-							// No es adyacente a otro, podemos calcular su fuerza
-							fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].start, gravedad.fy, 1 );
-							#ifdef DEBUG_INFO
-							printf("Se aplica fuerza normal en extremo start de segmento %d.\n", segmento_actual);
-							#endif
-						}
-						else
-						{
-							fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
-							#ifdef DEBUG_INFO
-							printf("Segmento %d tiene extremo start adyacente a otro. No se calcula su fuerza normal en extremo.\n", segmento_actual);
-							#endif
-						}	
-						break;
-					case interseccion_extremo_end:
-						if (mapa_original.Mapa[segmento_actual].end_adyacente_a_otro == false )
-						{
-							// No es adyacente a otro, podemos calcular su fuerza
-							fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].end, gravedad.fy, 1 );
-							#ifdef DEBUG_INFO
-							printf("Se aplica fuerza normal en extremo end de segmento %d.\n", segmento_actual);
-							#endif
-						}
-						else
-						{
-							fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
-							#ifdef DEBUG_INFO
-							printf("Segmento %d tiene extremo end adyacente a otro. No se calcula su fuerza normal en extremo.\n", segmento_actual);
-							#endif
-						}
-						break;
-					default:
-						#ifdef DEBUG_INFO
-						printf("No posible, error de programacion o de concepto.\n");
-						#endif
-						break;
-				}
-				#ifdef DEBUG_INFO
-				printf("Interferencia tipo %d con segmento %d. \n", tipo_interferencia_segmento[segmento_actual],segmento_actual); 
-				printf("Angulo Segmento: %f \n", angulo_segmento_actual*360/(2*3.1416));
-				printf("Velocidad tras anulacion: vx=%f, vy=%f \n", velocidad_real_moneda.vx, velocidad_real_moneda.vy );
-				printf("Fx = %f, Fy = %f \n", fuerzas_normales_segmentos[segmento_actual].fx, fuerzas_normales_segmentos[segmento_actual].fy );
-				#endif
 			}
-			else
+			////////////////////////////////////////////////////////////////////////////////////
+			// En caso de intersección:
+			// ESTO ES LO DIFICIL !!!!
+			for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
 			{
-				// Sin interferencia
-				fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
+
+				if ( tipo_interferencia_segmento[segmento_actual] != 0 )	// Si hay interferencia
+				{
+					float angulo_segmento_actual;
+
+					angulo_segmento_actual = AnguloSegmento( segmentos_girados[segmento_actual] );
+
+
+					// Anulamos componente velocidad normal al segmento
+					velocidad_real_moneda = AnulaVelocidadNormalASegmento( velocidad_real_moneda, angulo_segmento_actual );
+
+					// Calculamos la nueva velocidad de giro de la moneda provocada por el contacto
+					vel_angular_moneda = CalculaVelGiroSobreSegmento( velocidad_real_moneda, angulo_segmento_actual, gRadioMoneda);
+
+					// Calculamos posicion tangente (segunda vez)
+					switch (tipo_interferencia_segmento[segmento_actual])
+					{
+						case interseccion_central:
+							pos_real_moneda = CalculaPosTangenteACentroSegmento ( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
+							break;
+						case interseccion_extremo_start:
+							pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].start, pos_real_moneda, gRadioMoneda);
+							break;
+						case interseccion_extremo_end:
+							pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
+							break;
+						default:
+							#ifdef DEBUG_INFO
+							printf("En segundo calculo pos tangente. No posible, error de programacion o de concepto.\n");
+							#endif
+							break;
+					}
+
+					// En caso de giro del mapa:
+					if ( angulo != angulo_anterior )
+					{
+						// (TODO) Adecuar para otros tipos de giro
+						switch (mapa_original.TipoGiro)
+						{
+							case punto_fijo:
+								// hacemos que tambien gire la moneda
+								pos_real_moneda = GiraPunto ( mapa_original.PuntoGiroFijo, pos_real_moneda, angulo - angulo_anterior);
+
+								// Calculamos y sumamos una velocidad debida al giro
+								// (TODO) Esto no está bien, aparce una velocidad muy grande (¡¡¡REVISAR!!!!)
+								if ( abs( angulo-angulo_anterior) >= 10 /*grados*/)
+								{
+									//velocidad_real_moneda = SumaVelocidad( velocidad_real_moneda,  VelAngular2VelLineal( mapa_original.PuntoGiroFijo, pos_real_moneda /*Inexacto, mejor punto contacto (TODO)*/, (angulo-angulo_anterior), tiempo_imagen ) );
+									// TODO PENDIENTE (En lugar de aceleracion centrifugam que no existe, calcular una velocidad normal al segmento
+								}
+								break;
+							case moneda:
+								// En este caso, no es necesario hacer nada.
+								break;
+							case camara:
+								// (TODO)
+								printf("ERROR: TODAVIA NO IMPLEMENTADO\n");
+								exit(-1);
+								break;
+							default:
+								printf("Al proceder a calcular efectos del giro sobre moneda, error de programacion o error de concepto\n");
+								exit(-1);
+								break;
+						}
+
+					}
+
+					// Calculamos fuerzas normales
+					switch (tipo_interferencia_segmento[segmento_actual])
+					{
+						case interseccion_central:
+							fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalCentroSegmento( angulo_segmento_actual, gravedad.fy, 1 );	// Masa = 1  de momento
+							break;
+						case interseccion_extremo_start:
+							if (mapa_original.Mapa[segmento_actual].start_adyacente_a_otro == false )
+							{
+								// No es adyacente a otro, podemos calcular su fuerza
+								fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].start, gravedad.fy, 1 );
+								#ifdef DEBUG_INFO
+								printf("Se aplica fuerza normal en extremo start de segmento %d.\n", segmento_actual);
+								#endif
+							}
+							else
+							{
+								fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
+								#ifdef DEBUG_INFO
+								printf("Segmento %d tiene extremo start adyacente a otro. No se calcula su fuerza normal en extremo.\n", segmento_actual);
+								#endif
+							}	
+							break;
+						case interseccion_extremo_end:
+							if (mapa_original.Mapa[segmento_actual].end_adyacente_a_otro == false )
+							{
+								// No es adyacente a otro, podemos calcular su fuerza
+								fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalExtremoSegmento( pos_real_moneda, segmentos_girados[segmento_actual].end, gravedad.fy, 1 );
+								#ifdef DEBUG_INFO
+								printf("Se aplica fuerza normal en extremo end de segmento %d.\n", segmento_actual);
+								#endif
+							}
+							else
+							{
+								fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
+								#ifdef DEBUG_INFO
+								printf("Segmento %d tiene extremo end adyacente a otro. No se calcula su fuerza normal en extremo.\n", segmento_actual);
+								#endif
+							}
+							break;
+						default:
+							#ifdef DEBUG_INFO
+							printf("No posible, error de programacion o de concepto.\n");
+							#endif
+							break;
+					}
+					#ifdef DEBUG_INFO
+					printf("Interferencia tipo %d con segmento %d. \n", tipo_interferencia_segmento[segmento_actual],segmento_actual); 
+					printf("Angulo Segmento: %f \n", angulo_segmento_actual*360/(2*3.1416));
+					printf("Velocidad tras anulacion: vx=%f, vy=%f \n", velocidad_real_moneda.vx, velocidad_real_moneda.vy );
+					printf("Fx = %f, Fy = %f \n", fuerzas_normales_segmentos[segmento_actual].fx, fuerzas_normales_segmentos[segmento_actual].fy );
+					#endif
+				}
+				else
+				{
+					// Sin interferencia
+					fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
+				}
+
 			}
 
-		}
+			////////////////////////////////////////////////////////////////////////////////////
 
-		////////////////////////////////////////////////////////////////////////////////////
+			// Suma fuerzas
+			aceleracion_real_moneda = Fuerza2Aceleracion( SumaFuerzas( gravedad, fuerzas_normales_segmentos, mapa_original.NumeroSegmentos ), 1 ); //Masa = 1 de momento (TODO)
+			// Actualiza velocidad
+			velocidad_real_moneda = Aceleracion2Velocidad( velocidad_real_moneda, aceleracion_real_moneda, tiempo_imagen);
+			//Actualiza posición
+			pos_real_moneda = Velocidad2Posicion( pos_real_moneda, velocidad_real_moneda, tiempo_imagen);
+			// Actualiza angulo de giro de la moneda
+			angulo_rotacion_moneda = VelAng2Angulo( angulo_rotacion_moneda, vel_angular_moneda, tiempo_imagen); 
 
-		// Suma fuerzas
-		aceleracion_real_moneda = Fuerza2Aceleracion( SumaFuerzas( gravedad, fuerzas_normales_segmentos, mapa_original.NumeroSegmentos ), 1 ); //Masa = 1 de momento (TODO)
-		// Actualiza velocidad
-		velocidad_real_moneda = Aceleracion2Velocidad( velocidad_real_moneda, aceleracion_real_moneda, tiempo_imagen);
-		//Actualiza posición
-		pos_real_moneda = Velocidad2Posicion( pos_real_moneda, velocidad_real_moneda, tiempo_imagen);
-		// Actualiza angulo de giro de la moneda
-		angulo_rotacion_moneda = VelAng2Angulo( angulo_rotacion_moneda, vel_angular_moneda, tiempo_imagen); 
+			angulo_anterior = angulo;
 
-		angulo_anterior = angulo;
-
-		/////////////////////////////////////////////////////////////////////////////////////
-
+			/////////////////////////////////////////////////////////////////////////////////////
+		} // If (!pause) 
 
 		// Convertimos posiciones "reales" en posiciones de la pantalla
 		pos_pant_moneda = CalculaCamara(pos_real_moneda );
@@ -778,34 +896,42 @@ void bucle_principal_juego( void )
 						mapa_original.Mapa[segmento_actual].start.y , 
 						mapa_original.Mapa[segmento_actual].end.x , 
 						mapa_original.Mapa[segmento_actual].end.y );	*/ // Sin giros
-			#ifdef DEBUG_INFO
-			/*if ( interferencia_segmento[segmento_actual] )
+
+			switch ( mapa_original.Mapa[segmento_actual].type ) // Seleccionar color segun tipo de segmento
 			{
-				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
-			}
-			else
-			{
-				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
-			}*/
-			switch ( tipo_interferencia_segmento[segmento_actual] )
-			{
-				case sin_interseccion:
+				case pared:
 					SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
+					#ifdef DEBUG_INFO
+					// Mostrar informacion con colores sobre tipos de interferencia
+					switch ( tipo_interferencia_segmento[segmento_actual] )
+					{
+						case sin_interseccion:
+							SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
+							break;
+						case interseccion_extremo_start:
+							SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0x00 );	// Verde
+							break;
+						case interseccion_central:
+							SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
+							break;
+						case interseccion_extremo_end:
+							SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0xFF, 0x00 );	// Azul
+							break;
+						default:
+							break;
+					}
+					#endif
 					break;
-				case interseccion_extremo_start:
+				case meta:
 					SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0x00 );	// Verde
 					break;
-				case interseccion_central:
+				case muerte:
 					SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
 					break;
-				case interseccion_extremo_end:
-					SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0xFF, 0x00 );	// Azul
-					break;
 				default:
+					SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
 					break;
 			}
-			
-			#endif
 			SDL_RenderDrawLine( 	gRenderer, 
 						segmentos_girados[segmento_actual].start.x ,
 						segmentos_girados[segmento_actual].start.y , 
@@ -813,6 +939,80 @@ void bucle_principal_juego( void )
 						segmentos_girados[segmento_actual].end.y );
 		}
 
+		// Dibuja textos de intro del mapa
+		if ( intro_mapa )
+		{
+			// Cuadro Pulse cualquier tecla --- Press Any key label
+			renderQuad.x = 0.3*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			renderQuad.y = 0.2*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
+			renderQuad.w = 0.3*opciones_juego.screen_x_resolution;				// Ancho
+			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
+			SDL_RenderCopy( gRenderer, gNombreMapa, NULL, &renderQuad );	
+
+			// Cuadro Pulse cualquier tecla --- Press Any key label
+			renderQuad.x = 0.3*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
+			renderQuad.w = 0.3*opciones_juego.screen_x_resolution;				// Ancho
+			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
+			SDL_RenderCopy( gRenderer, gDescripcionMapa, NULL, &renderQuad );	
+		}
+
+		if ( intro_mapa || win || lose )
+		{
+			// Cuadro Pulse cualquier tecla --- Press Any key label
+			renderQuad.x = 0.2*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			renderQuad.y = 0.8*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
+			renderQuad.w = 0.6*opciones_juego.screen_x_resolution;				// Ancho
+			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
+			SDL_RenderCopy( gRenderer, gPulseTecla, NULL, &renderQuad );	
+		}
+		
+		if ( win )
+		{
+			// Icono Victoria --- Victory icon
+			renderQuad.x = 0.1*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
+			renderQuad.w = gDimIconoVictoriaX;				// Ancho
+			renderQuad.h = gDimIconoVictoriaY;				// Alto
+			SDL_RenderCopy( gRenderer, gIconoVictoria, NULL, &renderQuad );	
+
+
+			// Cuadro Texto Vctoria --- Press Any key label
+			renderQuad.x = 0.35*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
+			renderQuad.w = 0.5*opciones_juego.screen_x_resolution;				// Ancho
+			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
+			SDL_RenderCopy( gRenderer, gTextoVictoria, NULL, &renderQuad );	
+
+		}
+
+		if( lose )
+		{
+			// Icono Perder --- Victory icon
+			renderQuad.x = 0.1*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
+			renderQuad.w = gDimIconoPierdeX;				// Ancho
+			renderQuad.h = gDimIconoPierdeY;				// Alto
+			SDL_RenderCopy( gRenderer, gIconoPierde, NULL, &renderQuad );	
+
+
+			// Cuadro Pulse cualquier tecla --- Press Any key label
+			renderQuad.x = 0.35*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
+			renderQuad.w = 0.5*opciones_juego.screen_x_resolution;				// Ancho
+			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
+			SDL_RenderCopy( gRenderer, gTextoPierde, NULL, &renderQuad );
+
+		}
+		// Dibuja cuadro de pausa
+		if ( pause )
+		{
+			renderQuad.x = 0.4*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
+			renderQuad.w = 0.2*opciones_juego.screen_x_resolution;				// Ancho
+			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
+			SDL_RenderCopy( gRenderer, gTexturaPausa, NULL, &renderQuad );
+		}
 
 		//Update screen 
 		SDL_RenderPresent( gRenderer );
@@ -843,6 +1043,10 @@ void bucle_principal_juego( void )
 	//free(interferencia_segmento);
 	free(fuerzas_normales_segmentos);
 	free(tipo_interferencia_segmento);
+	// Liberamos texturas, imagenes, sonidos, etc
+	freeMainGameLoopMedia();
+
+	return resultado_final;
 }
 
 

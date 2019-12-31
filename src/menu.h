@@ -10,19 +10,29 @@ enum pantalla_menu_principal
 	menu_jugar,		// Incluye botones: Campañas, Practicar
 	menu_campana,
 	menu_practicar,
-	menu_opciones,
+	menu_opciones,		// Incluye botones: Video, Sonido, Controles, Juego, Idioma, Atras
 	menu_creditos,
 	NUM_TOTAL_PANTALLAS_MENU
 };
 
 
 // Listado de los botones de los menus
+// Menu buttons list
 enum listado_botones
 {
+	// Menu principal
 	boton_jugar,		// Play button
 	boton_opciones,		// Option button
 	boton_creditos,		// Credits button
-	boton_salir		// Quit button
+	boton_salir,		// Quit button
+
+	// Menu opciones
+	boton_video,		// Video options button
+	boton_sonido,		// Sound options button
+	boton_controles,	// Controls options button
+	boton_opc_juego,	// Gameplay options button
+	boton_idioma,		// Language options button
+	boton_opc_atras		// Go back
 };
 
 enum tipo_boton
@@ -69,6 +79,13 @@ struct pantalla_menu
 };
 
 
+
+enum resultado
+{
+	abortado,		// Game aborted by the user
+	victoria,		// Game finished in victory
+	derrota			// Game finished in defeat
+};
 
 bool raton_sobre_boton (struct boton_menu, int, int );
 

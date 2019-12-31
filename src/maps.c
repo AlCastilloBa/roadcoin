@@ -6,7 +6,7 @@
 #include "maps.h"
 
 
-//#define DEBUG_INFO
+#define DEBUG_INFO
 
 struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 {

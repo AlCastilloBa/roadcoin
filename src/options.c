@@ -13,7 +13,7 @@ struct opciones CargarArchivoOpciones()
 	struct opciones opciones_cargadas;
 
 	char linea_leida[200];
-	bool fullscreen_ok, screen_x_resolution_ok, screen_y_resolution_ok;
+	bool fullscreen_ok, screen_x_resolution_ok, screen_y_resolution_ok, mouse_sensitivity_ok;
 
 	FILE *archivo;
 	int linea=0;
@@ -112,6 +112,22 @@ struct opciones CargarArchivoOpciones()
 					#endif
 				}
 			}
+			else if (strstr(linea_leida, "mouse_sensitivity") != NULL )
+			{
+				if ( sscanf(linea_leida, "mouse_sensitivity=%f", &(opciones_cargadas.mouse_sensitivity) ) == 1 )
+				{
+					mouse_sensitivity_ok = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, mouse_sensitivity=%f\n", linea, opciones_cargadas.mouse_sensitivity );
+					#endif
+				}
+				else
+				{	
+					#ifdef DEBUG_INFO
+					printf("Linea %d, mouse_sensitivity --> No se han podido leer el valor. Se tomará el valor por defecto.\n", linea);
+					#endif
+				}
+			}
 			else
 			{
 				printf("Linea %d, expresion no reconocida, se ignora.\n", linea);
@@ -133,13 +149,18 @@ struct opciones CargarArchivoOpciones()
 	} 		
 	if (screen_x_resolution_ok == false) 		
 	{
-		printf("Falta screen_x_resolution Se toma el valor por defecto.\n");
+		printf("Falta screen_x_resolution. Se toma el valor por defecto.\n");
 		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_FULLSCREEN;
 	}
 	if (screen_y_resolution_ok == false) 		
 	{
-		printf("Falta screen_y_resolution Se toma el valor por defecto.\n");
+		printf("Falta screen_y_resolution. Se toma el valor por defecto.\n");
 		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_FULLSCREEN;
+	}
+	if (mouse_sensitivity_ok == false)
+	{
+		printf("Falta mouse_sensitivity. Se toma el valor por defecto.\n");
+		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_MOUSE_SENSIVITY;
 	}
 
 
