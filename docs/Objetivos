@@ -10,9 +10,9 @@ El mapa se girará (o bien con el ratón o con el joystick),
 y el jugardor debe llevar la moneda a la meta.
 
 
-Objetivos del proyecto para la versión v0.1:
+Objetivos del proyecto para la versión v0.1-beta.0:
 
-[      ] Portable UNIX / Windows con el mismo código.
+[ BOOM ] Portable UNIX / Windows con el mismo código.
 [ BOOM ] Que el bucle principal funcione.
 [ BOOM ] Que se pueda jugar, aunque le falte realismo.
 [ BOOM ] Movimiento independiente del "framerate".
@@ -22,16 +22,20 @@ Objetivos del proyecto para la versión v0.1:
 [ BOOM ] Que funcione el giro con el ratón.
 [ BOOM ] Calcular y mostrar FPS (para ver que estamos haciendo).
 
-
+Objetivos del proyecto para la version v0.1-beta.1:
+[ BOOM ] Cámara movil (para hacer niveles grandes)
+[ BOOM ] Rotacion de la moneda.
+[ BOOM ] Rotacion de un segundo fondo, definible segun mapa.
+[ BOOM ] Imagen de la moneda.
+[ BOOM ] Para eliminar "enganches" en los puntos de interseccion entre segmentos continuos, definir
+          alguna forma de indicar que los segmentos están contiguos, de tal
+          forma que no se calculen las fuerzas normales en los extremos.
 
 Objetivos para siguientes versiones:
-[      ] Cámara movil (para hacer niveles grandes)
-[ BOOM ] Rotacion de la moneda.
 [      ] Menú elegante.
-[      ] Pasar mapas de ficheos guarros a ficheros XML elegantes.
+[      ] Pasar mapas de ficheros guarros a ficheros XML elegantes.
 [      ] Joystick.
 [      ] Sonidos (golpes de la moneda).
-[ BOOM ] Imagen de la moneda.
 [      ] Mapas con graficos con texturas y un fondo (que no den ganas de llorar
      al ver la pantalla).
 [      ] Musica de verbena de pueblo.
@@ -50,8 +54,6 @@ Objetivos para siguientes versiones:
 	[      ] Viento
 	...etc
 [      ] Eliminar botes molestos que quitan realismo.
-[ BOOM ] Para eliminar "enganches" en los puntos de interseccion entre segmentos continuos, definir
-          alguna forma de indicar que los segmentos están contiguos, de tal
-          forma que no se calculen las fuerzas normales en los extremos.
 [      ] En el mapa, especificar textos en segmentos, que sean mostrados al tocarlos.
+[      ] En ciertas ocasiones, la moneda rebota en el final de un segmento, cuando debería caer. Investigar auq lo provoca.
 .... ETC

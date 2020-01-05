@@ -23,6 +23,11 @@ v0.1-beta.1
 - Mouse sensibility is now included in settings.
 - Pause button with pause image.
 - Added basic win and lose scenes.
+-----------------
+- Added code for toggle buttons in the menu.
+- Line segments can be drawn with textures.
+- Map can include a rotating background.
+- Added a simple camera management. Camera can be fixed, moved by the user, or follow the coin.
 
 
 

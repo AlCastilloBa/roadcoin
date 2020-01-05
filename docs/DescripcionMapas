@@ -1,14 +1,16 @@
-OBSOLETO!!! SE DEBE ACTUALIZAR
+# [ES] Descripción del formato de mapas
+
+# [EN] Map format description
 
 
-# Las lineas que empiezan por "#" son comentarios, serán ignoradas por el programa.
+# [ES] Las lineas que empiezan por "#" son comentarios, serán ignoradas por el programa.
 # Todas las líneas tendrán una estructura determinada.
 #    palabra_clave = valor
 # El programa buscará esta palabra clave e intentara leer el valor y guardarlo en memoria.
 # A continuación se listan los tipos de campos.
 
 
-# Lines beginning with the character "#" are remarks. They will be ignored by the program.
+# [EN] Lines beginning with the character "#" are remarks. They will be ignored by the program.
 # All the lines will have this structure.
 #     keyword = value
 # This program will searth for a keyword and will try to read the value and store it into memory.
@@ -16,60 +18,108 @@ OBSOLETO!!! SE DEBE ACTUALIZAR
 
 
 
-# Nombre del mapa
-# Map name
+# [ES] Nombre del mapa
+# [EN] Map name
 nombre=Nombre del mapa
 
 
 
-# Numero de segmentos
-# Number of line segments
+# [ES] Numero de segmentos
+# [EN] Number of line segments
 num_segmentos=27
 
 
 
-# Modo de giro de mapa. indica respecto a que punto gira el mapa 
-   (0=camara, 1=punto_fijo)
-# Map rotating mode, determines the point the map will rotate around.
-   (0=camera, 1=fixed point)
+# [ES] Modo de giro de mapa. indica respecto a que punto gira el mapa 
+#   (0=camara, 1=punto_fijo)
+# [EN] Map rotating mode, determines the point the map will rotate around.
+#   (0=camera, 1=fixed point)
 modo_giro_mapa=1
 
 
 
-# Posicion del punto de giro del mapa
+# [ES] Posicion del punto de giro del mapa
 # La siguientes linea son las coordenadas del punto de giro.
 # Unicamente se tiene en cuenta para el caso de giro alrededor de un punto fijo
-# Fixed point rotating point. This line indicates rotating point coordinates, only in the case the map rotates around a fixed point.
+# [EN] Fixed point rotating point. This line indicates rotating point coordinates, only in the case the map rotates around a fixed point.
 punto_giro=(416,355)
 
 
-# ;ME LLEGO AQUIIIIIII
-
-# Las siguientes linea no comentada es el limites de giro del mapa (angulo maximo y angulo minimo con el signo contrario)
-# Nota: el origen es arriba
-# Nota: la unidad son grados
-30
-
-# Posicion inicial de la moneda
-0
-300
-
-# Gravedad (aceleracion hacia abajo)
-100
+# [ES] Angulo maximo (en grados): limites de giro del mapa (angulo maximo y angulo minimo con el signo contrario)
+# # Nota: el origen es arriba. Nota: la unidad son grados
+# [EN] Maximum rotating angle (in degrees): map rotation limit (maximum angle, and minimum angle with opposite sign)
+# # Note: 0 deg means up. Unit are degrees.
+angulo_max=45
 
 
-# A partir de este punto nos encontraremos los segmentos uno a uno, con la siguiente estructura repetida.
-# Punto inicial, coordenada X (double)
-# Punto inicial, coordenada Y (double)
-# Punto final, coordenada X (double)
-# Punto final, coordenada Y (double)
-# Tipo de segmento (0=wall, 1=goal, 2=death)
-25
-13
-43
-72
-0
 
+# [ES] Posicion inicial de la moneda. Estructura ( coord x , coord y )
+# [EN] Coin starting position. Structure (x coord, y coord)
+pos_inicial_moneda=(530,0)
+
+
+# [ES] Gravedad. Aceleración hacia abajo. Unidad pixeles/s².
+# [EN] Gravity. Acceleration in down direction. Unit pixels/s².
+gravedad=1000
+
+
+# [ES] Ruta imagen de la moneda. Atención, debe ser cuadrada (dimensión x igual a dimensión y).
+# #  Nota: ruta relativa, desde el directorio del ejecutable del juego.
+# [EN] Path to coin image. Attention, it must be square (x dimension equal to y dimension).
+# # Note: relative path, starting from game executable file directory.
+imagen_moneda=images/moneda4.png
+
+
+# [ES] Ruta imagen del fondo. Será estirada hasta ocupar todo el tamaño de la pantalla. Por lo tanto, dim_x / dim_y debe ser similar a la relación de aspecto de la pantalla.
+# #  Nota: ruta relativa, desde el directorio del ejecutable del juego.
+# [EN] Path to background image. It will be stretched to fit the entire screen. Therefore, dim_x / dim_y should be similar to the screen aspect ratio.
+# # Note: relative path, starting from game executable file directory.
+imagen_fondo=images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg
+
+
+
+# [ES] Especificación de los segmentos. Cada linea indicará un segmento, y seguirá la siguiente estructura.
+# segmento[ num_segmento ]=(( coord_x_punto_inicio , coord_y_punto_inicio ) , ( coord_x_punto_final , coord_y_punto_final ) , tipo_segmento )
+# donde "tipo segmento" puede tener los siguientes valores ( 0=pared, 1=meta, 2=muerte )
+# Nota: el primer segmento siempre será [0].
+# [EN] Line segments specification. Each line will specify a line segment, and must follow the following structure.
+# segmento[ segment_number ]=(( x_coord_start_point , y_coord_start_point ) , ( x_coord_end_point , x_coord_end_point ) , segment_type )
+# where "segment type" can have the following values ( 0=wall, 1=goal, 2=death ).
+# Note: the firs line segment will always be number [0].
+segmento[0]=((559,0),(558,31),0)
+segmento[1]=((625,36),(539,30),0)
+segmento[2]=((539,30),(424,33),0)
+segmento[3]=((424,33),(293,47),0)
+
+
+# [ES] Existe la posibilidad de añadir una textura de un fondo giratorio. Este fondo girará al rotar el mapa, y se representara por encima del otro fondo.
+   fondo_giratorio ( 0=sin fondo giratorio, 1=con fondo giratorio )
+# [EN] It is possible to add a rotatong background texture. This background will rotate alongo with the map rotarion, and will be displayed over the other background image.
+   fondo_giratorio ( 0=no rotating background, 1=with rotating background )
+fondo_giratorio=1
+
+# [ES] Ruta imagen del fondo giratorio. Solo tenido en cuenta en el caso de que haya fondo giratorio.
+# #  Nota: ruta relativa, desde el directorio del ejecutable del juego.
+# [EN] Path to the rotating background image. Only taken into acount in the case the rotating background exist.
+# # Note: relative path, starting from game executable file directory.
+imagen_fnd_giratorio=images/fondo_gira_monza.jpg
+
+# [ES] Posición del fondo giratorio. Las valores de las coordenadas están en el mismo sistema de referencia que los segmentos de linea. Estructura:
+# pos_fnd_giratorio=((borde_izquierdo,borde_superior),(borde_derecho,borde_inferior))
+# Nota: Solamente tenido en cuenta si hay fondo giratorio.
+# [EN] Rotating background image. The coordinates value are referenced to the same coordinate system as line segments. Structure:
+# pos_fnd_giratorio=((left edge,upper edge),(right edge,lower edge))
+# Note: Taken only into account when there is a rotating background.
+pos_fnd_giratorio=((0,0),(800,739))
+
+
+# [ES] Centro de giro del fondo giratorio. Solo tenido en cuenta en el caso de que haya fondo giratorio.
+# Atención: Actualmente, las coordenadas están referidas a la esquina superior izquierda de la imagen del centro giratorio. Es posible que sea necesario hacer cálculos para escribir estos valores.
+# Estructura: centro_giro_fnd_gir=(coord x,coord y)
+# [EN] Rotation center for the rotating background. Only taken into acount in the case the rotating background exist.
+# Attention: The coordinate values are currently refered to the upper left corner of the rotating background. It is possible that calculations must be made in order to write the values.
+# Estructura: centro_giro_fnd_gir=(x coord,y coord)
+centro_giro_fnd_gir=(416,355)
 
 
 
