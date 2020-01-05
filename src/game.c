@@ -8,12 +8,12 @@
 
 
 #include "physics.h"
-#include "camera.h"
 #include "maps.h"
 #include "geometry.h"
 #include "options.h"
 #include "menu.h"
 #include "graphics.h"
+#include "camera.h"
 
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
@@ -52,6 +52,8 @@ SDL_Texture* gIconoVictoria = NULL;		// Victory icon texture
 SDL_Texture* gIconoPierde = NULL;		// Lose icon texture
 SDL_Texture* gTextoVictoria = NULL;		// Victory text texture
 SDL_Texture* gTextoPierde = NULL;		// Lose text texture
+SDL_Texture* gTexturaSegmento = NULL;		// Line segment texture
+SDL_Texture* gTexturaFondoGiratorio = NULL;	// Rotating background texture
 
 TTF_Font *gFuenteTextoJuego = NULL;
 SDL_Color gColorBlanco = { 255 , 255 , 255 }; 	// Blanco
@@ -63,6 +65,7 @@ int gRadioMoneda;
 //Dimensiones texturas --- Texture dimensions
 int gDimIconoVictoriaX; int gDimIconoVictoriaY;
 int gDimIconoPierdeX; int gDimIconoPierdeY;
+int gDimTexturaSegmentoX; int gDimTexturaSegmentoY;
 
 //Variables globales control
 float inc_angulo_teclado = 1.0f;
@@ -188,7 +191,9 @@ bool loadIntroMedia()
 bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda, 
 				char* ruta_imagen_fondo,
 				char* nombre_mapa,
-				char* descripcion_mapa ) 
+				char* descripcion_mapa,
+				bool HayFondoGiratorio,
+				char* ruta_imagen_fondo_giratorio ) 
 { 
 	// Esta función carga las texturas, sonidos, etc asociados al mapa que se va a jugar.
 	// This function loads textures, sounds, etc related to the currend map to be played.
@@ -261,6 +266,28 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 	gTextoVictoria = RenderizaTextoEnTextura("Completado        ", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
 	//Cargar textura de texto de perder --- Load lose text texture
 	gTextoPierde = RenderizaTextoEnTextura("Pierdes una moneda", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+
+
+	// NUEVO PRUEBAS 2/1/2020
+
+	gTexturaSegmento = CargaTextura( "images/metal_1x5.png" , &gDimTexturaSegmentoX, &gDimTexturaSegmentoY, false );
+	if( gTexturaSegmento == NULL ) 
+	{ 
+		printf( "Failed to load texture image!\n" ); 
+		success = false; 
+	} 
+
+
+	if ( HayFondoGiratorio )
+	{
+		gTexturaFondoGiratorio = CargaTextura( ruta_imagen_fondo_giratorio , NULL, NULL, false );
+		if( gTexturaFondoGiratorio == NULL ) 
+		{ 
+			printf( "Failed to load texture image (fondo giratorio)!\n" ); 
+			success = false; 
+		} 
+	}
+
 	return success;
 }
 
@@ -443,7 +470,6 @@ enum resultado bucle_principal_juego( void )
 	float vel_angular_moneda = 0.0f;	// En rad/s
 
 	struct punto pos_real_moneda;			// Posicion de centro de la moneda (unidades del juego)
-	struct posicion_camara pos_pant_moneda;			// Posicion de centro de la moneda (pixeles de la pantalla)
 
 	struct vector_velocidad velocidad_real_moneda;
 	struct vector_aceleracion aceleracion_real_moneda;
@@ -456,6 +482,16 @@ enum resultado bucle_principal_juego( void )
 
 	struct vector_fuerza gravedad;	
 	struct vector_fuerza* fuerzas_normales_segmentos;	// Vector que guarda las fuerzas normales de apoyo sobre segmentos en el fotograma actual
+
+	//(TODO PRUEBAS, BORRAR!!!)
+	// struct posicion_camara pos_pant_moneda;			// Posicion de centro de la moneda (pixeles de la pantalla)
+	struct punto pos_pant_moneda;			// Posicion de centro de la moneda (pixeles de la pantalla)
+	enum modo_camara ModoCamara;
+	struct segmento* pos_camara_segmentos_girados;
+	int pos_cam_fondo_giratorio_izquierda, pos_cam_fondo_giratorio_arriba, pos_cam_fondo_giratorio_derecha, pos_cam_fondo_giratorio_abajo;
+	int desplazamiento_camara_usuario_x = 0;
+	int desplazamiento_camara_usuario_y = 0; 
+
 
 	SDL_Rect renderQuad;		// Rectangulo de SDL para indicar la posicion de los objetos a renderizar
 
@@ -500,12 +536,25 @@ enum resultado bucle_principal_juego( void )
 		exit(-1);
 	}
 
+	// Reservamos memoria para la posición de la pantalla de los segmentos (despues de aplicar la camara) (TODO PRUEBAS, BORRAR!!!)
+	pos_camara_segmentos_girados = calloc(mapa_original.NumeroSegmentos, sizeof(struct segmento) );
+	if ( pos_camara_segmentos_girados == NULL )
+	{
+		printf ( "Error: no se puede reservar memoria para la posición en la pantalla de los segmentos girados\n");
+		exit(-1);
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Cargamos archivos del juego - Load Game media 
 	#ifdef DEBUG_INFO
 	printf("Cargando archivos juego...\n");
 	#endif
-	if( !loadMainGameLoopMedia( mapa_original.RutaImagenMoneda, mapa_original.RutaImagenFondo, mapa_original.NombreMapa, mapa_original.DescripcionMapa ) ) 
+	if( !loadMainGameLoopMedia( 	mapa_original.RutaImagenMoneda, 
+					mapa_original.RutaImagenFondo, 
+					mapa_original.NombreMapa, 
+					mapa_original.DescripcionMapa,
+					mapa_original.HayFondoGiratorio,
+					mapa_original.RutaImagenFondoGiratorio ) ) 
 	{ 
 		printf( "Failed to load media!\n" ); 
 		exit(-1);
@@ -513,7 +562,16 @@ enum resultado bucle_principal_juego( void )
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 
-
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Inicializamos modo cámara
+	if ( mapa_original.TipoGiro == punto_fijo )
+	{
+		ModoCamara = camara_fija_en_origen;
+	}
+	else if ( mapa_original.TipoGiro == moneda )
+	{
+		ModoCamara = camara_sigue_moneda;
+	}
 	//Ajustar variables ratón
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -587,6 +645,39 @@ enum resultado bucle_principal_juego( void )
 						{
 							angulo += inc_angulo_teclado;
 						}
+						break;
+					case SDLK_c:
+						// Gestion de cambio de camara
+						switch ( ModoCamara )
+						{
+							case camara_fija_en_origen:
+								ModoCamara = camara_sigue_moneda;
+								break;
+							case camara_sigue_moneda:
+								ModoCamara = camara_movil_por_usuario;
+								break;
+							case camara_movil_por_usuario:
+								ModoCamara = camara_fija_en_origen;
+								break;
+							default:
+								ModoCamara = camara_sigue_moneda;
+								break;
+						}
+					case SDLK_KP_8:	// Numeric Keypad 8 (UP)
+						if (ModoCamara == camara_movil_por_usuario )
+							desplazamiento_camara_usuario_y--;
+						break;
+					case SDLK_KP_2: // Numeric Keypad 2 (DOWN)
+						if (ModoCamara == camara_movil_por_usuario )
+							desplazamiento_camara_usuario_y++;
+						break;
+					case SDLK_KP_4: // Numeric Keypad 4 (LEFT)
+						if (ModoCamara == camara_movil_por_usuario )
+							desplazamiento_camara_usuario_x--;
+						break;
+					case SDLK_KP_6: // Numeric Keypad 6 (RIGHT)
+						if (ModoCamara == camara_movil_por_usuario )
+							desplazamiento_camara_usuario_x++;
 						break;
 					default:  
 						break; 
@@ -861,9 +952,14 @@ enum resultado bucle_principal_juego( void )
 		} // If (!pause) 
 
 		// Convertimos posiciones "reales" en posiciones de la pantalla
-		pos_pant_moneda = CalculaCamara(pos_real_moneda );
-
-		//PENDIENTE DE HACER, TRANSFORMAR MAPA A LA PANTALLA (TODO)		
+		// pos_pant_moneda = CalculaCamara(pos_real_moneda ); // TODO PRUEBAS , BORRAR
+		pos_pant_moneda = CalculaCamara2( 		ModoCamara, opciones_juego.screen_x_resolution, opciones_juego.screen_y_resolution,
+								desplazamiento_camara_usuario_x, desplazamiento_camara_usuario_y,
+								pos_real_moneda, 
+								mapa_original.NumeroSegmentos, 
+								segmentos_girados,  pos_camara_segmentos_girados,
+								mapa_original.Pos_x_izquierda_fondo_giratorio, mapa_original.Pos_y_arriba_fondo_giratorio, mapa_original.Pos_x_derecha_fondo_giratorio, mapa_original.Pos_y_abajo_fondo_giratorio, 
+								&pos_cam_fondo_giratorio_izquierda, &pos_cam_fondo_giratorio_arriba, &pos_cam_fondo_giratorio_derecha, &pos_cam_fondo_giratorio_abajo   ); 		
 
 		/////////////////////////////////////////////////////////////////////////////////////
 		// Representa todo por pantalla
@@ -872,8 +968,39 @@ enum resultado bucle_principal_juego( void )
 		SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0xFF, 0xFF );
 		SDL_RenderClear( gRenderer ); 
 
-		//Dibuja fondo
-		SDL_RenderCopy( gRenderer, gTexturaFondo, NULL, NULL );		//Imagen estirada a toda la ventana
+		//Dibuja fondo --- Draws background
+		SDL_RenderCopy( gRenderer, gTexturaFondo, NULL, NULL );		//Imagen estirada a toda la ventana --- Image stretched to fit entire screen
+
+
+
+
+
+		// Dibuja fondo giratorio (si hubiese) --- Draws rotating background (in case it exists)
+		if ( mapa_original.HayFondoGiratorio && opciones_juego.textured_objects )
+		{
+			SDL_Point centro_giro_fondo_giratorio;
+
+			/*renderQuad.x = mapa_original.Pos_x_izquierda_fondo_giratorio;										// Coord X de esquina superior izquierda
+			renderQuad.y = mapa_original.Pos_y_arriba_fondo_giratorio;										// Coord Y de esquina superior izquierda
+			renderQuad.w = mapa_original.Pos_x_derecha_fondo_giratorio - mapa_original.Pos_x_izquierda_fondo_giratorio;				// Ancho
+			renderQuad.h = mapa_original.Pos_y_abajo_fondo_giratorio - mapa_original.Pos_y_arriba_fondo_giratorio;			*/ /*TODO PRUEBAS, BORRAR */
+
+
+			renderQuad.x = pos_cam_fondo_giratorio_izquierda;										// Coord X de esquina superior izquierda
+			renderQuad.y = pos_cam_fondo_giratorio_arriba;										// Coord Y de esquina superior izquierda
+			renderQuad.w = pos_cam_fondo_giratorio_derecha - pos_cam_fondo_giratorio_izquierda;					// Ancho
+			renderQuad.h = pos_cam_fondo_giratorio_abajo - pos_cam_fondo_giratorio_arriba;						// Alto
+
+			centro_giro_fondo_giratorio.x = /*416;*/mapa_original.CentroGiroFondoGiratorio.x;
+			centro_giro_fondo_giratorio.y = /*355;*/mapa_original.CentroGiroFondoGiratorio.y;
+
+			SDL_RenderCopyEx( gRenderer, gTexturaFondoGiratorio, NULL, &renderQuad, angulo, &centro_giro_fondo_giratorio, SDL_FLIP_NONE );
+		}
+
+
+
+
+
 
 		//Render texture to screen - Dibuja moneda
 		//Crea un rectangulo en la posicion desesada de la moneda // Nota: SDL_Rect es un struct
@@ -885,60 +1012,97 @@ enum resultado bucle_principal_juego( void )
 		SDL_RenderCopyEx( gRenderer, gTexturaMoneda, NULL, &renderQuad, angulo_rotacion_moneda*180/PI, NULL /*Rota alrededor del centro*/, SDL_FLIP_NONE );
 
 
-
-		//Dibuja lineas
-		SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-		//SDL_RenderDrawLine( gRenderer, 0, GAME_SCREEN_HEIGHT / 2, GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT / 2 );
-		for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
+		// Dibuja lineas (modo con texturas)
+		if (opciones_juego.textured_objects)
 		{
-			/*SDL_RenderDrawLine( 	gRenderer, 
-						mapa_original.Mapa[segmento_actual].start.x ,
-						mapa_original.Mapa[segmento_actual].start.y , 
-						mapa_original.Mapa[segmento_actual].end.x , 
-						mapa_original.Mapa[segmento_actual].end.y );	*/ // Sin giros
+			for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
+			{	
+				float angulo_segmento_actual;
+				SDL_Point centro_giro_textura_segmento;
 
-			switch ( mapa_original.Mapa[segmento_actual].type ) // Seleccionar color segun tipo de segmento
-			{
-				case pared:
-					SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
-					#ifdef DEBUG_INFO
-					// Mostrar informacion con colores sobre tipos de interferencia
-					switch ( tipo_interferencia_segmento[segmento_actual] )
-					{
-						case sin_interseccion:
-							SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
-							break;
-						case interseccion_extremo_start:
-							SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0x00 );	// Verde
-							break;
-						case interseccion_central:
-							SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
-							break;
-						case interseccion_extremo_end:
-							SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0xFF, 0x00 );	// Azul
-							break;
-						default:
-							break;
-					}
-					#endif
-					break;
-				case meta:
-					SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0x00 );	// Verde
-					break;
-				case muerte:
-					SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
-					break;
-				default:
-					SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
-					break;
+				// Calculamos el angulo
+				/*angulo_segmento_actual = AnguloSegmento( segmentos_girados[segmento_actual] );*/ /* TODO PRUEBAS, BORRAR) */
+				angulo_segmento_actual = AnguloSegmento( pos_camara_segmentos_girados[segmento_actual] );
+
+				// Posicionamos el rectangulo, sin giro, en posición horizontal
+				/*renderQuad.x = segmentos_girados[segmento_actual].start.x;		// Coord X de esquina superior izquierda
+				renderQuad.y = segmentos_girados[segmento_actual].start.y - gDimTexturaSegmentoY/2;		// Coord Y de esquina superior izquierda
+				renderQuad.w = LongitudVector(segmentos_girados[segmento_actual].start ,segmentos_girados[segmento_actual].end );				// Ancho
+				renderQuad.h = gDimTexturaSegmentoY;				// Alto*/  /* TODO PRUEBAS, BORRAR */
+
+				renderQuad.x = pos_camara_segmentos_girados[segmento_actual].start.x;		// Coord X de esquina superior izquierda
+				renderQuad.y = pos_camara_segmentos_girados[segmento_actual].start.y - gDimTexturaSegmentoY/2;		// Coord Y de esquina superior izquierda
+				renderQuad.w = LongitudVector(pos_camara_segmentos_girados[segmento_actual].start ,pos_camara_segmentos_girados[segmento_actual].end );				// Ancho
+				renderQuad.h = gDimTexturaSegmentoY;				// Alto
+
+				// Calculamos punto de giro
+				centro_giro_textura_segmento.x = 0;
+				centro_giro_textura_segmento.y = gDimTexturaSegmentoY/2;
+				// Dibujamos textura girada
+				SDL_RenderCopyEx( gRenderer, gTexturaSegmento, NULL, &renderQuad, angulo_segmento_actual*180/PI, &centro_giro_textura_segmento, SDL_FLIP_NONE );
 			}
-			SDL_RenderDrawLine( 	gRenderer, 
-						segmentos_girados[segmento_actual].start.x ,
-						segmentos_girados[segmento_actual].start.y , 
-						segmentos_girados[segmento_actual].end.x , 
-						segmentos_girados[segmento_actual].end.y );
 		}
 
+		//Dibuja lineas (modo WireFrame)
+		if (opciones_juego.wireframe )
+		{
+			SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+			//SDL_RenderDrawLine( gRenderer, 0, GAME_SCREEN_HEIGHT / 2, GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT / 2 );
+			for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
+			{
+				/*SDL_RenderDrawLine( 	gRenderer, 
+							mapa_original.Mapa[segmento_actual].start.x ,
+							mapa_original.Mapa[segmento_actual].start.y , 
+							mapa_original.Mapa[segmento_actual].end.x , 
+							mapa_original.Mapa[segmento_actual].end.y );	*/ // Sin giros
+
+				switch ( mapa_original.Mapa[segmento_actual].type ) // Seleccionar color segun tipo de segmento
+				{
+					case pared:
+						SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
+						#ifdef DEBUG_INFO
+						// Mostrar informacion con colores sobre tipos de interferencia
+						switch ( tipo_interferencia_segmento[segmento_actual] )
+						{
+							case sin_interseccion:
+								SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
+								break;
+							case interseccion_extremo_start:
+								SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0x00 );	// Verde
+								break;
+							case interseccion_central:
+								SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
+								break;
+							case interseccion_extremo_end:
+								SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0xFF, 0x00 );	// Azul
+								break;
+							default:
+								break;
+						}
+						#endif
+						break;
+					case meta:
+						SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0x00 );	// Verde
+						break;
+					case muerte:
+						SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0x00 );	// Rojo
+						break;
+					default:
+						SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
+						break;
+				}
+				/* SDL_RenderDrawLine( 	gRenderer, 
+							segmentos_girados[segmento_actual].start.x ,
+							segmentos_girados[segmento_actual].start.y , 
+							segmentos_girados[segmento_actual].end.x , 
+							segmentos_girados[segmento_actual].end.y ); */ /* PRUEBAS TODO, BORRAR */
+				SDL_RenderDrawLine( 	gRenderer, 
+							pos_camara_segmentos_girados[segmento_actual].start.x ,
+							pos_camara_segmentos_girados[segmento_actual].start.y , 
+							pos_camara_segmentos_girados[segmento_actual].end.x , 
+							pos_camara_segmentos_girados[segmento_actual].end.y );  /* PRUEBAS TODO, BORRAR */
+			}
+		}
 		// Dibuja textos de intro del mapa
 		if ( intro_mapa )
 		{
@@ -1043,6 +1207,7 @@ enum resultado bucle_principal_juego( void )
 	//free(interferencia_segmento);
 	free(fuerzas_normales_segmentos);
 	free(tipo_interferencia_segmento);
+	free(pos_camara_segmentos_girados);
 	// Liberamos texturas, imagenes, sonidos, etc
 	freeMainGameLoopMedia();
 

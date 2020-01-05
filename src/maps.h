@@ -47,6 +47,14 @@ struct mapa
 	struct segmento *Mapa;
 	char RutaImagenMoneda[255];
 	char RutaImagenFondo[255];
+
+	bool HayFondoGiratorio;
+	char RutaImagenFondoGiratorio[255];
+	int Pos_x_izquierda_fondo_giratorio;
+	int Pos_y_arriba_fondo_giratorio;
+	int Pos_x_derecha_fondo_giratorio;
+	int Pos_y_abajo_fondo_giratorio;
+	struct punto CentroGiroFondoGiratorio;
 };
 
 

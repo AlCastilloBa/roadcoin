@@ -23,7 +23,7 @@
 
 #define PORCENTAJE_ANCHO_TITULOS 70
 #define PORCENTAJE_ALTO_TITULOS 16
-#define PORCENTAJE_ANCHO_BOTONES 40
+#define PORCENTAJE_ANCHO_BOTONES 70
 #define PORCENTAJE_MARGEN_SUPERIOR 30
 //#define PORCENTAJE_MARGEN_INFERIOR 20
 #define PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES 10
@@ -109,9 +109,47 @@ bool inicializa_datos_boton( struct boton_menu* boton, int indice_boton, enum li
 	return exito;
 }
 
+bool inicializa_datos_pantalla_menu( struct pantalla_menu* pantalla, enum pantalla_menu_principal numero_pantalla, char* titulo_pantalla, char* ruta_textura_fondo, int numero_botones)
+{
+	// La funcion "inicializar_menu_principal" es muy extensa, con código muy parecido. Se crea esta función para intentar reducir la extension del código.
+	// Function "inicializar_menu_principal" (initialize main menu) is too long. This function is created in an attempt to reduce code lenght.
 
+	bool exito = true;
 
+	/* pantallas_menu_principal[menu_opciones].identificador_pantalla*/ pantalla->identificador_pantalla = numero_pantalla;
+	strcpy( pantalla->titulo, titulo_pantalla );
+	pantalla->textura_titulo = RenderizaTextoEnTextura( pantalla->titulo, 
+								gFuenteTexto, 
+								gColorTextoReposo, 
+								/*&(pantallas_menu_principal[menu_principal].botones_pantalla[0].textura_dim_x)*/ NULL, 
+								/*&(pantallas_menu_principal[menu_principal].botones_pantalla[0].textura_dim_y)*/ NULL   );
+	pantalla->borde_izquierdo_titulo = (opciones_juego.screen_x_resolution)*(100-PORCENTAJE_ANCHO_TITULOS)/2/100;
+	pantalla->borde_derecho_titulo   = (opciones_juego.screen_x_resolution)*(100+PORCENTAJE_ANCHO_TITULOS)/2/100;
+	pantalla->borde_arriba_titulo    = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + (-2)*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES)/100;
+	pantalla->borde_abajo_titulo     = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + (-2)*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES + PORCENTAJE_ALTO_TITULOS)/100;
 
+	pantalla->imagen_fondo_pantalla = CargaTextura( ruta_textura_fondo , NULL, NULL, false );
+	if( pantalla->imagen_fondo_pantalla == NULL ) 
+	{
+		printf( "Error al cargar textura fondo.\n" ); 
+		exito = false;
+	}
+	pantalla->numero_botones = numero_botones;
+	#ifdef DEBUG_INFO
+	printf("Reservando memoria dinámica para los botones de pantalla...\n");
+	#endif
+	if ( numero_botones > 0 )
+	{
+		pantalla->botones_pantalla = calloc( pantalla->numero_botones, sizeof( struct boton_menu )  );
+		if ( pantalla->botones_pantalla == NULL )
+		{
+			printf( "Error al reservar memoria dinámica para los botones.\n" ); 
+			exito = false;
+		}
+	}
+
+	return exito;
+}
 
 
 
@@ -138,7 +176,10 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	printf("Inicializando la fuente del menu...\n");
 	#endif
 
-	gFuenteTexto = TTF_OpenFont( "fonts/lunasol.ttf", 28 );
+	gFuenteTexto = TTF_OpenFont( "fonts/lunasol.ttf", 48 );
+	//gFuenteTexto = TTF_OpenFont( "fonts/ethnocen.ttf" , 48);
+	//gFuenteTexto = TTF_OpenFont( "fonts/zorque.ttf", 48 );
+
 	if( gFuenteTexto == NULL )
 	{
 		printf( "Failed to load font! SDL_ttf Error: %s\n", TTF_GetError() );
@@ -183,14 +224,21 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos de pantalla menu principal...\n");
 	#endif
-	pantallas_menu_principal[menu_principal].identificador_pantalla = menu_principal;
-	strcpy( pantallas_menu_principal[menu_principal].titulo, "Menu principal\0" );
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_principal]), menu_principal, "Menu principal\0" ,  "images/gradient-abstract.png", 4 ) )
+	{
+		printf( "Error al inicializar pantalla menu principal.\n" ); 
+		success = false;
+	}
+
+	// Lo siguiente se ha dejado como ejemplo de lo que hace la función anterior --- The following remark is left as an example of what the previous function does
+/*	pantallas_menu_principal[menu_principal].identificador_pantalla = menu_principal;
+	strcpy( pantallas_menu_principal[menu_principal].titulo, "    Menu principal    \0" );
 	pantallas_menu_principal[menu_principal].textura_titulo = RenderizaTextoEnTextura( 	pantallas_menu_principal[menu_principal].titulo, 
 														gFuenteTexto, 
 														gColorTextoReposo, 
-														/*&(pantallas_menu_principal[menu_principal].botones_pantalla[0].textura_dim_x)*/ NULL, 
-														/*&(pantallas_menu_principal[menu_principal].botones_pantalla[0].textura_dim_y)*/ NULL   );
-	pantallas_menu_principal[menu_principal].borde_izquierdo_titulo = (opciones_juego.screen_x_resolution)*(100-PORCENTAJE_ANCHO_TITULOS)/2/100;
+														/*&(pantallas_menu_principal[menu_principal].botones_pantalla[0].textura_dim_x)*/// NULL, 
+														/*&(pantallas_menu_principal[menu_principal].botones_pantalla[0].textura_dim_y)*/// NULL   );
+/*	pantallas_menu_principal[menu_principal].borde_izquierdo_titulo = (opciones_juego.screen_x_resolution)*(100-PORCENTAJE_ANCHO_TITULOS)/2/100;
 	pantallas_menu_principal[menu_principal].borde_derecho_titulo   = (opciones_juego.screen_x_resolution)*(100+PORCENTAJE_ANCHO_TITULOS)/2/100;
 	pantallas_menu_principal[menu_principal].borde_arriba_titulo    = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + (-2)*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES)/100;
 	pantallas_menu_principal[menu_principal].borde_abajo_titulo	 = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + (-2)*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES + PORCENTAJE_ALTO_TITULOS)/100;
@@ -206,17 +254,18 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	printf("Reservando memoria dinámica para los botones de pantalla menu principal...\n");
 	#endif
 	pantallas_menu_principal[menu_principal].botones_pantalla = calloc( pantallas_menu_principal[menu_principal].numero_botones, sizeof( struct boton_menu )  );
+*/
 	//----------------------------
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 0 de pantalla menu principal...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_principal].botones_pantalla[0]) , 0, boton_jugar, boton_pulsar, " Jugar  \0" , 3, 1  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_principal].botones_pantalla[0]) , 0, boton_jugar, boton_pulsar, "     Jugar      \0" , 3, 1  ) )
 	{
 		printf( "Error al inicializar boton 0 en menu principal.\n" ); 
 		success = false;
 	}
-/*
-	pantallas_menu_principal[menu_principal].botones_pantalla[0].identificador_boton = boton_jugar;
+	// Lo siguiente se ha dejado como ejemplo de lo que hace la función anterior --- The following remark is left as an example of what the previous function does
+/*	pantallas_menu_principal[menu_principal].botones_pantalla[0].identificador_boton = boton_jugar;
 	pantallas_menu_principal[menu_principal].botones_pantalla[0].clase_boton = boton_pulsar;
 	strcpy( pantallas_menu_principal[menu_principal].botones_pantalla[0].texto, " Jugar  \0" );
 	pantallas_menu_principal[menu_principal].botones_pantalla[0].borde_izquierdo = (opciones_juego.screen_x_resolution)*(100-PORCENTAJE_ANCHO_BOTONES)/2/100;
@@ -249,7 +298,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 1 de pantalla menu principal...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_principal].botones_pantalla[1]) , 1, boton_opciones, boton_pulsar, "Opciones\0" , 0, 2  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_principal].botones_pantalla[1]) , 1, boton_opciones, boton_pulsar, "    Opciones    \0" , 0, 2  ) )
 	{
 		printf( "Error al inicializar boton 1 en menu principal.\n" ); 
 		success = false;
@@ -258,7 +307,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 2 de pantalla menu principal...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_principal].botones_pantalla[2]) , 2, boton_creditos, boton_pulsar, "Creditos\0" , 1, 3  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_principal].botones_pantalla[2]) , 2, boton_creditos, boton_pulsar, "    Creditos    \0" , 1, 3  ) )
 	{
 		printf( "Error al inicializar boton 2 en menu principal.\n" ); 
 		success = false;
@@ -267,7 +316,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 3 de pantalla menu principal...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_principal].botones_pantalla[3]) , 3, boton_salir, boton_pulsar, " Salir  \0" , 2, 0  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_principal].botones_pantalla[3]) , 3, boton_salir, boton_pulsar, "     Salir      \0" , 2, 0  ) )
 	{
 		printf( "Error al inicializar boton 2 en menu principal.\n" ); 
 		success = false;
@@ -278,35 +327,16 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos de pantalla opciones...\n");
 	#endif
-	pantallas_menu_principal[menu_opciones].identificador_pantalla = menu_opciones;
-	strcpy( pantallas_menu_principal[menu_opciones].titulo, "Menu opciones\0" );
-	pantallas_menu_principal[menu_opciones].textura_titulo = RenderizaTextoEnTextura( 	pantallas_menu_principal[menu_opciones].titulo, 
-														gFuenteTexto, 
-														gColorTextoReposo, 
-														/*&(pantallas_menu_principal[menu_principal].botones_pantalla[0].textura_dim_x)*/ NULL, 
-														/*&(pantallas_menu_principal[menu_principal].botones_pantalla[0].textura_dim_y)*/ NULL   );
-	pantallas_menu_principal[menu_opciones].borde_izquierdo_titulo = (opciones_juego.screen_x_resolution)*(100-PORCENTAJE_ANCHO_TITULOS)/2/100;
-	pantallas_menu_principal[menu_opciones].borde_derecho_titulo   = (opciones_juego.screen_x_resolution)*(100+PORCENTAJE_ANCHO_TITULOS)/2/100;
-	pantallas_menu_principal[menu_opciones].borde_arriba_titulo    = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + (-2)*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES)/100;
-	pantallas_menu_principal[menu_opciones].borde_abajo_titulo     = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + (-2)*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES + PORCENTAJE_ALTO_TITULOS)/100;
-
-	pantallas_menu_principal[menu_opciones].imagen_fondo_pantalla = CargaTextura( "images/blue_pink_gradient.png" , NULL, NULL, false );
-	if( pantallas_menu_principal[menu_opciones].imagen_fondo_pantalla == NULL ) 
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_opciones]), menu_opciones, "Menu opciones\0", "images/blue_pink_gradient.png", 6 ) )
 	{
-		printf( "Error al cargar textura fondo menu opciones.\n" ); 
+		printf( "Error al inicializar pantalla opciones.\n" ); 
 		success = false;
 	}
-	pantallas_menu_principal[menu_opciones].numero_botones = 6;
-	#ifdef DEBUG_INFO
-	printf("Reservando memoria dinámica para los botones de pantalla menu opciones...\n");
-	#endif
-	pantallas_menu_principal[menu_opciones].botones_pantalla = calloc( pantallas_menu_principal[menu_opciones].numero_botones, sizeof( struct boton_menu )  );
-
 	//-----------------------------------------------
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 0 de pantalla menu opciones...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[0]) , 0, boton_video, boton_pulsar, " Video  \0" , 5, 1  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[0]) , 0, boton_video, boton_pulsar, "     Video      \0" , 5, 1  ) )
 	{
 		printf( "Error al inicializar boton 0 en menu opciones.\n" ); 
 		success = false;
@@ -315,7 +345,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 1 de pantalla menu opciones...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[1]) , 1, boton_sonido, boton_pulsar, " Sonido \0" , 0, 2  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[1]) , 1, boton_sonido, boton_pulsar, "     Sonido     \0" , 0, 2  ) )
 	{
 		printf( "Error al inicializar boton 1 en menu opciones.\n" ); 
 		success = false;
@@ -324,7 +354,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 2 de pantalla menu opciones...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[2]) , 2, boton_controles, boton_pulsar, "Controles\0" , 1, 3  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[2]) , 2, boton_controles, boton_pulsar, "    Controles    \0" , 1, 3  ) )
 	{
 		printf( "Error al inicializar boton 2 en menu opciones.\n" ); 
 		success = false;
@@ -333,7 +363,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 3 de pantalla menu opciones...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[3]) , 3, boton_opc_juego, boton_pulsar, " Juego  \0" , 2, 4  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[3]) , 3, boton_opc_juego, boton_pulsar, "     Juego      \0" , 2, 4  ) )
 	{
 		printf( "Error al inicializar boton 3 en menu opciones.\n" ); 
 		success = false;
@@ -342,7 +372,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 3 de pantalla menu opciones...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[3]) , 3, boton_opc_juego, boton_pulsar, " Juego  \0" , 2, 4  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[3]) , 3, boton_opc_juego, boton_pulsar, "     Juego      \0" , 2, 4  ) )
 	{
 		printf( "Error al inicializar boton 3 en menu opciones.\n" ); 
 		success = false;
@@ -351,7 +381,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 4 de pantalla menu opciones...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[4]) , 4, boton_idioma, boton_pulsar, " Idioma \0" , 3, 5  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[4]) , 4, boton_idioma, boton_pulsar, "     Idioma     \0" , 3, 5  ) )
 	{
 		printf( "Error al inicializar boton 4 en menu opciones.\n" ); 
 		success = false;
@@ -360,9 +390,62 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 5 de pantalla menu opciones...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[5]) , 5, boton_opc_atras, boton_pulsar, " Atras  \0" , 4, 0  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opciones].botones_pantalla[5]) , 5, boton_opc_atras, boton_pulsar, "     Atras      \0" , 4, 0  ) )
 	{
 		printf( "Error al inicializar boton 5 en menu opciones.\n" ); 
+		success = false;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla opciones de video
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla opciones
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos de pantalla opciones de video...\n");
+	#endif
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_opc_video]), menu_opc_video, "Opciones video\0", "images/muticolor_gradient.jpg", 4 ) )
+	{
+		printf( "Error al inicializar pantalla opciones de video.\n" ); 
+		success = false;
+	}
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 0 de pantalla menu opciones de video...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_video].botones_pantalla[0]) , 0, boton_fullscreen, boton_conmutar, "Pantalla completa\0" , 1, 2  ) )
+	{
+		printf( "Error al inicializar boton 0 en menu opciones de video.\n" ); 
+		success = false;
+	}
+	pantallas_menu_principal[menu_opc_video].botones_pantalla[0].estado_on_off = opciones_juego.fullscreen;
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 1 de pantalla menu opciones de video...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_video].botones_pantalla[1]) , 1, boton_wireframe, boton_conmutar, "Dibujar alambres \0" , 0, 2  ) )
+	{
+		printf( "Error al inicializar boton 1 en menu opciones de video.\n" ); 
+		success = false;
+	}
+	pantallas_menu_principal[menu_opc_video].botones_pantalla[1].estado_on_off = opciones_juego.wireframe;
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 2 de pantalla menu opciones de video...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_video].botones_pantalla[2]) , 2, boton_textured_objects, boton_conmutar, "Objetos texturas  \0" , 1, 3  ) )
+	{
+		printf( "Error al inicializar boton 2 en menu opciones de video.\n" ); 
+		success = false;
+	}
+	pantallas_menu_principal[menu_opc_video].botones_pantalla[2].estado_on_off = opciones_juego.textured_objects;
+	//----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 3 de pantalla menu opciones de video...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_video].botones_pantalla[3]) , 3, boton_opcvid_atras, boton_pulsar, "      Atras      \0" , 2, 0  ) )
+	{
+		printf( "Error al inicializar boton 2 en menu opciones de video.\n" ); 
 		success = false;
 	}
 
@@ -509,6 +592,7 @@ void bucle_principal_menu_principal( void )
 						// Tecla F: Pantalla completa --- Toggle fullscreen
 						CambiarModoPantallaCompleta ( !opciones_juego.fullscreen , gGameWindow );
 						opciones_juego.fullscreen = !opciones_juego.fullscreen;
+						pantallas_menu_principal[menu_opc_video].botones_pantalla[0].estado_on_off = opciones_juego.fullscreen;
 						break;
 					default:  
 						break; 
@@ -569,12 +653,31 @@ void bucle_principal_menu_principal( void )
 					quit = true;
 					break;
 				case boton_opciones:
+				case boton_opcvid_atras:
 					menu_activo = menu_opciones;
 					boton_seleccionado = 0;
 					break;
 				case boton_opc_atras:
 					menu_activo = menu_principal;
 					boton_seleccionado = 0;
+					break;
+				case boton_video:
+					menu_activo = menu_opc_video;
+					boton_seleccionado = 0;
+					break;
+				case boton_fullscreen:
+					// Tecla F: Pantalla completa --- Toggle fullscreen
+					CambiarModoPantallaCompleta ( !opciones_juego.fullscreen , gGameWindow );
+					opciones_juego.fullscreen = !opciones_juego.fullscreen;
+					pantallas_menu_principal[menu_opc_video].botones_pantalla[0].estado_on_off = opciones_juego.fullscreen;
+					break;
+				case boton_wireframe:
+					opciones_juego.wireframe = !opciones_juego.wireframe;
+					pantallas_menu_principal[menu_opc_video].botones_pantalla[1].estado_on_off = opciones_juego.wireframe;					
+					break;
+				case boton_textured_objects:
+					opciones_juego.textured_objects = !opciones_juego.textured_objects;
+					pantallas_menu_principal[menu_opc_video].botones_pantalla[2].estado_on_off = opciones_juego.textured_objects;					
 					break;
 				default:
 					// No hacemos nada --- Do nothing
@@ -618,6 +721,33 @@ void bucle_principal_menu_principal( void )
 						else
 						{
 							SDL_RenderCopy( gRenderer, pantallas_menu_principal[menu_activo].botones_pantalla[i].textura_boton_reposo, NULL, &renderQuad );
+						}
+						break;
+					case boton_conmutar:
+						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo; 									/* Coord X esquina superior izquierda */
+						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 										/* Coord Y esquina superior izqeuirda */
+						renderQuad.w = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_derecho - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo; 	/* Ancho */
+						renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;
+						if ( boton_seleccionado == i )
+						{
+							SDL_RenderCopy( gRenderer, pantallas_menu_principal[menu_activo].botones_pantalla[i].textura_boton_seleccionado, NULL, &renderQuad );
+						}
+						else
+						{
+							SDL_RenderCopy( gRenderer, pantallas_menu_principal[menu_activo].botones_pantalla[i].textura_boton_reposo, NULL, &renderQuad );
+						}
+						// Dibujar caja que indique el estado de la seleccion --- Draw tickbo
+						renderQuad.w =  (int) (opciones_juego.screen_y_resolution) * PORCENTAJE_ALTO_BOTON/100 ; 		/* Ancho */ /* Ancho igual que alto de boton --- Tickbox width equal to button height */
+						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo - renderQuad.w; 			/* Coord X esquina superior izquierda */
+						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 							/* Coord Y esquina superior izqeuirda */
+						renderQuad.h = renderQuad.w;												/* Alto */
+						if ( pantallas_menu_principal[menu_activo].botones_pantalla[i].estado_on_off )
+						{
+							SDL_RenderCopy( gRenderer, gWhiteCheckBoxChecked, NULL, &renderQuad );
+						}
+						else
+						{
+							SDL_RenderCopy( gRenderer, gWhiteCheckBoxUnchecked, NULL, &renderQuad );
 						}
 						break;
 					default:

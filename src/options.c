@@ -13,7 +13,7 @@ struct opciones CargarArchivoOpciones()
 	struct opciones opciones_cargadas;
 
 	char linea_leida[200];
-	bool fullscreen_ok, screen_x_resolution_ok, screen_y_resolution_ok, mouse_sensitivity_ok;
+	bool fullscreen_ok, screen_x_resolution_ok, screen_y_resolution_ok, mouse_sensitivity_ok, wireframe_ok, textured_objects_ok;
 
 	FILE *archivo;
 	int linea=0;
@@ -112,6 +112,80 @@ struct opciones CargarArchivoOpciones()
 					#endif
 				}
 			}
+			else if (strstr(linea_leida, "wireframe") != NULL )
+			{
+				int dato_leido;
+				if ( sscanf(linea_leida, "wireframe=%d", &dato_leido ) == 1 )
+				{
+					switch (dato_leido)
+					{
+						case 0:
+							opciones_cargadas.wireframe = false;
+							wireframe_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, wireframe=false \n", linea);
+							#endif
+							break;
+						case 1:
+							opciones_cargadas.wireframe = true;
+							wireframe_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, wireframe=true \n", linea);
+							#endif
+							break;
+						default:
+							// Valor no válido, se toma el valor por defecto
+							wireframe_ok = false;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, wireframe tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
+							#endif
+							break;
+					}
+				}
+				else
+				{	
+					#ifdef DEBUG_INFO
+					printf("Linea %d, wireframe --> No se han podido leer todos los valores. Se tomará el valor por defecto.\n", linea);
+					#endif
+				}
+			}
+			else if (strstr(linea_leida, "textured_lines") != NULL )
+			{
+				int dato_leido;
+				if ( sscanf(linea_leida, "textured_lines=%d", &dato_leido ) == 1 )
+				{
+					switch (dato_leido)
+					{
+						case 0:
+							opciones_cargadas.textured_objects = false;
+							textured_objects_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, textured_objects=false \n", linea);
+							#endif
+							break;
+						case 1:
+							opciones_cargadas.textured_objects = true;
+							textured_objects_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, textured_objects=true \n", linea);
+							#endif
+							break;
+						default:
+							// Valor no válido, se toma el valor por defecto
+							textured_objects_ok = false;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, textured_objects tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
+							#endif
+							break;
+					}
+				}
+				else
+				{	
+					#ifdef DEBUG_INFO
+					printf("Linea %d, textured_lines --> No se han podido leer todos los valores. Se tomará el valor por defecto.\n", linea);
+					#endif
+				}
+			}
 			else if (strstr(linea_leida, "mouse_sensitivity") != NULL )
 			{
 				if ( sscanf(linea_leida, "mouse_sensitivity=%f", &(opciones_cargadas.mouse_sensitivity) ) == 1 )
@@ -150,12 +224,22 @@ struct opciones CargarArchivoOpciones()
 	if (screen_x_resolution_ok == false) 		
 	{
 		printf("Falta screen_x_resolution. Se toma el valor por defecto.\n");
-		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_FULLSCREEN;
+		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_SCREEN_X_RESOLUTION;
 	}
 	if (screen_y_resolution_ok == false) 		
 	{
 		printf("Falta screen_y_resolution. Se toma el valor por defecto.\n");
-		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_FULLSCREEN;
+		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_SCREEN_Y_RESOLUTION;
+	}
+	if (wireframe_ok == false)
+	{
+		printf("Opciones: Falta wireframe. Se toma el valor por defecto.\n");
+		opciones_cargadas.wireframe=OPTIONS_DEFAULT_WIREFRAME;
+	}
+	if (textured_objects_ok == false)
+	{
+		printf("Opciones: Falta textured_objects. Se toma el valor por defecto.\n");
+		opciones_cargadas.textured_objects=OPTIONS_DEFAULT_TEXTURED_OBJECTS;
 	}
 	if (mouse_sensitivity_ok == false)
 	{

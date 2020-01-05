@@ -13,7 +13,8 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	struct mapa mapa_a_cargar;
 	struct punto punto_auxiliar;
 	char linea_leida[200];
-	bool nombre_ok, num_segmentos_ok, modo_giro_mapa_ok, punto_giro_ok, angulo_max_ok, pos_inicial_ok, gravedad_ok, imagen_moneda_ok, imagen_fondo_ok;
+	bool nombre_ok, num_segmentos_ok, modo_giro_mapa_ok, punto_giro_ok, angulo_max_ok, pos_inicial_ok, gravedad_ok, imagen_moneda_ok, imagen_fondo_ok; 
+	bool fondo_giratorio_ok, imagen_fondo_giratorio_ok, pos_fondo_giratorio_ok, centro_giro_fondo_giratorio_ok ;
 	bool segmento_ok[LIMITE_SEGMENTOS];
 	bool vector_segmentos_inicializado =false;
 	FILE *archivo;
@@ -147,7 +148,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				{
 					imagen_moneda_ok = true;
 					#ifdef DEBUG_INFO
-					printf("Linea %d, imagen_moneda=%f\n", linea, mapa_a_cargar.RutaImagenMoneda );
+					printf("Linea %d, imagen_moneda=%s\n", linea, mapa_a_cargar.RutaImagenMoneda );
 					#endif
 				}
 				else
@@ -162,7 +163,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				{
 					imagen_fondo_ok = true;
 					#ifdef DEBUG_INFO
-					printf("Linea %d, imagen_fondo=%f\n", linea, mapa_a_cargar.RutaImagenFondo );
+					printf("Linea %d, imagen_fondo=%s\n", linea, mapa_a_cargar.RutaImagenFondo );
 					#endif
 				}
 				else
@@ -209,6 +210,92 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 
 				}
 			}
+			else if (strstr(linea_leida, "fondo_giratorio") != NULL )
+			{
+				int dato_leido;
+				if ( sscanf(linea_leida, "fondo_giratorio=%d", &dato_leido ) == 1 )
+				{
+					switch (dato_leido)
+					{
+						case 0:
+							mapa_a_cargar.HayFondoGiratorio = false;
+							fondo_giratorio_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Linea %d, fondo_giratorio=false \n", linea);
+							#endif
+							break;
+						case 1:
+							mapa_a_cargar.HayFondoGiratorio = true;
+							fondo_giratorio_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Linea %d, fondo_giratorio=true \n", linea);
+							#endif
+							break;
+						default:
+							// Valor no válido, se toma el valor por defecto
+							fondo_giratorio_ok = false;
+							#ifdef DEBUG_INFO
+							printf("Linea %d, fondo_giratorio tiene un valor no permitido. \n", linea);
+							#endif
+							break;
+					}
+				}
+			}
+			else if (strstr(linea_leida, "imagen_fnd_giratorio") != NULL )
+			{
+				if ( sscanf(linea_leida, "imagen_fnd_giratorio=%s", mapa_a_cargar.RutaImagenFondoGiratorio ) == 1 )
+				{
+					imagen_fondo_giratorio_ok = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, imagen_fnd_giratorio=%s\n", linea, mapa_a_cargar.RutaImagenFondoGiratorio );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, imagen_fnd_giratorio --> No se han podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
+			else if (strstr(linea_leida, "pos_fnd_giratorio") != NULL )
+			{	
+				printf("Aqui llega\n");
+				if ( sscanf(linea_leida, "pos_fnd_giratorio=((%d,%d),(%d,%d))", 	&(mapa_a_cargar.Pos_x_izquierda_fondo_giratorio),
+													&(mapa_a_cargar.Pos_y_arriba_fondo_giratorio),
+													&(mapa_a_cargar.Pos_x_derecha_fondo_giratorio),
+													&(mapa_a_cargar.Pos_y_abajo_fondo_giratorio)           ) == 4 )
+				{
+					pos_fondo_giratorio_ok = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, pos_fnd_giratorio --> (%d, y=%d), (%d, %d) \n", 	linea, 
+																mapa_a_cargar.Pos_x_izquierda_fondo_giratorio,
+																mapa_a_cargar.Pos_y_arriba_fondo_giratorio,
+																mapa_a_cargar.Pos_x_derecha_fondo_giratorio,
+																mapa_a_cargar.Pos_y_abajo_fondo_giratorio );
+
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, pos_fnd_giratorio --> No se han podido leer todos los valores.\n", linea);
+					exit(-1);
+				}
+			}
+			else if (strstr(linea_leida, "centro_giro_fnd_gir") != NULL )
+			{
+				printf("Aqui tb llega\n");
+				if ( sscanf(linea_leida, "centro_giro_fnd_gir=(%lf,%lf)", &(mapa_a_cargar.CentroGiroFondoGiratorio.x), &(mapa_a_cargar.CentroGiroFondoGiratorio.y) ) == 2 )
+				{
+					centro_giro_fondo_giratorio_ok = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, centro_giro_fnd_gir --> x=%f, y=%f \n", linea, mapa_a_cargar.CentroGiroFondoGiratorio.x, mapa_a_cargar.CentroGiroFondoGiratorio.y );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, centro_giro_fnd_gir --> No se han podido leer todos los valores.\n", linea);
+					exit(-1);
+				}
+			}
 			else
 			{
 				printf("Linea %d, expresion no reconocida, se ignora.\n", linea);
@@ -226,14 +313,25 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	if (num_segmentos_ok == false) 		printf("Falta el número de segmentos.\n");	
 	if (modo_giro_mapa_ok == false) 	printf("Falta el modo de giro.\n");
 	if (mapa_a_cargar.TipoGiro == punto_fijo &&  punto_giro_ok == false)
-					 	printf("Falta el punto de giro.\n");	
+					 	printf("Falta el punto de giro (y el mapa gira alrededor de un punto fijo).\n");	
 	if (angulo_max_ok == false) 		printf("Falta el angulo máximo.\n");
 	if (pos_inicial_ok == false) 		printf("Falta el la posición inicial.\n");
 	if (gravedad_ok == false) 		printf("Falta la gravedad.\n");
 	if (imagen_moneda_ok == false)		printf("Falta el la ruta de la imagen de la moneda.\n");
 	if (imagen_fondo_ok == false)		printf("Falta el la ruta de la imagen del fondo.\n");
 
-	if (nombre_ok==false || num_segmentos_ok==false || modo_giro_mapa_ok==false || punto_giro_ok==false || angulo_max_ok==false || pos_inicial_ok==false || gravedad_ok==false || imagen_moneda_ok==false || imagen_fondo_ok==false)
+	if (fondo_giratorio_ok == false )	printf("Falta especificar si hay o no un fondo giratorio.\n");
+	if (mapa_a_cargar.HayFondoGiratorio == true && imagen_fondo_giratorio_ok == false )
+						printf("Falta el la ruta de la imagen del fondo giratorio (y hay fondo giratorio).\n");
+	if (mapa_a_cargar.HayFondoGiratorio == true && pos_fondo_giratorio_ok == false )
+						printf("Falta la posición del fondo giratorio (y hay fondo giratorio).\n");
+	if (mapa_a_cargar.HayFondoGiratorio == true && centro_giro_fondo_giratorio_ok == false )
+						printf("Falta la posición del centro de giro del fondo giratorio (y hay fondo giratorio).\n");
+
+
+
+	if (nombre_ok==false || num_segmentos_ok==false || modo_giro_mapa_ok==false || (mapa_a_cargar.TipoGiro == punto_fijo && punto_giro_ok==false ) || angulo_max_ok==false || pos_inicial_ok==false || gravedad_ok==false || imagen_moneda_ok==false || imagen_fondo_ok==false || 
+		fondo_giratorio_ok==false || (mapa_a_cargar.HayFondoGiratorio == true && imagen_fondo_giratorio_ok == false) || (mapa_a_cargar.HayFondoGiratorio == true && pos_fondo_giratorio_ok == false ) || (mapa_a_cargar.HayFondoGiratorio == true && centro_giro_fondo_giratorio_ok == false ) )
 	{
 		printf("Archivo de mapa incompleto\n");
 		exit(-1);
