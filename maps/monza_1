@@ -22,10 +22,12 @@ pos_inicial_moneda=(530,0)
 gravedad=1000
 
 # Ruta imagen de la moneda
-imagen_moneda=images/moneda4.png
+imagen_moneda=images/moneda3.png
 
 # Ruta imagen del fondo
-imagen_fondo=images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg
+#imagen_fondo=images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg
+imagen_fondo=images/red_white_flag_bg.png
+
 
 #Segmentos
 # Nivel Salida
@@ -157,3 +159,19 @@ segmento[40]=((-5000,1000),(5000,1000),2)
 #segmento[]=((,),(,),0)
 #segmento[]=((,),(,),0)
 #segmento[]=((,),(,),0)
+
+
+# Fondo giratorio
+fondo_giratorio=1
+
+#imagen_fnd_giratorio=images/fondo_gira_monza.jpg
+#pos_fnd_giratorio=((0,0),(800,739))
+#centro_giro_fnd_gir=(416,355)
+
+
+imagen_fnd_giratorio=images/fondo_gira_monza_2.png
+pos_fnd_giratorio=((0,-64),(829,758))
+centro_giro_fnd_gir=(416,419)
+
+
+
