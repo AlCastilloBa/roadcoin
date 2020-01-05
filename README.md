@@ -11,7 +11,15 @@ The mazes are composed of a set of line segments. Normally these segments will b
 The maze can be rotated using the keyboard, a mouse or a joystick.
 This program uses the SDL2 library, and no additional libraries or engines. Everithing is implemented using simple vector operations and simple mechanics equations.
 
+The following libraries are needed:
+* SDL2
+* SDL2 image
+* SDL2 ttf
+* SDL2 mixer
+
 Currently compiles for GNU/Linux (using gcc), and for Windows (using MinGW).
+* To compile for GNU/Linux with gcc, use `make`.
+* To compile for Windows with MinGW, use `mingw32-make.exe -f ./Makefile_windows_minGW`, but check "include" and "lib" paths first. Additionally, an "exe" is included (remember SDL2, SDL2image, SDL2ttf, SDL2mixer dll libraries are needed).
 
 ## Current state
 Work in progress. The basic game physics have been implemented. It is minimally playable, but a lot of features are still to be programmed.
