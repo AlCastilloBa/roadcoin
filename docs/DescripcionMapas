@@ -47,8 +47,10 @@ punto_giro=(416,355)
 
 # [ES] Angulo maximo (en grados): limites de giro del mapa (angulo maximo y angulo minimo con el signo contrario)
 # # Nota: el origen es arriba. Nota: la unidad son grados
+# # Nota2: Si se especifica un angulo máximo de 0 grados, entonces se entiende que el mapa puede girar libremente (no hay limite de angulo).
 # [EN] Maximum rotating angle (in degrees): map rotation limit (maximum angle, and minimum angle with opposite sign)
 # # Note: 0 deg means up. Unit are degrees.
+# # Note2: If an 0 degrees is specified, then the map will rotate freely (no angle limits)
 angulo_max=45
 
 
@@ -121,6 +123,14 @@ pos_fnd_giratorio=((0,0),(800,739))
 # Estructura: centro_giro_fnd_gir=(x coord,y coord)
 centro_giro_fnd_gir=(416,355)
 
+
+# [ES] Parametro opcional, para aplicar un factor de escala al mapa completo.
+# Multiplica todas las coordenadas (segmentos, posiciones inciales, puntos de giro, etc) por un factor.
+# Es util cuando se diseñan mapas a partir de imagenes.
+# [EN] Optional parameter, useful to apply a scale factor to the complete map.
+# All coordinates are multiplied by a scale (segments, start position, totation centers, etc).
+# This is useful when designing maps with images.
+escala=3
 
 
 # Nota: ara hacer esto bien, esto pide un formato XML con etiquetas

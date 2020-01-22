@@ -32,6 +32,7 @@ Objetivos del proyecto para la version v0.1-beta.1:
           forma que no se calculen las fuerzas normales en los extremos.
 
 Objetivos para siguientes versiones:
+[      ] Evitar que, si la velocidad de la moneda es alta, se pueda atravesar un segmento.
 [      ] Menú elegante.
 [      ] Pasar mapas de ficheros guarros a ficheros XML elegantes.
 [      ] Joystick.
@@ -56,4 +57,6 @@ Objetivos para siguientes versiones:
 [      ] Eliminar botes molestos que quitan realismo.
 [      ] En el mapa, especificar textos en segmentos, que sean mostrados al tocarlos.
 [      ] En ciertas ocasiones, la moneda rebota en el final de un segmento, cuando debería caer. Investigar auq lo provoca.
+[      ] La deteccion de adyacencias provoca problemas en el caso de que el angulo sea 90º, 
+         se queda enganchada en lugar de caer en precipicios en angulo recto.
 .... ETC

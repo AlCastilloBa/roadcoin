@@ -29,5 +29,12 @@ v0.1-beta.1
 - Map can include a rotating background.
 - Added a simple camera management. Camera can be fixed, moved by the user, or follow the coin.
 
+v0.1-beta.2
+- Added infinite rotation possibility (when angle limit = 0).
+- Added scale factor in map.
+- Added a provisional (and parsimonious) menu to choose maps from.
+- Added a new rotating type behaviour: rotate everything (including coin around the origin). Note: rotating around the coin seems unstable when angles are near 90º (bad design), and the new mode seems to solve the problem
+.
+
 
 
