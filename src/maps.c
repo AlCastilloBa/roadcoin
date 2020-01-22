@@ -13,8 +13,10 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	struct mapa mapa_a_cargar;
 	struct punto punto_auxiliar;
 	char linea_leida[200];
-	bool nombre_ok, num_segmentos_ok, modo_giro_mapa_ok, punto_giro_ok, angulo_max_ok, pos_inicial_ok, gravedad_ok, imagen_moneda_ok, imagen_fondo_ok; 
-	bool fondo_giratorio_ok, imagen_fondo_giratorio_ok, pos_fondo_giratorio_ok, centro_giro_fondo_giratorio_ok ;
+	bool nombre_ok=false, num_segmentos_ok=false, modo_giro_mapa_ok=false, punto_giro_ok=false, angulo_max_ok=false, pos_inicial_ok=false, gravedad_ok=false, imagen_moneda_ok=false, imagen_fondo_ok=false; 
+	bool escala_presente=false;
+	float escala;
+	bool fondo_giratorio_ok=false, imagen_fondo_giratorio_ok=false, pos_fondo_giratorio_ok=false, centro_giro_fondo_giratorio_ok=false ;
 	bool segmento_ok[LIMITE_SEGMENTOS];
 	bool vector_segmentos_inicializado =false;
 	FILE *archivo;
@@ -296,6 +298,24 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 					exit(-1);
 				}
 			}
+			else if (strstr(linea_leida, "escala") != NULL )
+			{
+				if ( sscanf(linea_leida, "escala=%f", &escala ) == 1 )
+				{
+					escala_presente = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, escala=%f\n", linea, escala );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, escala --> No se ha podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
+
+
+
 			else
 			{
 				printf("Linea %d, expresion no reconocida, se ignora.\n", linea);
@@ -390,6 +410,33 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				#endif
 			}		
 		}
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// Aplicación de escala al mapa
+	if ( escala_presente )
+	{
+		// Segmentos
+		for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
+		{
+			mapa_a_cargar.Mapa[segmento_actual].start.x = mapa_a_cargar.Mapa[segmento_actual].start.x * escala;
+			mapa_a_cargar.Mapa[segmento_actual].start.y = mapa_a_cargar.Mapa[segmento_actual].start.y * escala;
+			mapa_a_cargar.Mapa[segmento_actual].end.x = mapa_a_cargar.Mapa[segmento_actual].end.x * escala;
+			mapa_a_cargar.Mapa[segmento_actual].end.y = mapa_a_cargar.Mapa[segmento_actual].end.y * escala;
+		}
+		// Posicion inicial moneda
+		mapa_a_cargar.PuntoInicialMoneda.x = mapa_a_cargar.PuntoInicialMoneda.x * escala;
+		mapa_a_cargar.PuntoInicialMoneda.y = mapa_a_cargar.PuntoInicialMoneda.y * escala;
+		// Centro de giro
+		mapa_a_cargar.PuntoGiroFijo.x = mapa_a_cargar.PuntoGiroFijo.x * escala;
+		mapa_a_cargar.PuntoGiroFijo.y = mapa_a_cargar.PuntoGiroFijo.y * escala;
+		// Fondo giratorio
+		mapa_a_cargar.CentroGiroFondoGiratorio.x = mapa_a_cargar.CentroGiroFondoGiratorio.x * escala;
+		mapa_a_cargar.CentroGiroFondoGiratorio.y = mapa_a_cargar.CentroGiroFondoGiratorio.y * escala;
+		mapa_a_cargar.Pos_x_izquierda_fondo_giratorio = mapa_a_cargar.Pos_x_izquierda_fondo_giratorio * escala;
+		mapa_a_cargar.Pos_y_arriba_fondo_giratorio = mapa_a_cargar.Pos_y_arriba_fondo_giratorio * escala;
+		mapa_a_cargar.Pos_x_derecha_fondo_giratorio = mapa_a_cargar.Pos_x_derecha_fondo_giratorio * escala;
+		mapa_a_cargar.Pos_y_abajo_fondo_giratorio = mapa_a_cargar.Pos_y_abajo_fondo_giratorio * escala;
 	}
 
 	#ifdef DEBUG_INFO

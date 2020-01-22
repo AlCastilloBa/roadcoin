@@ -415,18 +415,6 @@ int main( int argc, char* args[] )
 	bucle_principal_menu_principal();
 
 	/////////////////
-
-
-/*
-
-	#ifdef DEBUG_INFO
-	printf("Comenzando bucle principal del juego...\n");
-	#endif
-	bucle_principal_juego();
-
-*/
-
-
 	// Liberar memoria del menu
 	liberar_memoria_menu_principal( NUM_TOTAL_PANTALLAS_MENU );
 
@@ -447,7 +435,7 @@ int main( int argc, char* args[] )
 
 
 
-enum resultado bucle_principal_juego( void )
+enum resultado bucle_principal_juego( char* ruta_mapa )
 {
 	 
 	bool quit = false;		//Main loop flag
@@ -464,7 +452,7 @@ enum resultado bucle_principal_juego( void )
 	float framerate_deseado = 30;
 	int segmento_actual;
 	float angulo, angulo_anterior;
-	//float mouse_sensibility = 0.1f;
+	bool existe_limite_angulo;
 
 	float angulo_rotacion_moneda = 0.0f;	// En radianes
 	float vel_angular_moneda = 0.0f;	// En rad/s
@@ -477,30 +465,26 @@ enum resultado bucle_principal_juego( void )
 	struct mapa mapa_original;		// Mapa cargado desde archivo
 	struct segmento* segmentos_girados;
 
-	//bool* interferencia_segmento;		// Vector que indica si hay interferencia entre moneda y segmento
 	enum tipo_interseccion_circulo_segmento* tipo_interferencia_segmento;
 
 	struct vector_fuerza gravedad;	
 	struct vector_fuerza* fuerzas_normales_segmentos;	// Vector que guarda las fuerzas normales de apoyo sobre segmentos en el fotograma actual
 
-	//(TODO PRUEBAS, BORRAR!!!)
-	// struct posicion_camara pos_pant_moneda;			// Posicion de centro de la moneda (pixeles de la pantalla)
 	struct punto pos_pant_moneda;			// Posicion de centro de la moneda (pixeles de la pantalla)
 	enum modo_camara ModoCamara;
 	struct segmento* pos_camara_segmentos_girados;
 	int pos_cam_fondo_giratorio_izquierda, pos_cam_fondo_giratorio_arriba, pos_cam_fondo_giratorio_derecha, pos_cam_fondo_giratorio_abajo;
 	int desplazamiento_camara_usuario_x = 0;
 	int desplazamiento_camara_usuario_y = 0; 
+	struct punto punto_origen={0, 0};
 
 
 	SDL_Rect renderQuad;		// Rectangulo de SDL para indicar la posicion de los objetos a renderizar
 
 	//////////////////////////////////////////////////////////////////////////////////////////
-
 	//Leer mapa
-	//mapa_original = CargarMapaDesdeArchivo( "maps/test_map" );
-	//mapa_original = CargarMapaDesdeArchivo( "maps/test_map_2" );
-	mapa_original = CargarMapaDesdeArchivo( "maps/monza_1" );
+	mapa_original = CargarMapaDesdeArchivo( ruta_mapa );
+
 	// DATOS INCIALES, A BORRAR CUANDO SE LEA EL FICHERO
 	pos_real_moneda.x = mapa_original.PuntoInicialMoneda.x;			//Pixeles
 	pos_real_moneda.y = mapa_original.PuntoInicialMoneda.y;			//Pixeles
@@ -512,6 +496,17 @@ enum resultado bucle_principal_juego( void )
 	gravedad.fy = mapa_original.Gravedad;					//Pixeles/segundo²
 
 	angulo = 0; angulo_anterior = 0;
+
+
+	// Nuevo 14/1/2020, todavía no probado
+	if ( mapa_original.AnguloMax < 0.01f )
+	{
+		existe_limite_angulo = false;		// El mapa puede girar sin limite de angulo --- The map can rotate without an maximum angle limit
+	}
+	else
+	{
+		existe_limite_angulo = true;		// Existe un limite de angulo --- An maximum angle limit exists
+	}
 
 	// Reserva memoria dinámica
 	// Reservamos memoria para los segmentos girados
@@ -568,7 +563,7 @@ enum resultado bucle_principal_juego( void )
 	{
 		ModoCamara = camara_fija_en_origen;
 	}
-	else if ( mapa_original.TipoGiro == moneda )
+	else if ( mapa_original.TipoGiro == moneda || mapa_original.TipoGiro == origen )
 	{
 		ModoCamara = camara_sigue_moneda;
 	}
@@ -591,7 +586,6 @@ enum resultado bucle_principal_juego( void )
 
 
 		// Calcular tiempo para el movimiento
-		//SDL_Delay (1000); --> Para pruebas, borrar
 		contador_frames++;
 		lastTime = currentTime;
 		currentTime = SDL_GetTicks();
@@ -718,16 +712,26 @@ enum resultado bucle_principal_juego( void )
 			}
 
 		}
+		///////////////////////////////////////////////////////////////////////////
+		// Limites de angulos --- 14/1/2020, todavía no probado
+		if (existe_limite_angulo )
+		{
+			if ( angulo < -(mapa_original.AnguloMax)  )
+			{
+				angulo = -(mapa_original.AnguloMax);
+			}
+			if (angulo > mapa_original.AnguloMax )
+			{
+				angulo = mapa_original.AnguloMax;
+			}
+		}
+		else	/* AnguloMax = 0, se entiende sin limites de giro*/
+		{	
+			// Devuelve el angulo al intervalo 0-360º -- Converts angle to 0-360deg range
+			angulo = WrapAngle_0_360( angulo );
+		}
 
-		// Limites de angulos
-		if ( angulo < -(mapa_original.AnguloMax)  )
-		{
-			angulo = -(mapa_original.AnguloMax);
-		}
-		if (angulo > mapa_original.AnguloMax )
-		{
-			angulo = mapa_original.AnguloMax;
-		}
+		//////////////////////////////////////////////////////////////////////////////
 
 		if ( !pause && !intro_mapa && !win && !lose )
 		{
@@ -750,6 +754,14 @@ enum resultado bucle_principal_juego( void )
 					break;
 				case moneda:
 					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, pos_real_moneda, mapa_original.NumeroSegmentos, angulo );
+					break;
+				case origen:
+					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, punto_origen, mapa_original.NumeroSegmentos, angulo );
+					// Arrastramos tambien a la moneda en el giro
+					if ( angulo != angulo_anterior )
+					{
+						pos_real_moneda = GiraPunto ( punto_origen, pos_real_moneda, angulo-angulo_anterior );
+					}
 					break;
 				default:
 					printf("Al proceder a girar el mapa, error de programacion o error de concepto\n");
@@ -866,6 +878,9 @@ enum resultado bucle_principal_juego( void )
 								printf("ERROR: TODAVIA NO IMPLEMENTADO\n");
 								exit(-1);
 								break;
+							case origen:
+								// En este caso, no es necesario hacer nada.
+								break;
 							default:
 								printf("Al proceder a calcular efectos del giro sobre moneda, error de programacion o error de concepto\n");
 								exit(-1);
@@ -924,7 +939,7 @@ enum resultado bucle_principal_juego( void )
 					printf("Interferencia tipo %d con segmento %d. \n", tipo_interferencia_segmento[segmento_actual],segmento_actual); 
 					printf("Angulo Segmento: %f \n", angulo_segmento_actual*360/(2*3.1416));
 					printf("Velocidad tras anulacion: vx=%f, vy=%f \n", velocidad_real_moneda.vx, velocidad_real_moneda.vy );
-					printf("Fx = %f, Fy = %f \n", fuerzas_normales_segmentos[segmento_actual].fx, fuerzas_normales_segmentos[segmento_actual].fy );
+					printf("Fuerzas normales: Fx = %f, Fy = %f \n", fuerzas_normales_segmentos[segmento_actual].fx, fuerzas_normales_segmentos[segmento_actual].fy );
 					#endif
 				}
 				else
@@ -948,8 +963,12 @@ enum resultado bucle_principal_juego( void )
 
 			angulo_anterior = angulo;
 
+
+			#ifdef DEBUG_INFO
+			printf("Velocidad actual: vx=%f, vy=%f\n", velocidad_real_moneda.vx, velocidad_real_moneda.vy);		
+			#endif
 			/////////////////////////////////////////////////////////////////////////////////////
-		} // If (!pause) 
+		} // If (!pause && !intro_mapa && !win && !lose ) 
 
 		// Convertimos posiciones "reales" en posiciones de la pantalla
 		// pos_pant_moneda = CalculaCamara(pos_real_moneda ); // TODO PRUEBAS , BORRAR
@@ -971,36 +990,21 @@ enum resultado bucle_principal_juego( void )
 		//Dibuja fondo --- Draws background
 		SDL_RenderCopy( gRenderer, gTexturaFondo, NULL, NULL );		//Imagen estirada a toda la ventana --- Image stretched to fit entire screen
 
-
-
-
-
 		// Dibuja fondo giratorio (si hubiese) --- Draws rotating background (in case it exists)
 		if ( mapa_original.HayFondoGiratorio && opciones_juego.textured_objects )
 		{
 			SDL_Point centro_giro_fondo_giratorio;
-
-			/*renderQuad.x = mapa_original.Pos_x_izquierda_fondo_giratorio;										// Coord X de esquina superior izquierda
-			renderQuad.y = mapa_original.Pos_y_arriba_fondo_giratorio;										// Coord Y de esquina superior izquierda
-			renderQuad.w = mapa_original.Pos_x_derecha_fondo_giratorio - mapa_original.Pos_x_izquierda_fondo_giratorio;				// Ancho
-			renderQuad.h = mapa_original.Pos_y_abajo_fondo_giratorio - mapa_original.Pos_y_arriba_fondo_giratorio;			*/ /*TODO PRUEBAS, BORRAR */
-
 
 			renderQuad.x = pos_cam_fondo_giratorio_izquierda;										// Coord X de esquina superior izquierda
 			renderQuad.y = pos_cam_fondo_giratorio_arriba;										// Coord Y de esquina superior izquierda
 			renderQuad.w = pos_cam_fondo_giratorio_derecha - pos_cam_fondo_giratorio_izquierda;					// Ancho
 			renderQuad.h = pos_cam_fondo_giratorio_abajo - pos_cam_fondo_giratorio_arriba;						// Alto
 
-			centro_giro_fondo_giratorio.x = /*416;*/mapa_original.CentroGiroFondoGiratorio.x;
-			centro_giro_fondo_giratorio.y = /*355;*/mapa_original.CentroGiroFondoGiratorio.y;
+			centro_giro_fondo_giratorio.x = mapa_original.CentroGiroFondoGiratorio.x;
+			centro_giro_fondo_giratorio.y = mapa_original.CentroGiroFondoGiratorio.y;
 
 			SDL_RenderCopyEx( gRenderer, gTexturaFondoGiratorio, NULL, &renderQuad, angulo, &centro_giro_fondo_giratorio, SDL_FLIP_NONE );
 		}
-
-
-
-
-
 
 		//Render texture to screen - Dibuja moneda
 		//Crea un rectangulo en la posicion desesada de la moneda // Nota: SDL_Rect es un struct
@@ -1021,14 +1025,7 @@ enum resultado bucle_principal_juego( void )
 				SDL_Point centro_giro_textura_segmento;
 
 				// Calculamos el angulo
-				/*angulo_segmento_actual = AnguloSegmento( segmentos_girados[segmento_actual] );*/ /* TODO PRUEBAS, BORRAR) */
 				angulo_segmento_actual = AnguloSegmento( pos_camara_segmentos_girados[segmento_actual] );
-
-				// Posicionamos el rectangulo, sin giro, en posición horizontal
-				/*renderQuad.x = segmentos_girados[segmento_actual].start.x;		// Coord X de esquina superior izquierda
-				renderQuad.y = segmentos_girados[segmento_actual].start.y - gDimTexturaSegmentoY/2;		// Coord Y de esquina superior izquierda
-				renderQuad.w = LongitudVector(segmentos_girados[segmento_actual].start ,segmentos_girados[segmento_actual].end );				// Ancho
-				renderQuad.h = gDimTexturaSegmentoY;				// Alto*/  /* TODO PRUEBAS, BORRAR */
 
 				renderQuad.x = pos_camara_segmentos_girados[segmento_actual].start.x;		// Coord X de esquina superior izquierda
 				renderQuad.y = pos_camara_segmentos_girados[segmento_actual].start.y - gDimTexturaSegmentoY/2;		// Coord Y de esquina superior izquierda
@@ -1047,15 +1044,9 @@ enum resultado bucle_principal_juego( void )
 		if (opciones_juego.wireframe )
 		{
 			SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-			//SDL_RenderDrawLine( gRenderer, 0, GAME_SCREEN_HEIGHT / 2, GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT / 2 );
+
 			for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
 			{
-				/*SDL_RenderDrawLine( 	gRenderer, 
-							mapa_original.Mapa[segmento_actual].start.x ,
-							mapa_original.Mapa[segmento_actual].start.y , 
-							mapa_original.Mapa[segmento_actual].end.x , 
-							mapa_original.Mapa[segmento_actual].end.y );	*/ // Sin giros
-
 				switch ( mapa_original.Mapa[segmento_actual].type ) // Seleccionar color segun tipo de segmento
 				{
 					case pared:
@@ -1091,16 +1082,12 @@ enum resultado bucle_principal_juego( void )
 						SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );	// Blanco
 						break;
 				}
-				/* SDL_RenderDrawLine( 	gRenderer, 
-							segmentos_girados[segmento_actual].start.x ,
-							segmentos_girados[segmento_actual].start.y , 
-							segmentos_girados[segmento_actual].end.x , 
-							segmentos_girados[segmento_actual].end.y ); */ /* PRUEBAS TODO, BORRAR */
+
 				SDL_RenderDrawLine( 	gRenderer, 
 							pos_camara_segmentos_girados[segmento_actual].start.x ,
 							pos_camara_segmentos_girados[segmento_actual].start.y , 
 							pos_camara_segmentos_girados[segmento_actual].end.x , 
-							pos_camara_segmentos_girados[segmento_actual].end.y );  /* PRUEBAS TODO, BORRAR */
+							pos_camara_segmentos_girados[segmento_actual].end.y );
 			}
 		}
 		// Dibuja textos de intro del mapa

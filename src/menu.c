@@ -445,9 +445,80 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#endif
 	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_video].botones_pantalla[3]) , 3, boton_opcvid_atras, boton_pulsar, "      Atras      \0" , 2, 0  ) )
 	{
-		printf( "Error al inicializar boton 2 en menu opciones de video.\n" ); 
+		printf( "Error al inicializar boton 3 en menu opciones de video.\n" ); 
 		success = false;
 	}
+
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla menu provisional de seleccion de niveles
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla seleccion provisional de seleccion de niveles
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos de pantalla opciones de video...\n");
+	#endif
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_niveles_provisional]), menu_niveles_provisional, "Seleccion provisional nivel\0", "images/blob_gradient.jpeg", 6 ) )
+	{
+		printf( "Error al inicializar pantalla menu provisional seleccion nivel.\n" ); 
+		success = false;
+	}
+
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 0 de pantalla menu provisional seleccion nivel...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[0]) , 0, boton_provisional_nivel_01, boton_pulsar, "    Monza        \0" , 5, 1  ) )
+	{
+		printf( "Error al inicializar boton 0 en menu provisional seleccion nivel.\n" ); 
+		success = false;
+	}
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 1 de pantalla menu provisional seleccion nivel...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[1]) , 1, boton_provisional_nivel_02, boton_pulsar, "Laberinto 01     \0" , 0, 2  ) )
+	{
+		printf( "Error al inicializar boton 1 en menu provisional seleccion nivel.\n" ); 
+		success = false;
+	}
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 2 de pantalla menu provisional seleccion nivel...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[2]) , 2, boton_provisional_nivel_03, boton_pulsar, "Nivel 3           \0" , 1, 3  ) )
+	{
+		printf( "Error al inicializar boton 2 en menu provisional seleccion nivel.\n" ); 
+		success = false;
+	}
+	//----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 3 de pantalla menu provisional seleccion nivel...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[3]) , 3, boton_provisional_nivel_04, boton_pulsar, "Nivel 4           \0" , 2, 4  ) )
+	{
+		printf( "Error al inicializar boton 3 en menu provisional seleccion nivel.\n" ); 
+		success = false;
+	}
+	//----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 4 de pantalla menu provisional seleccion nivel...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[4]) , 4, boton_provisional_nivel_05, boton_pulsar, "Nivel 4           \0" , 3, 5  ) )
+	{
+		printf( "Error al inicializar boton 4 en menu provisional seleccion nivel.\n" ); 
+		success = false;
+	}
+	//----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 5 de pantalla menu provisional seleccion nivel...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[5]) , 5, boton_nivel_prov_atras, boton_pulsar, "      Atras      \0" , 4, 0  ) )
+	{
+		printf( "Error al inicializar boton 5 en menu provisional seleccion nivel.\n" ); 
+		success = false;
+	}
+
 
 	return success;
 }
@@ -641,13 +712,53 @@ void bucle_principal_menu_principal( void )
 			{
 
 				case boton_jugar:
+					menu_activo = menu_niveles_provisional;
+					boton_seleccionado = 0;
+					break;
+				case boton_provisional_nivel_01:
 					#ifdef DEBUG_INFO
+					printf("Comenzando bucle principal del juego...\n");
+					#endif
+					bucle_principal_juego( "maps/monza_1" );
+					//Activar variables ratón una vez el juego ha terminado
+					SDL_ShowCursor(SDL_ENABLE);
+					SDL_SetRelativeMouseMode(SDL_FALSE);
+					break;
+				case boton_provisional_nivel_02:
+					#ifdef DEBUG_INFO
+					printf("Comenzando bucle principal del juego...\n");
+					#endif
+					bucle_principal_juego( "maps/laberinto01" );
+					//Activar variables ratón una vez el juego ha terminado
+					SDL_ShowCursor(SDL_ENABLE);
+					SDL_SetRelativeMouseMode(SDL_FALSE);
+					break;
+				case boton_provisional_nivel_03:
+					/*#ifdef DEBUG_INFO
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
 					bucle_principal_juego();
 					//Activar variables ratón una vez el juego ha terminado
 					SDL_ShowCursor(SDL_ENABLE);
-					SDL_SetRelativeMouseMode(SDL_FALSE);
+					SDL_SetRelativeMouseMode(SDL_FALSE);*/
+					break;
+				case boton_provisional_nivel_04:
+					/*#ifdef DEBUG_INFO
+					printf("Comenzando bucle principal del juego...\n");
+					#endif
+					bucle_principal_juego();
+					//Activar variables ratón una vez el juego ha terminado
+					SDL_ShowCursor(SDL_ENABLE);
+					SDL_SetRelativeMouseMode(SDL_FALSE);*/
+					break;
+				case boton_provisional_nivel_05:
+					/*#ifdef DEBUG_INFO
+					printf("Comenzando bucle principal del juego...\n");
+					#endif
+					bucle_principal_juego();
+					//Activar variables ratón una vez el juego ha terminado
+					SDL_ShowCursor(SDL_ENABLE);
+					SDL_SetRelativeMouseMode(SDL_FALSE);*/
 					break;
 				case boton_salir:
 					quit = true;
@@ -658,6 +769,7 @@ void bucle_principal_menu_principal( void )
 					boton_seleccionado = 0;
 					break;
 				case boton_opc_atras:
+				case boton_nivel_prov_atras:
 					menu_activo = menu_principal;
 					boton_seleccionado = 0;
 					break;

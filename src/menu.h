@@ -9,6 +9,7 @@ enum pantalla_menu_principal
 	menu_principal,		// Incluye botones: jugar, opciones, creditos, salir
 	menu_jugar,		// Incluye botones: Campañas, Practicar
 	menu_campana,
+	menu_niveles_provisional,
 	menu_practicar,
 	menu_opciones,		// Incluye botones: Video, Sonido, Controles, Juego, Idioma, Atras
 	menu_creditos,
@@ -43,8 +44,11 @@ enum listado_botones
 	boton_fullscreen,	// Fullscreen toggle button
 	boton_wireframe,	// Wireframe toggle button
 	boton_textured_objects,	// Textured lines button
-	boton_opcvid_atras	// Go back
+	boton_opcvid_atras,	// Go back
 
+	// Menu seleccion niveles provisional
+	boton_provisional_nivel_01, boton_provisional_nivel_02, boton_provisional_nivel_03, boton_provisional_nivel_04, boton_provisional_nivel_05,
+	boton_nivel_prov_atras
 };
 
 enum tipo_boton

@@ -12,9 +12,10 @@ enum tipo_segmento
 
 enum tipo_giro
 {
-	camara,		// El mapa gira alrededor de la cámara
-	punto_fijo,	// El mapa gira alrededor de un punto fijo
-	moneda		// El mapa gira alrededor de la moneda
+	camara,		// (0) El mapa gira alrededor de la cámara
+	punto_fijo,	// (1) El mapa gira alrededor de un punto fijo
+	moneda,		// (2) El mapa gira alrededor de la moneda
+	origen		// (3) El mapa gira alrededor del origen, y arrastra a la moneda en su giro
 };
 
 // Punto en 2D
