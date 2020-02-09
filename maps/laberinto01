@@ -10,7 +10,7 @@ num_segmentos=46
 modo_giro_mapa=3
 
 # Posicion del punto de giro del mapa
-punto_giro=(140,160)
+# punto_giro=(140,160)
 
 # Angulo maximo (en grados)
 angulo_max=0
@@ -26,6 +26,9 @@ imagen_moneda=images/moneda5.png
 
 # Ruta imagen del fondo
 imagen_fondo=images/fondo_tablas_madera.jpg
+
+# Ruta de la musica
+ruta_musica=music/AncientPassageMysteriousSpookyGameMusicbyHeatleyBros.mp3
 
 # Fondo giratorio
 fondo_giratorio=0

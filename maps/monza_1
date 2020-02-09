@@ -24,6 +24,9 @@ gravedad=1000
 # Ruta imagen de la moneda
 imagen_moneda=images/moneda3.png
 
+# Ruta de la musica
+ruta_musica=music/WarpPortal_FastDreamyGameMusicbyHeatleyBros.mp3
+
 # Ruta imagen del fondo
 #imagen_fondo=images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg
 imagen_fondo=images/red_white_flag_bg.png
