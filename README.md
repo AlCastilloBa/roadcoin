@@ -42,6 +42,7 @@ KP<kbd>2</kbd>        | Move camera down
 KP<kbd>4</kbd>        | Move camera left
 KP<kbd>6</kbd>        | Move camera right
 
-
+## Additional information
+The music used in this project is temporary and only used for testing purposes. In order to avoid copyright issues, it is not uploaded. Feel free to use your own music.
 
 
