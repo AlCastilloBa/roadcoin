@@ -17,7 +17,7 @@
 
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
-//#define DEBUG_INFO
+// #define DEBUG_INFO
 
 //Screen dimension constants 
 const int INTRO_SCREEN_WIDTH = 500; 
@@ -54,6 +54,7 @@ SDL_Texture* gTextoVictoria = NULL;		// Victory text texture
 SDL_Texture* gTextoPierde = NULL;		// Lose text texture
 SDL_Texture* gTexturaSegmento = NULL;		// Line segment texture
 SDL_Texture* gTexturaFondoGiratorio = NULL;	// Rotating background texture
+SDL_Texture* gTexturaPinballBumper = NULL;	// Pinball bumper texture
 
 TTF_Font *gFuenteTextoJuego = NULL;
 SDL_Color gColorBlanco = { 255 , 255 , 255 }; 	// Blanco
@@ -76,6 +77,12 @@ struct opciones opciones_juego;
 // Variables globales menu (ver menu.c)
 struct pantalla_menu* pantallas_menu_principal;
 
+
+// Variables globales musica y sonido de juego
+Mix_Music *gMusicaJuego = NULL;
+Mix_Chunk *gSonidoGolpeMoneda = NULL;
+Mix_Chunk *gSonidoPinballBumper = NULL;
+
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -87,7 +94,7 @@ bool inicializar_intro()
 	int imgFlags = IMG_INIT_PNG; 		//Initialize PNG loading
 
 	//Initialize SDL (y joystick)
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )  //When there's an error, SDL_Init returns -1
+	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )  //When there's an error, SDL_Init returns -1
 	{ 
 		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() ); 
 		success = false;
@@ -113,7 +120,13 @@ bool inicializar_intro()
 
 
 	// Inicializa SDL_mixer
-	// PENDIENTE
+	//Initialize SDL_mixer
+	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
+	{
+		printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+
  
 	//Create window 
 	gIntroWindow = SDL_CreateWindow( 	"Intro", 
@@ -193,7 +206,8 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 				char* nombre_mapa,
 				char* descripcion_mapa,
 				bool HayFondoGiratorio,
-				char* ruta_imagen_fondo_giratorio ) 
+				char* ruta_imagen_fondo_giratorio,
+				char* ruta_musica ) 
 { 
 	// Esta función carga las texturas, sonidos, etc asociados al mapa que se va a jugar.
 	// This function loads textures, sounds, etc related to the currend map to be played.
@@ -267,6 +281,13 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 	//Cargar textura de texto de perder --- Load lose text texture
 	gTextoPierde = RenderizaTextoEnTextura("Pierdes una moneda", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
 
+	// Nuevo 9/1/2020
+	gTexturaPinballBumper = CargaTextura( "images/pinball_bumper.png" , NULL, NULL, false );
+	if( gTexturaPinballBumper == NULL ) 
+	{ 
+		printf( "Failed to load pinball bumper texture image!\n" ); 
+		success = false; 
+	} 
 
 	// NUEVO PRUEBAS 2/1/2020
 
@@ -288,6 +309,20 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 		} 
 	}
 
+	// Cargar musica y sonido
+	gMusicaJuego = Mix_LoadMUS( ruta_musica );
+	if( gMusicaJuego == NULL )
+	{
+	    printf( "Error al cargar la musica del juego. SDL_mixer Error: %s\n", Mix_GetError() );
+	    //success = false;
+	}
+	gSonidoPinballBumper = Mix_LoadWAV( "sound/pinball_bumper.wav" );
+	if( gSonidoPinballBumper == NULL )
+	{
+	    printf( "Error al cargar sonido pinball bumper. SDL_mixer Error: %s\n", Mix_GetError() );
+	    success = false;
+	}
+
 	return success;
 }
 
@@ -296,9 +331,12 @@ bool freeMainGameLoopMedia()
 {
 	// Esta función libera los sonidos, texturas, etc, asociados al mapa que se acaba de jugar
 	// This funcion frees sounds, textures, etc, related to the map that as been played
+	#ifdef DEBUG_INFO
+	printf("Liberando memoria de media del juego...\n");
+	#endif
+
 	//Free loaded image 
-	SDL_DestroyTexture( gTexturaMoneda ); 
-	gTexturaMoneda = NULL;
+	SDL_DestroyTexture( gTexturaMoneda );  gTexturaMoneda = NULL;
 	gDimMonedaX=0; gDimMonedaY=0; gRadioMoneda=0;
 	SDL_DestroyTexture( gTexturaFondo ); gTexturaFondo = NULL;
 	SDL_DestroyTexture( gTexturaPausa ); gTexturaPausa = NULL;
@@ -307,6 +345,10 @@ bool freeMainGameLoopMedia()
 	SDL_DestroyTexture( gIconoVictoria ); gIconoVictoria = NULL;
 	SDL_DestroyTexture( gIconoPierde ); gIconoPierde = NULL;
 	SDL_DestroyTexture( gTexturaPausa ); gTexturaPausa = NULL;
+	SDL_DestroyTexture( gTexturaPinballBumper ); gTexturaPinballBumper = NULL;
+	// Liberar musica y sonidos
+	Mix_FreeMusic( gMusicaJuego ); gMusicaJuego = NULL;
+	Mix_FreeChunk( gSonidoPinballBumper); gSonidoPinballBumper = NULL;
 }
 
 
@@ -341,6 +383,7 @@ bool close_program()
 	gRenderer = NULL;
 
 	//Quit SDL subsystems 
+	Mix_Quit();
 	IMG_Quit();
 	SDL_Quit(); 
 }
@@ -451,28 +494,34 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	float tiempo_imagen;	//Tiempo de cada imagen, en segundos
 	float framerate_deseado = 30;
 	int segmento_actual;
+	int bumper_actual;		// Nuevo 9/1/2020
 	float angulo, angulo_anterior;
 	bool existe_limite_angulo;
 
 	float angulo_rotacion_moneda = 0.0f;	// En radianes
 	float vel_angular_moneda = 0.0f;	// En rad/s
 
-	struct punto pos_real_moneda;			// Posicion de centro de la moneda (unidades del juego)
+	struct punto pos_real_moneda;			// Posicion de centro de la moneda (unidades del juego) --- Coin center position (on game units)
+	struct punto pos_real_moneda_anterior;		// Posicion del centro de la moneda, pero en el fotograma anterior --- Coin center position, on previous frame
 
 	struct vector_velocidad velocidad_real_moneda;
 	struct vector_aceleracion aceleracion_real_moneda;
 
 	struct mapa mapa_original;		// Mapa cargado desde archivo
 	struct segmento* segmentos_girados;
+	struct segmento* pos_camara_segmentos_girados;		// Posición en la pantalla de los segmentos girados
+
+	struct punto* centros_bumpers_girados;			// Vector de posiciones de los bumpers despues de giro --- Array of pinball bumper positions after map rotation
+	struct punto* pos_pant_centros_bumpers_girados;		// Vector de posiciones de los bumpers en la pantalla despues de giro --- Array of pinball bumper positions on screen after map rotatoin
 
 	enum tipo_interseccion_circulo_segmento* tipo_interferencia_segmento;
 
 	struct vector_fuerza gravedad;	
 	struct vector_fuerza* fuerzas_normales_segmentos;	// Vector que guarda las fuerzas normales de apoyo sobre segmentos en el fotograma actual
 
-	struct punto pos_pant_moneda;			// Posicion de centro de la moneda (pixeles de la pantalla)
+	struct punto pos_pant_moneda;			// Posicion de centro de la moneda en la pantalla (pixeles de la pantalla) --- Coin center position on screen (on screen pixels)
 	enum modo_camara ModoCamara;
-	struct segmento* pos_camara_segmentos_girados;
+
 	int pos_cam_fondo_giratorio_izquierda, pos_cam_fondo_giratorio_arriba, pos_cam_fondo_giratorio_derecha, pos_cam_fondo_giratorio_abajo;
 	int desplazamiento_camara_usuario_x = 0;
 	int desplazamiento_camara_usuario_y = 0; 
@@ -488,6 +537,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	// DATOS INCIALES, A BORRAR CUANDO SE LEA EL FICHERO
 	pos_real_moneda.x = mapa_original.PuntoInicialMoneda.x;			//Pixeles
 	pos_real_moneda.y = mapa_original.PuntoInicialMoneda.y;			//Pixeles
+	pos_real_moneda_anterior = pos_real_moneda;				// Nuevo 25/1/2020 --- Guardamos posicion del fotograma anterior
 	velocidad_real_moneda.vx = 0;						//Pixeles/segundo
 	velocidad_real_moneda.vy = 0;						//Pixeles/segundo
 	aceleracion_real_moneda.ax = 0;						//Pixeles/segundo²
@@ -516,7 +566,13 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		printf ( "Error: no se puede reservar memoria para segmentos girados\n");
 		exit(-1);
 	}
-
+	// Reservamos memoria dinamica para las posiciones rotadas de los bumpers // Nuevo 9/2/2020
+	centros_bumpers_girados = calloc(mapa_original.NumeroPinballBumpers, sizeof(struct punto) );
+	if ( centros_bumpers_girados == NULL )
+	{
+		printf ( "Error: no se puede reservar memoria para las posiciones rotadas de los bumpers\n");
+		exit(-1);
+	}
 	//interferencia_segmento = calloc(mapa_original.NumeroSegmentos, sizeof(bool) );
 	tipo_interferencia_segmento = calloc(mapa_original.NumeroSegmentos, sizeof(enum tipo_interseccion_circulo_segmento) );
 	if ( tipo_interferencia_segmento == NULL )
@@ -531,11 +587,18 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		exit(-1);
 	}
 
-	// Reservamos memoria para la posición de la pantalla de los segmentos (despues de aplicar la camara) (TODO PRUEBAS, BORRAR!!!)
+	// Reservamos memoria para la posición de la pantalla de los segmentos (despues de aplicar la camara)
 	pos_camara_segmentos_girados = calloc(mapa_original.NumeroSegmentos, sizeof(struct segmento) );
 	if ( pos_camara_segmentos_girados == NULL )
 	{
 		printf ( "Error: no se puede reservar memoria para la posición en la pantalla de los segmentos girados\n");
+		exit(-1);
+	}
+	// Reservamos memoria para la posición de la pantalla de los bumpers (despues de aplicar la camara) (Nuevo 9/2/2020, TODO PRUEBAS, BORRAR!!!)
+	pos_pant_centros_bumpers_girados = calloc(mapa_original.NumeroPinballBumpers, sizeof(struct punto) );
+	if ( pos_pant_centros_bumpers_girados == NULL )
+	{
+		printf ( "Error: no se puede reservar memoria para la posición en la pantalla de los bumpers\n");
 		exit(-1);
 	}
 
@@ -549,7 +612,8 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					mapa_original.NombreMapa, 
 					mapa_original.DescripcionMapa,
 					mapa_original.HayFondoGiratorio,
-					mapa_original.RutaImagenFondoGiratorio ) ) 
+					mapa_original.RutaImagenFondoGiratorio,
+					mapa_original.RutaMusica ) ) 
 	{ 
 		printf( "Failed to load media!\n" ); 
 		exit(-1);
@@ -571,6 +635,14 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	//SDL_WarpMouseInWindow(gGameWindow, GAME_SCREEN_WIDTH / 2, GAME_SCREEN_HEIGHT / 2 );
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Desactivamos musica del menu y activamos la musica del juego
+	if ( (opciones_juego.music_enabled) && ( gMusicaJuego != NULL) )
+	{
+		Mix_HaltMusic( );			// Parar musica del menu si se estaba reproduciendo
+		Mix_PlayMusic( gMusicaJuego, -1 );	// Reproducir la musica del nivel	
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -603,7 +675,12 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		#endif
 
 		//////////////////////////////////////////////////////////////////////////////////////
-
+		//  _____       _                 _              _____                   _   
+		// | ____|_ __ | |_ _ __ __ _  __| | __ _ ___   / /_ _|_ __  _ __  _   _| |_ 
+		// |  _| | '_ \| __| '__/ _` |/ _` |/ _` / __| / / | || '_ \| '_ \| | | | __|
+		// | |___| | | | |_| | | (_| | (_| | (_| \__ \/ /  | || | | | |_) | |_| | |_ 
+		// |_____|_| |_|\__|_|  \__,_|\__,_|\__,_|___/_/  |___|_| |_| .__/ \__,_|\__|
+		//                                                          |_|              
 		//Gestión de entradas (teclado, ratón, joystick)
 		//Handle events on queue 
 		while( SDL_PollEvent( &e ) != 0 ) 
@@ -734,8 +811,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		//////////////////////////////////////////////////////////////////////////////
 
 		if ( !pause && !intro_mapa && !win && !lose )
-		{
-
+		{                                          
 			/////////////////////////////////////////////////////////////////////////////////////	
 			// Giramos el mapa
 			//if ( mapa_original.TipoGiro == punto_fijo )
@@ -746,6 +822,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			{
 				case punto_fijo:
 					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
+					GiraBumpers( mapa_original.Bumpers, centros_bumpers_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroPinballBumpers, angulo ); // Nuevo 9/2/2020
 					break;
 				case camara:
 					// (TODO)
@@ -754,9 +831,11 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					break;
 				case moneda:
 					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, pos_real_moneda, mapa_original.NumeroSegmentos, angulo );
+					GiraBumpers( mapa_original.Bumpers, centros_bumpers_girados, pos_real_moneda, mapa_original.NumeroPinballBumpers, angulo ); // Nuevo 9/2/2020
 					break;
 				case origen:
 					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, punto_origen, mapa_original.NumeroSegmentos, angulo );
+					GiraBumpers( mapa_original.Bumpers, centros_bumpers_girados, punto_origen, mapa_original.NumeroPinballBumpers, angulo ); // Nuevo 9/2/2020
 					// Arrastramos tambien a la moneda en el giro
 					if ( angulo != angulo_anterior )
 					{
@@ -770,8 +849,40 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			}
 			// Nota: (TODO) falta implementar otros casos
 
-
 			////////////////////////////////////////////////////////////////////////////////////
+			//   ____      _            _            ____           _      _             
+			//  / ___|__ _| | ___ _   _| | __ _ _ __|  _ \ ___  ___(_) ___(_) ___  _ __  
+			// | |   / _` | |/ __| | | | |/ _` | '__| |_) / _ \/ __| |/ __| |/ _ \| '_ \ 
+			// | |__| (_| | | (__| |_| | | (_| | |  |  __/ (_) \__ \ | (__| | (_) | | | |
+			//  \____\__,_|_|\___|\__,_|_|\__,_|_|  |_|   \___/|___/_|\___|_|\___/|_| |_|
+
+			//////////////////////////////////////////////////////////////////////////////////
+			// Calculo posiciones tras golpes con bumpers (Nuevo 9/2/2020)
+			if ( mapa_original.NumeroPinballBumpers != 0 )
+			{
+				for ( bumper_actual = 0 ; bumper_actual < mapa_original.NumeroPinballBumpers ; bumper_actual++ )
+				{
+					// Miramos si hay interseccion entre moneda y bumpers
+					if (LongitudVector_Cuadrado( pos_real_moneda , centros_bumpers_girados[bumper_actual] ) <  ( gRadioMoneda + mapa_original.Bumpers[bumper_actual].radio )* ( gRadioMoneda + mapa_original.Bumpers[bumper_actual].radio ) )
+					{
+						// Posiciona la moneda en posicion tangente
+						pos_real_moneda = CalculaPosTangenteCirculoCirculo( pos_real_moneda, centros_bumpers_girados[bumper_actual], gRadioMoneda, mapa_original.Bumpers[bumper_actual].radio);
+						// Cancela velocidad normal al bumper (o la tangencial a la recta que une moneda y bumper)
+						velocidad_real_moneda = AnulaVelocidadTangencialARecta( velocidad_real_moneda, pos_real_moneda, centros_bumpers_girados[bumper_actual]);
+						// Calcula la nueva velocidad
+						velocidad_real_moneda = SumaVelocidad( velocidad_real_moneda, VelocidadSobreRecta ( mapa_original.Bumpers[bumper_actual].velocidad_salida, centros_bumpers_girados[bumper_actual], pos_real_moneda ) );
+						// Reproduce sonido
+						if ( opciones_juego.sound_enabled )
+						{
+							Mix_PlayChannel( -1, gSonidoPinballBumper, 0 );
+						}
+					}
+				}
+			}
+			// Fin de calculo posicionde de bumpers (Nuevo 9/2/2020)
+			/////////////////////////////////////////////////////////////////////////////////
+
+			/////////////////////////////////////////////////////////////////////////////////
 			// Determinamos intersecciones
 			// PROVISIONAL
 		
@@ -779,6 +890,17 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			{
 				tipo_interferencia_segmento[segmento_actual] =  CirculoTocaSegmento(pos_real_moneda, gRadioMoneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end );
 
+				/*// Nuevo 25/1/2020--- PRUEBAS (TODO) --- TODAVIA NO FUNCIONA -- NOT WORKING YET
+				if ( ( tipo_interferencia_segmento[segmento_actual]==0) &&    LongitudVector_Cuadrado(pos_real_moneda,pos_real_moneda_anterior)>(gRadioMoneda*gRadioMoneda) )
+				{
+					// Si la distancia de la posicion de la moneda entre fotogramas sucesivos es mayor que el radio
+					// (o bien el PC es lento, o bien la moneda tiene una velocidad muy alta)
+					// podriamos correr el riesgo de atravesar un segmento y no enterarnos
+					if ( doIntersect( pos_real_moneda , pos_real_moneda_anterior, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end ) )
+					{
+						tipo_interferencia_segmento[segmento_actual]=interseccion_atravesado;
+					}
+				}*/
 				// Nota: hay que meter la comprobacion de segmentos contando con la posicion anterior (PENDIENTE, TODO)
 				// Si hay interferencia, calculamos posicion tangente (primera vez)
 				if ( tipo_interferencia_segmento[segmento_actual] != 0 )	// Si hay interferencia
@@ -794,6 +916,9 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 						case interseccion_extremo_end:
 							pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
 							break;
+						/*case interseccion_atravesado:		// Nuevo 25/1/2020 -- PRUEBAS (TODO) TODAVIA NO FUNCIONA -- NOT WORKING YET
+							pos_real_moneda = CalculaPosTangenteACentroSegmento ( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, pos_real_moneda_anterior, gRadioMoneda);
+							break;*/
 						default:
 							#ifdef DEBUG_INFO
 							printf("En primer calculo pos tangente. No posible, error de programacion o de concepto.\n");
@@ -845,6 +970,9 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 						case interseccion_extremo_end:
 							pos_real_moneda = CalculaPosTangenteAExtremoSegmento ( segmentos_girados[segmento_actual].end, pos_real_moneda, gRadioMoneda);
 							break;
+						/*case interseccion_atravesado:	// Nuevo 25/1/2020 --- Pruebas (TODO) TODAVIA NO FUNCIONA -- NOT WORKING YET
+							pos_real_moneda = CalculaPosTangenteACentroSegmento ( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, pos_real_moneda_anterior, gRadioMoneda);
+							break;*/
 						default:
 							#ifdef DEBUG_INFO
 							printf("En segundo calculo pos tangente. No posible, error de programacion o de concepto.\n");
@@ -855,7 +983,6 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					// En caso de giro del mapa:
 					if ( angulo != angulo_anterior )
 					{
-						// (TODO) Adecuar para otros tipos de giro
 						switch (mapa_original.TipoGiro)
 						{
 							case punto_fijo:
@@ -896,6 +1023,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 							fuerzas_normales_segmentos[segmento_actual] = CalculaReaccionNormalCentroSegmento( angulo_segmento_actual, gravedad.fy, 1 );	// Masa = 1  de momento
 							break;
 						case interseccion_extremo_start:
+						/*case interseccion_atravesado:*/		// Nuevo 25/1/2020 -- PRUEBAS (TODO) TODAVIA NO FUNCIONA -- NOT WORKING YET
 							if (mapa_original.Mapa[segmento_actual].start_adyacente_a_otro == false )
 							{
 								// No es adyacente a otro, podemos calcular su fuerza
@@ -957,6 +1085,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			// Actualiza velocidad
 			velocidad_real_moneda = Aceleracion2Velocidad( velocidad_real_moneda, aceleracion_real_moneda, tiempo_imagen);
 			//Actualiza posición
+			pos_real_moneda_anterior = pos_real_moneda;		// Nuevo 25/1/2020 --- Guardamos posicion del fotograma anterior
 			pos_real_moneda = Velocidad2Posicion( pos_real_moneda, velocidad_real_moneda, tiempo_imagen);
 			// Actualiza angulo de giro de la moneda
 			angulo_rotacion_moneda = VelAng2Angulo( angulo_rotacion_moneda, vel_angular_moneda, tiempo_imagen); 
@@ -971,16 +1100,24 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		} // If (!pause && !intro_mapa && !win && !lose ) 
 
 		// Convertimos posiciones "reales" en posiciones de la pantalla
-		// pos_pant_moneda = CalculaCamara(pos_real_moneda ); // TODO PRUEBAS , BORRAR
-		pos_pant_moneda = CalculaCamara2( 		ModoCamara, opciones_juego.screen_x_resolution, opciones_juego.screen_y_resolution,
+		pos_pant_moneda = CalculaCamara( 		ModoCamara, opciones_juego.screen_x_resolution, opciones_juego.screen_y_resolution,
 								desplazamiento_camara_usuario_x, desplazamiento_camara_usuario_y,
 								pos_real_moneda, 
 								mapa_original.NumeroSegmentos, 
 								segmentos_girados,  pos_camara_segmentos_girados,
 								mapa_original.Pos_x_izquierda_fondo_giratorio, mapa_original.Pos_y_arriba_fondo_giratorio, mapa_original.Pos_x_derecha_fondo_giratorio, mapa_original.Pos_y_abajo_fondo_giratorio, 
-								&pos_cam_fondo_giratorio_izquierda, &pos_cam_fondo_giratorio_arriba, &pos_cam_fondo_giratorio_derecha, &pos_cam_fondo_giratorio_abajo   ); 		
+								&pos_cam_fondo_giratorio_izquierda, &pos_cam_fondo_giratorio_arriba, &pos_cam_fondo_giratorio_derecha, &pos_cam_fondo_giratorio_abajo,
+								mapa_original.NumeroPinballBumpers,
+								centros_bumpers_girados, pos_pant_centros_bumpers_girados   ); 		
 
 		/////////////////////////////////////////////////////////////////////////////////////
+		//  ____  _ _            _       ____             _        _ _       		 ____                      ____                           
+		// |  _ \(_) |__  _   _ (_) __ _|  _ \ __ _ _ __ | |_ __ _| | | __ _ 		|  _ \ _ __ __ ___      __/ ___|  ___ _ __ ___  ___ _ __  
+		// | | | | | '_ \| | | || |/ _` | |_) / _` | '_ \| __/ _` | | |/ _` |		| | | | '__/ _` \ \ /\ / /\___ \ / __| '__/ _ \/ _ \ '_ \ 
+		// | |_| | | |_) | |_| || | (_| |  __/ (_| | | | | || (_| | | | (_| |		| |_| | | | (_| |\ V  V /  ___) | (__| | |  __/  __/ | | |
+		// |____/|_|_.__/ \__,_|/ |\__,_|_|   \__,_|_| |_|\__\__,_|_|_|\__,_|		|____/|_|  \__,_| \_/\_/  |____/ \___|_|  \___|\___|_| |_|
+		//                    |__/                                           
+
 		// Representa todo por pantalla
 
 		 //Clear screen 
@@ -1067,6 +1204,9 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 							case interseccion_extremo_end:
 								SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0xFF, 0x00 );	// Azul
 								break;
+							/*case interseccion_atravesado:
+								SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0x00 );	// Negro --- Nuevo 25/1/2020 -- PRUEBAS (TODO)
+								break;	*/						
 							default:
 								break;
 						}
@@ -1090,6 +1230,20 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 							pos_camara_segmentos_girados[segmento_actual].end.y );
 			}
 		}
+		// Dibuja "bumpers" de "pinball" --- Draw pinball bumpers on screen
+		if ( mapa_original.NumeroPinballBumpers != 0 )
+		{
+			for ( bumper_actual = 0 ; bumper_actual < mapa_original.NumeroPinballBumpers ; bumper_actual++ )
+			{
+				renderQuad.x = pos_pant_centros_bumpers_girados[bumper_actual].x - mapa_original.Bumpers[bumper_actual].radio;		// Coord X de esquina superior izquierda
+				renderQuad.y = pos_pant_centros_bumpers_girados[bumper_actual].y - mapa_original.Bumpers[bumper_actual].radio;		// Coord Y de esquina superior izquierda
+				renderQuad.w = 2*mapa_original.Bumpers[bumper_actual].radio;							// Ancho
+				renderQuad.h = 2*mapa_original.Bumpers[bumper_actual].radio;							// Alto
+				//SDL_RenderCopy( gRenderer, gTexturaPinballBumper, NULL, &renderQuad ); 	// Version sin rotacion
+				SDL_RenderCopyEx( gRenderer, gTexturaPinballBumper, NULL, &renderQuad, angulo, NULL /*Rota alrededor del centro*/, SDL_FLIP_NONE );
+			}
+		}
+
 		// Dibuja textos de intro del mapa
 		if ( intro_mapa )
 		{
@@ -1187,14 +1341,29 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		#endif
 
 	}
-	
+	// Detenemos la música del juego para volver al menu
+	if ( opciones_juego.music_enabled )
+	{
+		Mix_HaltMusic( );			// Parar musica del juego si se estaba reproduciendo	
+	}	
+
+
 	// Liberamos memoria dinamica
-	free(mapa_original.Mapa);
-	free(segmentos_girados);
+	#ifdef DEBUG_INFO
+	printf("Liberando la memoria dinámica del juego.\n");
+	#endif
+	free(mapa_original.Mapa); mapa_original.Mapa = NULL;
+	free(segmentos_girados); segmentos_girados = NULL;
 	//free(interferencia_segmento);
-	free(fuerzas_normales_segmentos);
-	free(tipo_interferencia_segmento);
-	free(pos_camara_segmentos_girados);
+	free(fuerzas_normales_segmentos); fuerzas_normales_segmentos = NULL;
+	free(tipo_interferencia_segmento); tipo_interferencia_segmento = NULL;
+	free(pos_camara_segmentos_girados); pos_camara_segmentos_girados = NULL;
+	if (mapa_original.NumeroPinballBumpers != 0)	// Nuevo 09/02/2020
+	{
+		free(mapa_original.Bumpers); mapa_original.Bumpers = NULL;
+	}
+	free(centros_bumpers_girados); centros_bumpers_girados = NULL;
+	free(pos_pant_centros_bumpers_girados); pos_pant_centros_bumpers_girados = NULL;
 	// Liberamos texturas, imagenes, sonidos, etc
 	freeMainGameLoopMedia();
 

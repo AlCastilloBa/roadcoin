@@ -35,7 +35,7 @@ struct punto GiraPunto ( struct punto centro_giro, struct punto punto_inicial, d
 void GiraMapaCompleto( struct segmento* inicial, struct segmento* girado, struct punto centro_giro, int num_segmentos, double angulo )
 {
 	int segm;
-	// VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
+	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
 	for ( segm = 0 ; segm < num_segmentos ; segm++ )
 	{
 		girado[segm].start = GiraPunto( centro_giro , inicial[segm].start, angulo );
@@ -44,12 +44,26 @@ void GiraMapaCompleto( struct segmento* inicial, struct segmento* girado, struct
 
 }
 
+void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct punto centro_giro, int num_bumpers, double angulo )	// Nuevo 9/2/2020
+{
+	int bumper;
+	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
+	if ( num_bumpers != 0 )
+	{
+		for ( bumper = 0 ; bumper < num_bumpers ; bumper++ )
+		{
+			girado[bumper] = GiraPunto( centro_giro , inicial[bumper].centro, angulo );
+		}
+	}
+}
+
 float AnguloSegmento (struct segmento segm )
 {
 	// Nota: Criterio de signos. Angulo positivo si va de X+ a Y+
-	// Nota: (TODO) Pendiente de probar.
 	return atan2( segm.end.y - segm.start.y , segm.end.x - segm.start.x );
 }
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -351,3 +365,33 @@ double WrapAngle_m180_180 (double angulo)
 		angulo += 360;
 	return angulo - 180;
 }
+
+
+///////////////////////////////////////////////
+// Nuevo 5/2/2020
+float AnguloRecta (struct punto p, struct punto q )
+{
+	// Similar a "AnguloSegmento", pero la recta está definida por dos puntos
+	// Nota: Criterio de signos. Angulo positivo si va de X+ a Y+
+	// Nota: (TODO) Pendiente de probar.
+	return atan2( q.y - p.y , q.x - p.x );
+}
+
+// Nuevo 9/2/2020
+struct punto CalculaPosTangenteCirculoCirculo ( struct punto centro_circulo_A, struct punto centro_circulo_B, double radio_A, double radio_B)
+{ 
+	// Esta función calcula la posición del centro del circulo A para que sea tangente al circulo B (siguiendo la linea recta que marcan actualmente).
+	// Se considera que el circulo B es fijo, y estamos buscando la posición tangente al circulo B.
+
+
+	struct punto nuevo_centro_circulo_B;
+	double distancia_centros;
+
+	distancia_centros = LongitudVector( centro_circulo_A, centro_circulo_B);
+	
+	nuevo_centro_circulo_B.x = centro_circulo_B.x + ((centro_circulo_A.x - centro_circulo_B.x )/distancia_centros)* (radio_A + radio_B);
+	nuevo_centro_circulo_B.y = centro_circulo_B.y + ((centro_circulo_A.y - centro_circulo_B.y )/distancia_centros)* (radio_A + radio_B);
+
+	return nuevo_centro_circulo_B;
+}
+

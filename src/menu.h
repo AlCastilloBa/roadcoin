@@ -14,7 +14,7 @@ enum pantalla_menu_principal
 	menu_opciones,		// Incluye botones: Video, Sonido, Controles, Juego, Idioma, Atras
 	menu_creditos,
 	menu_opc_video,
-	menu_opc_sonido,
+	menu_opc_sonido,	// Incluye botones: Sonido, Musica
 	menu_opc_control,
 	menu_opc_juego,
 	meno_opc_idioma,
@@ -45,6 +45,11 @@ enum listado_botones
 	boton_wireframe,	// Wireframe toggle button
 	boton_textured_objects,	// Textured lines button
 	boton_opcvid_atras,	// Go back
+
+	// Menu opciones sonido
+	boton_activar_sonido,		// Enable sound button
+	boton_activar_musica,		// Enable music button
+	boton_opcsnd_atras,		// Go back
 
 	// Menu seleccion niveles provisional
 	boton_provisional_nivel_01, boton_provisional_nivel_02, boton_provisional_nivel_03, boton_provisional_nivel_04, boton_provisional_nivel_05,

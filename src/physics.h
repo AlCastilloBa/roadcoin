@@ -41,3 +41,9 @@ struct vector_velocidad VelAngular2VelLineal ( struct punto, struct punto, doubl
 double VelAng2Angulo ( double, double, double );
 
 double CalculaVelGiroSobreSegmento ( struct vector_velocidad, double, double );
+
+struct vector_velocidad AnulaVelocidadTangencialARecta( struct vector_velocidad, struct punto, struct punto);
+
+struct vector_velocidad VelocidadSobreRecta ( double, struct punto, struct punto );
+
+

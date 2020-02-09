@@ -17,9 +17,6 @@ enum modo_camara
 };
 
 
-//void CalculaCamara(double , int*, double , int*  );
 
-struct posicion_camara CalculaCamara( struct punto );
-
-struct punto CalculaCamara2( enum modo_camara, int, int, int, int, struct punto, int, struct segmento*,  struct segmento*, int, int, int, int, int*, int*, int*, int* );
+struct punto CalculaCamara( enum modo_camara, int, int, int, int, struct punto, int, struct segmento*,  struct segmento*, int, int, int, int, int*, int*, int*, int*, int, struct punto*, struct punto* );
 

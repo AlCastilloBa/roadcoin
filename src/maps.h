@@ -1,6 +1,7 @@
 #include <stdbool.h>
 
-#define LIMITE_SEGMENTOS 50
+#define LIMITE_SEGMENTOS 500
+#define LIMITE_BUMPERS 500
 
 // Tipos de segmentos
 enum tipo_segmento 
@@ -35,27 +36,40 @@ struct segmento
 	bool end_adyacente_a_otro;	// Ending point is next to another one
 };
 
+struct pinball_bumper	// Nuevo 5/2/2020 (PENDIENTE PROBAR)
+{
+	struct punto centro;		// Bumper center point
+	float radio;			// Bumper radius
+	float velocidad_salida;		// Coin exit speed after hitting the bumper
+};
+
 struct mapa
 {
-	char NombreMapa[100];
-	char DescripcionMapa[200];
-	int NumeroSegmentos;
-	enum tipo_giro TipoGiro;
-	struct punto PuntoGiroFijo;
-	float AnguloMax;
-	struct punto PuntoInicialMoneda;
-	float Gravedad;
-	struct segmento *Mapa;
-	char RutaImagenMoneda[255];
-	char RutaImagenFondo[255];
+	char NombreMapa[100];				// Map name
+	char DescripcionMapa[200];			// Map description
+	int NumeroSegmentos;				// Number of segment lines
+	enum tipo_giro TipoGiro;			// Type of rotation behaviour
+	struct punto PuntoGiroFijo;			// Fixed point center of rotation
+	float AnguloMax;				// Maximum angle
+	struct punto PuntoInicialMoneda;		// Coin starting position
+	float Gravedad;					// Gravity
+	struct segmento *Mapa;				// Pointer to segment lines memory area
+	char RutaImagenMoneda[255];			// Path to coin image
+	char RutaImagenFondo[255];			// Path to background image
 
-	bool HayFondoGiratorio;
-	char RutaImagenFondoGiratorio[255];
-	int Pos_x_izquierda_fondo_giratorio;
-	int Pos_y_arriba_fondo_giratorio;
-	int Pos_x_derecha_fondo_giratorio;
-	int Pos_y_abajo_fondo_giratorio;
-	struct punto CentroGiroFondoGiratorio;
+	bool HayFondoGiratorio;				// Rotating background exists
+	char RutaImagenFondoGiratorio[255];		// Path to rotating background image
+	int Pos_x_izquierda_fondo_giratorio;		// Rotating background left coordinate
+	int Pos_y_arriba_fondo_giratorio;		// Rotating background upper coordinate
+	int Pos_x_derecha_fondo_giratorio;		// Rotating background right coordinate
+	int Pos_y_abajo_fondo_giratorio;		// Rotating background lower coordinate
+	struct punto CentroGiroFondoGiratorio;		// Rotating background, center of rotation
+
+	char RutaMusica[255];				// Path to music file for the level
+	
+	// Nuevo 5/2/2020 (TODO, PENDIENTE PROBAR)
+	int NumeroPinballBumpers;			
+	struct pinball_bumper *Bumpers;			// Pointer to pinball bumpers memory area
 };
 
 

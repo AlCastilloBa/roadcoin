@@ -231,3 +231,65 @@ double CalculaVelGiroSobreSegmento ( struct vector_velocidad velocidad_inicial, 
 	}
 }
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//  5/2/2020
+///////////////////////////////////////////////////////////////////////////////////////////
+struct vector_velocidad AnulaVelocidadTangencialARecta( struct vector_velocidad velocidad_inicial, struct punto punto_1_recta, struct punto punto_2_recta)
+{
+	// Esta funcion anula la velocidad tangencial a una recta (definida por dos puntos (1 y 2) )
+	// Esto es util para los BUMPERS de PINBALL, o para hacer que la moneda ruede sobre una circunferencia cualquiera.
+	// En esos casos, los puntos 1 y 2 serían los centros de las dos circunferencias
+
+	struct punto vector_unitario_recta, vector_velocidad_inicial;
+	struct vector_velocidad velocidad_normal;
+	double prod_escalar_v_n;
+	double angulo_recta;
+
+	//Convertimos velocidad desde struct vector_velocidad a struct punto
+	vector_velocidad_inicial.x = velocidad_inicial.vx;
+	vector_velocidad_inicial.y = velocidad_inicial.vy;
+
+	// Calculamos angulo
+	angulo_recta = AnguloRecta(punto_1_recta , punto_2_recta);
+
+	vector_unitario_recta.x = cos(angulo_recta);
+	vector_unitario_recta.y = sin(angulo_recta);
+
+	prod_escalar_v_n = ProductoEscalar2D (vector_velocidad_inicial, vector_unitario_recta);
+	
+	velocidad_normal.vx = velocidad_inicial.vx - prod_escalar_v_n * vector_unitario_recta.x;
+	velocidad_normal.vy = velocidad_inicial.vy - prod_escalar_v_n * vector_unitario_recta.y;
+
+
+	#ifdef DEBUG_INFO
+	printf("En funcion AnulaVelocidadTangencialARecta: prodesc = %f,  \n nx = %f; ny = %f, \n vtx=%f, vty=%f \n",  prod_escalar_v_n, vector_unitario_normal.x, vector_unitario_normal.y, velocidad_tangencial.vx, velocidad_tangencial.vy );
+	#endif
+	return velocidad_normal;
+}
+
+
+struct vector_velocidad VelocidadSobreRecta ( double modulo_velocidad_resultado, struct punto punto_1_recta, struct punto punto_2_recta )
+{
+	// Esta función crea un vector velocidad en la recta definida por los dos puntos, con módulo dado.
+	// El vector se creará desde el punto 2 hacia el punto 1
+	// Nota: Esto es util para los PINBALL BUMPERS, para crear un impulso de velocidad
+	struct vector_velocidad velocidad_resultado;
+	struct punto vector_unitario_recta;
+	double angulo_recta;
+
+	// Calculamos angulo
+	angulo_recta = AnguloRecta(punto_1_recta , punto_2_recta);
+
+	// Calculamos vector unitario
+	vector_unitario_recta.x = cos(angulo_recta);
+	vector_unitario_recta.y = sin(angulo_recta);
+
+	velocidad_resultado.vx = vector_unitario_recta.x * modulo_velocidad_resultado;
+	velocidad_resultado.vy = vector_unitario_recta.y * modulo_velocidad_resultado;
+
+	return velocidad_resultado;
+
+}
+

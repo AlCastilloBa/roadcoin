@@ -13,7 +13,8 @@ struct opciones CargarArchivoOpciones()
 	struct opciones opciones_cargadas;
 
 	char linea_leida[200];
-	bool fullscreen_ok, screen_x_resolution_ok, screen_y_resolution_ok, mouse_sensitivity_ok, wireframe_ok, textured_objects_ok;
+	bool fullscreen_ok=false, screen_x_resolution_ok=false, screen_y_resolution_ok=false, mouse_sensitivity_ok=false, wireframe_ok=false, textured_objects_ok=false;
+	bool music_enabled_ok=false, sound_enabled_ok=false;
 
 	FILE *archivo;
 	int linea=0;
@@ -202,6 +203,83 @@ struct opciones CargarArchivoOpciones()
 					#endif
 				}
 			}
+			else if (strstr(linea_leida, "music_enabled") != NULL )
+			{
+				int dato_leido;
+				if ( sscanf(linea_leida, "music_enabled=%d", &dato_leido ) == 1 )
+				{
+					switch (dato_leido)
+					{
+						case 0:
+							opciones_cargadas.music_enabled = false;
+							music_enabled_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, music_enabled=false \n", linea);
+							#endif
+							break;
+						case 1:
+							opciones_cargadas.music_enabled = true;
+							music_enabled_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, music_enabled=true \n", linea);
+							#endif
+							break;
+						default:
+							// Valor no válido, se toma el valor por defecto
+							music_enabled_ok = false;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, music_enabled tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
+							#endif
+							break;
+					}
+				}
+				else
+				{	
+					#ifdef DEBUG_INFO
+					printf("Linea %d, music_enabled --> No se han podido leer todos los valores. Se tomará el valor por defecto.\n", linea);
+					#endif
+				}
+			}
+			else if (strstr(linea_leida, "sound_enabled") != NULL )
+			{
+				int dato_leido;
+				if ( sscanf(linea_leida, "sound_enabled=%d", &dato_leido ) == 1 )
+				{
+					switch (dato_leido)
+					{
+						case 0:
+							opciones_cargadas.sound_enabled = false;
+							sound_enabled_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, sound_enabled=false \n", linea);
+							#endif
+							break;
+						case 1:
+							opciones_cargadas.sound_enabled = true;
+							sound_enabled_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, sound_enabled=true \n", linea);
+							#endif
+							break;
+						default:
+							// Valor no válido, se toma el valor por defecto
+							sound_enabled_ok = false;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, sound_enabled tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
+							#endif
+							break;
+					}
+				}
+				else
+				{	
+					#ifdef DEBUG_INFO
+					printf("Linea %d, sound_enabled --> No se han podido leer todos los valores. Se tomará el valor por defecto.\n", linea);
+					#endif
+				}
+			}
+			/////////////////////////////////////////////////////////////////////
+			// Seguir añadiendo opciones aqui
+			/////////////////////////////////////////////////////////////////////
 			else
 			{
 				printf("Linea %d, expresion no reconocida, se ignora.\n", linea);
@@ -229,7 +307,7 @@ struct opciones CargarArchivoOpciones()
 	if (screen_y_resolution_ok == false) 		
 	{
 		printf("Falta screen_y_resolution. Se toma el valor por defecto.\n");
-		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_SCREEN_Y_RESOLUTION;
+		opciones_cargadas.screen_y_resolution=OPTIONS_DEFAULT_SCREEN_Y_RESOLUTION;
 	}
 	if (wireframe_ok == false)
 	{
@@ -244,10 +322,18 @@ struct opciones CargarArchivoOpciones()
 	if (mouse_sensitivity_ok == false)
 	{
 		printf("Falta mouse_sensitivity. Se toma el valor por defecto.\n");
-		opciones_cargadas.screen_x_resolution=OPTIONS_DEFAULT_MOUSE_SENSIVITY;
+		opciones_cargadas.mouse_sensitivity=OPTIONS_DEFAULT_MOUSE_SENSIVITY;
 	}
-
-
+	if (music_enabled_ok == false)
+	{
+		printf("Falta music_enabled. Se toma el valor por defecto.\n");
+		opciones_cargadas.music_enabled=OPTIONS_DEFAULT_MUSIC_ENABLED;
+	}
+	if (sound_enabled_ok == false)
+	{
+		printf("Falta sound_enabled. Se toma el valor por defecto.\n");
+		opciones_cargadas.sound_enabled=OPTIONS_DEFAULT_SOUND_ENABLED;
+	}
 
 	#ifdef DEBUG_INFO
 	printf("Opciones cargadas. Continuamos.\n" );

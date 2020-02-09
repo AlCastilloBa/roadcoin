@@ -14,6 +14,10 @@ struct opciones
 	bool textured_objects;
 
 	float mouse_sensitivity;
+	
+	bool music_enabled;
+	bool sound_enabled;
+
 };
 
 // Opciones por defecto
@@ -27,7 +31,8 @@ struct opciones
 
 #define OPTIONS_DEFAULT_MOUSE_SENSIVITY 0.1f;
 
-
+#define OPTIONS_DEFAULT_MUSIC_ENABLED true;
+#define OPTIONS_DEFAULT_SOUND_ENABLED true;
 
 // Declaración de funciones
 // Function declaration

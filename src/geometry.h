@@ -6,13 +6,16 @@ enum tipo_interseccion_circulo_segmento
 	sin_interseccion=0,			// 0 - El circulo no toca el segmento en ningun sitio.
 	interseccion_extremo_start=1,		// 1 - El circulo toca el segmento en el extremo A.
 	interseccion_central=2,			// 2 - El cirtulo toca el segmento en un punto central cualquiera (entre los extremos).
-	interseccion_extremo_end=3		// 3 - El circulo toca el segmento en el extremo B.
+	interseccion_extremo_end=3,		// 3 - El circulo toca el segmento en el extremo B.
+	interseccion_atravesado=4		// 4 - El circulo ha atravesado el segmento sin tocarlo
 };
 
 
 struct punto GiraPunto ( struct punto, struct punto, double);
 
 void GiraMapaCompleto( struct segmento*, struct segmento*, struct punto, int, double  );
+
+void GiraBumpers( struct pinball_bumper*, struct punto*, struct punto, int, double );
 
 float AnguloSegmento (struct segmento );
 
@@ -55,5 +58,9 @@ double WrapAngle_0_360 (double);
 double WrapAngle_mpi_pi (double);
 
 double WrapAngle_m180_180 (double );
+
+float AnguloRecta (struct punto, struct punto );
+
+struct punto CalculaPosTangenteCirculoCirculo ( struct punto, struct punto, double, double);
 
 

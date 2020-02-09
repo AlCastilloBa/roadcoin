@@ -6,39 +6,23 @@
 #include <stdlib.h>
 
 
-//void CalculaCamara(	double pos_real_moneda_x, int* pos_pant_moneda_x,
-//			double pos_real_moneda_y, int* pos_pant_moneda_y )
-//{
-//	//DE MOMENTO ESTO, FALTA IMPLEMENTAR LOS CALCULOS DE LA CAMARA
-//	*pos_pant_moneda_x = (int)pos_real_moneda_x;
-//	*pos_pant_moneda_y = (int)pos_real_moneda_y;
-//
-//}
 
-
-struct posicion_camara CalculaCamara( struct punto pos_real )
-{
-	struct posicion_camara pos_cam;
-	//DE MOMENTO ESTO, FALTA IMPLEMENTAR LOS CALCULOS DE LA CAMARA
-	pos_cam.x = (int)pos_real.x;
-	pos_cam.y = (int)pos_real.y;
-	return pos_cam;
-}
-
-
-struct punto CalculaCamara2( 		enum modo_camara modo, int resolucion_x_pantalla, int resolucion_y_pantalla,
+struct punto CalculaCamara( 		enum modo_camara modo, int resolucion_x_pantalla, int resolucion_y_pantalla,
 					int desplazamiento_manual_usuario_x, int desplazamiento_manual_usuario_y,
 					struct punto pos_real_moneda, 
 					int num_segmentos, 
 					struct segmento* segmentos_pos_real,  struct segmento* segmentos_pos_pantalla,
 					int pos_real_fondo_giratorio_izquierda, int pos_real_fondo_giratorio_arriba, int pos_real_fondo_giratorio_derecha, int pos_real_fondo_giratorio_abajo, 
-					int* pos_cam_fondo_giratorio_izquierda, int* pos_cam_fondo_giratorio_arriba, int* pos_cam_fondo_giratorio_derecha, int* pos_cam_fondo_giratorio_abajo     ) 
+					int* pos_cam_fondo_giratorio_izquierda, int* pos_cam_fondo_giratorio_arriba, int* pos_cam_fondo_giratorio_derecha, int* pos_cam_fondo_giratorio_abajo,
+					int num_pinball_bumpers,
+					struct punto* pinball_bumpers_pos_real, struct punto* pinball_bumpers_pos_pantalla  ) 
 {
 	// Nota: 	posición real --> posición en coordenadas del juego, antes de calcular la posición en la pantala
 	// 		posición en pantalla --> coordenadas de la pantalla, tras calcular la posición
 	struct punto posicion_moneda_en_pantalla;
 	int desplazamiento_x, desplazamiento_y;		// Offset x, Offset y
 	int segm;
+	int bumper;
 
 	// Calculamos el desplazamiento
 	switch ( modo )
@@ -78,6 +62,12 @@ struct punto CalculaCamara2( 		enum modo_camara modo, int resolucion_x_pantalla,
 	*pos_cam_fondo_giratorio_arriba = pos_real_fondo_giratorio_arriba - desplazamiento_y;
 	*pos_cam_fondo_giratorio_derecha = pos_real_fondo_giratorio_derecha - desplazamiento_x;
 	*pos_cam_fondo_giratorio_abajo = pos_real_fondo_giratorio_abajo - desplazamiento_y;
+	// Calculamos la posicion de los pinball bumpers en la pantalla
+	for ( bumper = 0 ; bumper < num_pinball_bumpers ; bumper ++ )
+	{
+		pinball_bumpers_pos_pantalla[bumper].x = pinball_bumpers_pos_real[bumper].x - desplazamiento_x;
+		pinball_bumpers_pos_pantalla[bumper].y = pinball_bumpers_pos_real[bumper].y - desplazamiento_y;
+	}
 
 	return posicion_moneda_en_pantalla;
 }

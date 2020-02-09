@@ -6,7 +6,7 @@
 #include "maps.h"
 
 
-#define DEBUG_INFO
+ #define DEBUG_INFO
 
 struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 {
@@ -14,14 +14,16 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	struct punto punto_auxiliar;
 	char linea_leida[200];
 	bool nombre_ok=false, num_segmentos_ok=false, modo_giro_mapa_ok=false, punto_giro_ok=false, angulo_max_ok=false, pos_inicial_ok=false, gravedad_ok=false, imagen_moneda_ok=false, imagen_fondo_ok=false; 
-	bool escala_presente=false;
+	bool ruta_musica_ok=false;
+	bool escala_presente=false, num_pinball_bumpers_presente=false;
 	float escala;
 	bool fondo_giratorio_ok=false, imagen_fondo_giratorio_ok=false, pos_fondo_giratorio_ok=false, centro_giro_fondo_giratorio_ok=false ;
 	bool segmento_ok[LIMITE_SEGMENTOS];
-	bool vector_segmentos_inicializado =false;
+	bool bumper_ok[LIMITE_BUMPERS];
+	bool vector_segmentos_inicializado =false, vector_bumpers_inicializado=false;
 	FILE *archivo;
 	int linea=0;
-	int segmento_actual, i, otro_segmento_actual;
+	int segmento_actual, i, otro_segmento_actual, bumper_actual;
 
 	archivo = fopen( nombre_archivo, "r" );
 	if (archivo == NULL)
@@ -260,7 +262,6 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 			}
 			else if (strstr(linea_leida, "pos_fnd_giratorio") != NULL )
 			{	
-				printf("Aqui llega\n");
 				if ( sscanf(linea_leida, "pos_fnd_giratorio=((%d,%d),(%d,%d))", 	&(mapa_a_cargar.Pos_x_izquierda_fondo_giratorio),
 													&(mapa_a_cargar.Pos_y_arriba_fondo_giratorio),
 													&(mapa_a_cargar.Pos_x_derecha_fondo_giratorio),
@@ -284,7 +285,6 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 			}
 			else if (strstr(linea_leida, "centro_giro_fnd_gir") != NULL )
 			{
-				printf("Aqui tb llega\n");
 				if ( sscanf(linea_leida, "centro_giro_fnd_gir=(%lf,%lf)", &(mapa_a_cargar.CentroGiroFondoGiratorio.x), &(mapa_a_cargar.CentroGiroFondoGiratorio.y) ) == 2 )
 				{
 					centro_giro_fondo_giratorio_ok = true;
@@ -313,9 +313,86 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 					exit(-1);
 				}
 			}
+			else if (strstr(linea_leida, "ruta_musica") != NULL )
+			{
+				if ( sscanf(linea_leida, "ruta_musica=%s", mapa_a_cargar.RutaMusica ) == 1 )
+				{
+					ruta_musica_ok = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, ruta_musica=%s\n", linea, mapa_a_cargar.RutaMusica );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, ruta_musica --> No se han podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
+			//  ____                                      
+			// | __ ) _   _ _ __ ___  _ __   ___ _ __ ___ 
+			// |  _ \| | | | '_ ` _ \| '_ \ / _ \ '__/ __|
+			// | |_) | |_| | | | | | | |_) |  __/ |  \__ \
+			// |____/ \__,_|_| |_| |_| .__/ \___|_|  |___/
+			//                       |_|                  
+			else if (strstr(linea_leida, "num_bumpers") != NULL )	//Nuevo 9/2/2020
+			{
+				sscanf(linea_leida, "num_bumpers=%d", &(mapa_a_cargar.NumeroPinballBumpers));
+				num_pinball_bumpers_presente = true;
+				#ifdef DEBUG_INFO
+				printf("Linea %d, Numero bumpers = %d\n", linea, mapa_a_cargar.NumeroPinballBumpers);
+				#endif
+				// Reserva el vector de bumpers
+				if ( vector_bumpers_inicializado ==  true )
+				{
+					printf( "Error: ¿Dos declaraciones de numero de bumpers?\n");
+					exit(-1);
+				}
+				else
+				{
+					mapa_a_cargar.Bumpers = calloc(mapa_a_cargar.NumeroPinballBumpers, sizeof(struct pinball_bumper));
+					vector_bumpers_inicializado = true;
+					#ifdef DEBUG_INFO
+					printf("Memoria reservada para %d bumpers\n", mapa_a_cargar.NumeroPinballBumpers);
+					#endif
+				}
+			}
+			else if (strstr(linea_leida, "bumper") != NULL )
+			{
+				if (vector_bumpers_inicializado==false)
+				{
+					printf("La declaracion de los bumpers debe ir después de especificar el numero de bumpers\n");
+					exit(-1);
+				}
+				else
+				{
+					sscanf(linea_leida, "bumper[%d]",&bumper_actual); // Leemos primero el bumper actual, para poder hacer el direccionamiento en las siguientes instrucciones
+					if ( sscanf(linea_leida, "bumper[%d]=((%lf,%lf),%f,%f)", 		&bumper_actual, 
+														&(mapa_a_cargar.Bumpers[bumper_actual].centro.x),
+														&(mapa_a_cargar.Bumpers[bumper_actual].centro.y),
+														&(mapa_a_cargar.Bumpers[bumper_actual].radio),
+														&(mapa_a_cargar.Bumpers[bumper_actual].velocidad_salida)            ) == 5 )
+					{
+						bumper_ok[bumper_actual] = true;
+						#ifdef DEBUG_INFO
+						printf("Linea %d, bumper %d --> Centro x=%f, y=%f; Radio=%f, Velocidad salida=%f \n", 	linea, 
+																	bumper_actual,
+																	mapa_a_cargar.Bumpers[bumper_actual].centro.x,
+																	mapa_a_cargar.Bumpers[bumper_actual].centro.y,
+																	mapa_a_cargar.Bumpers[bumper_actual].radio,
+																	mapa_a_cargar.Bumpers[bumper_actual].velocidad_salida );
 
-
-
+						#endif
+					}
+					else
+					{	
+						printf("Linea %d, bumper --> No se han podido leer todos los valores.\n", linea);
+						exit(-1);
+					}
+				}
+			}
+			///////////////////////////////////////////////////////////
+			// Seguir añadiendo nuevas opciones aqui
+			//////////////////////////////////////////////////////////
 			else
 			{
 				printf("Linea %d, expresion no reconocida, se ignora.\n", linea);
@@ -347,24 +424,41 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 						printf("Falta la posición del fondo giratorio (y hay fondo giratorio).\n");
 	if (mapa_a_cargar.HayFondoGiratorio == true && centro_giro_fondo_giratorio_ok == false )
 						printf("Falta la posición del centro de giro del fondo giratorio (y hay fondo giratorio).\n");
+	if ( ruta_musica_ok == false )
+						printf("Falta especificar la ruta de la musica.\n");
 
 
-
-	if (nombre_ok==false || num_segmentos_ok==false || modo_giro_mapa_ok==false || (mapa_a_cargar.TipoGiro == punto_fijo && punto_giro_ok==false ) || angulo_max_ok==false || pos_inicial_ok==false || gravedad_ok==false || imagen_moneda_ok==false || imagen_fondo_ok==false || 
-		fondo_giratorio_ok==false || (mapa_a_cargar.HayFondoGiratorio == true && imagen_fondo_giratorio_ok == false) || (mapa_a_cargar.HayFondoGiratorio == true && pos_fondo_giratorio_ok == false ) || (mapa_a_cargar.HayFondoGiratorio == true && centro_giro_fondo_giratorio_ok == false ) )
+	if (nombre_ok==false || num_segmentos_ok==false || modo_giro_mapa_ok==false || (mapa_a_cargar.TipoGiro == punto_fijo && punto_giro_ok==false ) || 
+		angulo_max_ok==false || pos_inicial_ok==false || gravedad_ok==false || imagen_moneda_ok==false || imagen_fondo_ok==false || 
+		fondo_giratorio_ok==false || (mapa_a_cargar.HayFondoGiratorio == true && imagen_fondo_giratorio_ok == false) || (mapa_a_cargar.HayFondoGiratorio == true && pos_fondo_giratorio_ok == false ) || (mapa_a_cargar.HayFondoGiratorio == true && centro_giro_fondo_giratorio_ok == false ) ||
+		ruta_musica_ok == false )
 	{
 		printf("Archivo de mapa incompleto\n");
 		exit(-1);
 	}
 	for (i=0; i<mapa_a_cargar.NumeroSegmentos; i++)
 	{
-		if (segmento_ok[i]=false)
+		if (segmento_ok[i]==false)
 		{
 			printf("Segmento %d no definido\n");
 			exit(-1);
 		}
 	}
-	
+	if ( num_pinball_bumpers_presente )
+	{
+		for (i=0; i<mapa_a_cargar.NumeroPinballBumpers; i++)
+		{
+			if (bumper_ok[i]==false)
+			{
+				printf("Bumper %d no definido\n");
+				exit(-1);
+			}
+		}		
+	}
+	else
+	{
+		mapa_a_cargar.NumeroPinballBumpers=0;
+	}
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// Para simplificar los calculos futuros, vamos a hacer que el punto de inicio (start) siempre esté a la izquierda.
 	for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)

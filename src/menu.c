@@ -51,6 +51,8 @@ SDL_Color gColorTextoSeleccionado = { 255 , 255 , 0 }; 	// Amarillo --- Yellow
 SDL_Texture* gWhiteCheckBoxChecked = NULL;
 SDL_Texture* gWhiteCheckBoxUnchecked = NULL;
 
+Mix_Music *gMusicaMenu = NULL;
+Mix_Chunk *gSonidoClickBoton = NULL;
 
 bool raton_sobre_boton (struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )
 {
@@ -413,7 +415,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 0 de pantalla menu opciones de video...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_video].botones_pantalla[0]) , 0, boton_fullscreen, boton_conmutar, "Pantalla completa\0" , 1, 2  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_video].botones_pantalla[0]) , 0, boton_fullscreen, boton_conmutar, "Pantalla completa\0" , 3, 1  ) )
 	{
 		printf( "Error al inicializar boton 0 en menu opciones de video.\n" ); 
 		success = false;
@@ -449,6 +451,48 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		success = false;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla opciones de sonido
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla opciones
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos de pantalla opciones de sonido...\n");
+	#endif
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_opc_sonido]), menu_opc_sonido, "Opciones sonido\0", "images/gradient_gray.jpg", 3 ) )
+	{
+		printf( "Error al inicializar pantalla opciones de sonido.\n" ); 
+		success = false;
+	}
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 0 de pantalla menu opciones de sonido...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_sonido].botones_pantalla[0]) , 0, boton_activar_musica, boton_conmutar, "      Musica     \0" , 2, 1  ) )
+	{
+		printf( "Error al inicializar boton 0 en menu opciones de sonido.\n" ); 
+		success = false;
+	}
+	pantallas_menu_principal[menu_opc_sonido].botones_pantalla[0].estado_on_off = opciones_juego.music_enabled;
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 1 de pantalla menu opciones de sonido...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_sonido].botones_pantalla[1]) , 1, boton_activar_sonido, boton_conmutar, "     Sonido      \0" , 0, 2  ) )
+	{
+		printf( "Error al inicializar boton 1 en menu opciones de sonido.\n" ); 
+		success = false;
+	}
+	pantallas_menu_principal[menu_opc_sonido].botones_pantalla[1].estado_on_off = opciones_juego.sound_enabled;
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 2 de pantalla menu opciones de sonido...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_sonido].botones_pantalla[2]) , 2, boton_opcsnd_atras, boton_pulsar, "      Atras      \0" , 1, 0  ) )
+	{
+		printf( "Error al inicializar boton 2 en menu opciones de sonido.\n" ); 
+		success = false;
+	}
+
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,7 +500,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla seleccion provisional de seleccion de niveles
 	#ifdef DEBUG_INFO
-	printf("Inicializando datos de pantalla opciones de video...\n");
+	printf("Inicializando datos de pantalla seleccion provisional de nivel...\n");
 	#endif
 	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_niveles_provisional]), menu_niveles_provisional, "Seleccion provisional nivel\0", "images/blob_gradient.jpeg", 6 ) )
 	{
@@ -495,7 +539,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 3 de pantalla menu provisional seleccion nivel...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[3]) , 3, boton_provisional_nivel_04, boton_pulsar, "Nivel 4           \0" , 2, 4  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[3]) , 3, boton_provisional_nivel_04, boton_pulsar, "Test2             \0" , 2, 4  ) )
 	{
 		printf( "Error al inicializar boton 3 en menu provisional seleccion nivel.\n" ); 
 		success = false;
@@ -519,6 +563,21 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		success = false;
 	}
 
+
+	//-----------------------------------------------------------------------------------------
+	// Carga sonidos menu
+	gMusicaMenu = Mix_LoadMUS( "music/TengoUnaVacaLechera(Instrumental).mp3" );
+	if( gMusicaMenu == NULL )
+	{
+	    printf( "Error al cargar la musica del menu. SDL_mixer Error: %s\n", Mix_GetError() );
+	    //success = false;
+	}
+	gSonidoClickBoton = Mix_LoadWAV( "sound/button_2.wav" );
+	if( gSonidoClickBoton == NULL )
+	{
+	    printf( "Error al cargar sonido clic boton. SDL_mixer Error: %s\n", Mix_GetError() );
+	    success = false;
+	}
 
 	return success;
 }
@@ -552,6 +611,10 @@ bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_prin
 
 	SDL_DestroyTexture(gWhiteCheckBoxChecked); gWhiteCheckBoxChecked = NULL;
 	SDL_DestroyTexture(gWhiteCheckBoxChecked); gWhiteCheckBoxChecked = NULL;
+
+	// Liberar musica y sonidos --- Free music and sounds
+	Mix_FreeMusic( gMusicaMenu ); gMusicaMenu = NULL;
+	Mix_FreeChunk( gSonidoClickBoton); gSonidoClickBoton = NULL;
 
 }
 
@@ -743,13 +806,13 @@ void bucle_principal_menu_principal( void )
 					SDL_SetRelativeMouseMode(SDL_FALSE);*/
 					break;
 				case boton_provisional_nivel_04:
-					/*#ifdef DEBUG_INFO
+					#ifdef DEBUG_INFO
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
-					bucle_principal_juego();
+					bucle_principal_juego( "maps/test_map_2");
 					//Activar variables ratón una vez el juego ha terminado
 					SDL_ShowCursor(SDL_ENABLE);
-					SDL_SetRelativeMouseMode(SDL_FALSE);*/
+					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
 				case boton_provisional_nivel_05:
 					/*#ifdef DEBUG_INFO
@@ -765,6 +828,7 @@ void bucle_principal_menu_principal( void )
 					break;
 				case boton_opciones:
 				case boton_opcvid_atras:
+				case boton_opcsnd_atras:
 					menu_activo = menu_opciones;
 					boton_seleccionado = 0;
 					break;
@@ -775,6 +839,10 @@ void bucle_principal_menu_principal( void )
 					break;
 				case boton_video:
 					menu_activo = menu_opc_video;
+					boton_seleccionado = 0;
+					break;
+				case boton_sonido:
+					menu_activo = menu_opc_sonido;
 					boton_seleccionado = 0;
 					break;
 				case boton_fullscreen:
@@ -791,10 +859,23 @@ void bucle_principal_menu_principal( void )
 					opciones_juego.textured_objects = !opciones_juego.textured_objects;
 					pantallas_menu_principal[menu_opc_video].botones_pantalla[2].estado_on_off = opciones_juego.textured_objects;					
 					break;
+				case boton_activar_musica:
+					opciones_juego.music_enabled = !opciones_juego.music_enabled;
+					pantallas_menu_principal[menu_opc_sonido].botones_pantalla[0].estado_on_off = opciones_juego.music_enabled;
+					break;
+				case boton_activar_sonido:
+					opciones_juego.sound_enabled = !opciones_juego.sound_enabled;
+					pantallas_menu_principal[menu_opc_sonido].botones_pantalla[1].estado_on_off = opciones_juego.sound_enabled;
+					break;
 				default:
 					// No hacemos nada --- Do nothing
 					break;
-			}	
+			}
+			// Reproducimos sonido de clic boton --- Play button click sound
+			if ( opciones_juego.sound_enabled )
+			{
+				Mix_PlayChannel( -1, gSonidoClickBoton, 0 );
+			}
 		}
 		boton_pulsado = false;
 
@@ -892,6 +973,23 @@ void bucle_principal_menu_principal( void )
 		system("clear");		// Borra la terminal para leer el estado actual (MUY LENTO)
 		#endif
 
+		///////////////////////////////////////////////////////////////////////////////////////
+		// Gestion musica del menu --- Menu music management
+		if ( (opciones_juego.music_enabled) && (gMusicaMenu != NULL) )
+		{
+			if(  Mix_PlayingMusic() == 0 )	// Si la musica no se está reproduciendo
+			{
+			     //Play the music
+			     Mix_PlayMusic( gMusicaMenu, -1 );
+			}
+		}
+		else
+		{
+			if(  Mix_PlayingMusic() == 1 )
+			{
+				Mix_HaltMusic( );
+			}
+		}
 	// Liberamos memoria dinamica
 	}
 
