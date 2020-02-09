@@ -33,6 +33,7 @@ Objetivos del proyecto para la version v0.1-beta.1:
 
 Objetivos para siguientes versiones:
 [      ] Evitar que, si la velocidad de la moneda es alta, se pueda atravesar un segmento.
+[      ] Solo anular velocidad normal al segmento cuando esta velocidad es en la direccion hacia el segmento.
 [      ] Menú elegante.
 [      ] Pasar mapas de ficheros guarros a ficheros XML elegantes.
 [      ] Joystick.
@@ -53,6 +54,7 @@ Objetivos para siguientes versiones:
 	[      ] Muelles
 	[      ] Imanes
 	[      ] Viento
+	[ BOOM ] Pinball Pop Bumpers
 	...etc
 [      ] Eliminar botes molestos que quitan realismo.
 [      ] En el mapa, especificar textos en segmentos, que sean mostrados al tocarlos.

@@ -31,9 +31,9 @@ num_segmentos=27
 
 
 # [ES] Modo de giro de mapa. indica respecto a que punto gira el mapa 
-#   (0=camara, 1=punto_fijo)
+#   (0=camara, 1=punto_fijo, 3=origen)
 # [EN] Map rotating mode, determines the point the map will rotate around.
-#   (0=camera, 1=fixed point)
+#   (0=camera, 1=fixed point, 3=origin)
 modo_giro_mapa=1
 
 
@@ -131,6 +131,32 @@ centro_giro_fnd_gir=(416,355)
 # All coordinates are multiplied by a scale (segments, start position, totation centers, etc).
 # This is useful when designing maps with images.
 escala=3
+
+
+# [ES] Ruta de la musica del nivel.
+# #  Nota: ruta relativa, desde el directorio del ejecutable del juego.
+# [EN] Path to level music file.
+# # Note: relative path, starting from game executable file directory.
+ruta_musica=music/nombre_cancion.mp3
+
+------------------------------------------------------------------
+
+# [ES] Numero de "bumpers" de "pinball" en el mapa.
+# # Nota: es opcional, si no está definido, se sobreentiende que será cero (ningún "bumper").
+# [EN] Number of pinball bumpers on map.
+# # Note: optional. If it is not defined, it will be implied that it will be zero (no bumpers).
+num_bumpers=5
+
+# [ES] Especificación de los bumpers. Cada linea indicará un bumper, y seguirá la siguiente estructura.
+# bumper[ num_bumper ]=(( coord_x_centro , coord_y_centro ) , radio_bumper , velocidad_salida_bumper )
+# Nota: el primer bumper siempre será [0].
+# [EN] Bumpers specification. Each line will specify a bumper, and must follow the following structure.
+# bumper[ bumper_number ]=(( center_x_coord , center_y_coord ) , bumper_radius , bumper_exit_speed )
+# Note: the first line bumper will always be number [0].
+bumper[0]=((559,0),32,200)
+bumper[1]=((625,36),32,200)
+bumper[2]=((539,30),32,200)
+bumper[3]=((424,33),32,200)
 
 
 # Nota: ara hacer esto bien, esto pide un formato XML con etiquetas

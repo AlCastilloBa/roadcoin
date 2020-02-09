@@ -34,7 +34,10 @@ v0.1-beta.2
 - Added scale factor in map.
 - Added a provisional (and parsimonious) menu to choose maps from.
 - Added a new rotating type behaviour: rotate everything (including coin around the origin). Note: rotating around the coin seems unstable when angles are near 90º (bad design), and the new mode seems to solve the problem
-.
+---------------------
+- Added first sounds, music and sound options menu.
+- Added pinball pop bumpers. Specified on map files, they make the ball bounce, and make a sound.
+
 
 
 
