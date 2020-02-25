@@ -37,6 +37,14 @@ v0.1-beta.2
 ---------------------
 - Added first sounds, music and sound options menu.
 - Added pinball pop bumpers. Specified on map files, they make the ball bounce, and make a sound.
+---------------------
+- If the player rotates the map very fast (on "fixed point rotation"), this rotation can make the coin fly. 
+  This makes the game much harder, so this is implemented as a gameplay option.
+- Line segments can be invisible.
+- Added a game option to limit speed to maximum one radius per frame. This is a workaround while the code to prevent the coin from going through the line segments.
+- The game writes the options when closing to the settings file.
+- Added a "no rotation" option for the map. When used, the map will not rotate.
+- Added pinball flippers code. The pinball flippers can be specified on map file, and can be operated with the mouse buttons.
 
 
 

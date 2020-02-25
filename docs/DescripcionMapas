@@ -81,17 +81,17 @@ imagen_fondo=images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg
 
 
 # [ES] Especificación de los segmentos. Cada linea indicará un segmento, y seguirá la siguiente estructura.
-# segmento[ num_segmento ]=(( coord_x_punto_inicio , coord_y_punto_inicio ) , ( coord_x_punto_final , coord_y_punto_final ) , tipo_segmento )
+# segmento[ num_segmento ]=(( coord_x_punto_inicio , coord_y_punto_inicio ) , ( coord_x_punto_final , coord_y_punto_final ) , tipo_segmento, invisible )
 # donde "tipo segmento" puede tener los siguientes valores ( 0=pared, 1=meta, 2=muerte )
 # Nota: el primer segmento siempre será [0].
 # [EN] Line segments specification. Each line will specify a line segment, and must follow the following structure.
-# segmento[ segment_number ]=(( x_coord_start_point , y_coord_start_point ) , ( x_coord_end_point , x_coord_end_point ) , segment_type )
+# segmento[ segment_number ]=(( x_coord_start_point , y_coord_start_point ) , ( x_coord_end_point , x_coord_end_point ) , segment_type, invisible )
 # where "segment type" can have the following values ( 0=wall, 1=goal, 2=death ).
 # Note: the firs line segment will always be number [0].
-segmento[0]=((559,0),(558,31),0)
-segmento[1]=((625,36),(539,30),0)
-segmento[2]=((539,30),(424,33),0)
-segmento[3]=((424,33),(293,47),0)
+segmento[0]=((559,0),(558,31),0,0)
+segmento[1]=((625,36),(539,30),0,1)
+segmento[2]=((539,30),(424,33),0,0)
+segmento[3]=((424,33),(293,47),0,0)
 
 
 # [ES] Existe la posibilidad de añadir una textura de un fondo giratorio. Este fondo girará al rotar el mapa, y se representara por encima del otro fondo.
@@ -157,6 +157,11 @@ bumper[0]=((559,0),32,200)
 bumper[1]=((625,36),32,200)
 bumper[2]=((539,30),32,200)
 bumper[3]=((424,33),32,200)
+
+
+# [ES] Angulo pinball flippers (en grados). Es el angulo que giraran los flippers al accionar el boton.
+# [EN] Pinball flippers angle (in degrees). This is the angle the flippers will rotate, when the button is pressed.
+angulo_flippers=30
 
 
 # Nota: ara hacer esto bien, esto pide un formato XML con etiquetas
