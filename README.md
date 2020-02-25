@@ -7,9 +7,9 @@ The objective of this project is not only recreate these machines, but also make
 ![Screenshot001](/images/screenshots/v0.1-beta.1.png)
 
 ## Technical details
-The mazes are composed of a set of line segments. Normally these segments will be walls, but other segment types will be available, such as "goal" and "death" line segments.
+The mazes are composed of a set of line segments. Normally these segments will be walls, but other segment types will be available, such as "goal" and "death" line segments. Additional elements have been included, such as bumpers and flippers so far.
 The maze can be rotated using the keyboard, a mouse or a joystick.
-This program uses the SDL2 library, and no additional libraries or engines. Everithing is implemented using simple vector operations and simple mechanics equations.
+This program uses the SDL2 library, and no additional libraries or engines. Everything is implemented using simple vector operations and simple mechanics equations.
 
 The following libraries are needed:
 * SDL2
@@ -25,7 +25,8 @@ Currently compiles for GNU/Linux (using gcc), and for Windows (using MinGW).
 Work in progress. The basic game physics have been implemented. It is minimally playable, but a lot of features are still to be programmed.
 
 ## Controls
-Game can be controlled with a mouse. Moving mouse left and right rotates the map. 
+Game can be controlled with a mouse. Moving mouse left and right rotates the map.
+Pinball flippers (when available), can be controlled using left and right mouse buttons.
 
 Additionaly, some keyboard keys can be used:
 
@@ -41,6 +42,7 @@ KP<kbd>8</kbd>        | Move camera up
 KP<kbd>2</kbd>        | Move camera down
 KP<kbd>4</kbd>        | Move camera left
 KP<kbd>6</kbd>        | Move camera right
+
 
 ## Additional information
 The music used in this project is temporary and only used for testing purposes. In order to avoid copyright issues, it is not uploaded. Feel free to use your own music.
