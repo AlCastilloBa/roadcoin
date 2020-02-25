@@ -51,6 +51,11 @@ enum listado_botones
 	boton_activar_musica,		// Enable music button
 	boton_opcsnd_atras,		// Go back
 
+	// Menu opciones juego
+	boton_moneda_puede_volar,	// Map rotation makes coin fly
+	boton_limitar_vel_moneda,	// Limit coin speed button
+	boton_opcjgo_atras,		// Go back
+
 	// Menu seleccion niveles provisional
 	boton_provisional_nivel_01, boton_provisional_nivel_02, boton_provisional_nivel_03, boton_provisional_nivel_04, boton_provisional_nivel_05,
 	boton_nivel_prov_atras

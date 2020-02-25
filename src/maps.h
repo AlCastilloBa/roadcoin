@@ -3,20 +3,23 @@
 #define LIMITE_SEGMENTOS 500
 #define LIMITE_BUMPERS 500
 
-// Tipos de segmentos
+// Tipos de segmentos --- Line segments types
 enum tipo_segmento 
 { 	
-	pared, 	/* Pared, la moneda no atravesará */
-	meta,	/* Meta, al tocar se gana el juego */
-	muerte 	/* Muerte, al tocar se pierde el juego */
+	pared = 0, 			/* Pared, la moneda no atravesará --- Wall, the coin will not pass through*/
+	meta = 1,			/* Meta, al tocar se gana el juego --- Goal, if touched you will win the game*/
+	muerte = 2, 			/* Muerte, al tocar se pierde el juego --- Deathm if touched you will lose the game*/
+	pinball_flipper_L = 3,
+	pinball_flipper_R = 4
 };
 
 enum tipo_giro
 {
-	camara,		// (0) El mapa gira alrededor de la cámara
-	punto_fijo,	// (1) El mapa gira alrededor de un punto fijo
-	moneda,		// (2) El mapa gira alrededor de la moneda
-	origen		// (3) El mapa gira alrededor del origen, y arrastra a la moneda en su giro
+	camara = 0,		// (0) El mapa gira alrededor de la cámara
+	punto_fijo = 1,		// (1) El mapa gira alrededor de un punto fijo
+	moneda = 2,		// (2) El mapa gira alrededor de la moneda
+	origen = 3,		// (3) El mapa gira alrededor del origen, y arrastra a la moneda en su giro
+	no_rot = 4		// (4) El mapa no va a girar
 };
 
 // Punto en 2D
@@ -34,6 +37,7 @@ struct segmento
 	enum tipo_segmento type;
 	bool start_adyacente_a_otro;	// Starting point is next to another one
 	bool end_adyacente_a_otro;	// Ending point is next to another one
+	bool invisible;			// Invisible
 };
 
 struct pinball_bumper	// Nuevo 5/2/2020 (PENDIENTE PROBAR)
@@ -67,9 +71,11 @@ struct mapa
 
 	char RutaMusica[255];				// Path to music file for the level
 	
-	// Nuevo 5/2/2020 (TODO, PENDIENTE PROBAR)
 	int NumeroPinballBumpers;			
 	struct pinball_bumper *Bumpers;			// Pointer to pinball bumpers memory area
+
+	bool mapa_contiene_flippers;			// The map contains flippers
+	float angulo_flippers;				// Flippers rotation angle
 };
 
 

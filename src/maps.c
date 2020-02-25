@@ -14,7 +14,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	struct punto punto_auxiliar;
 	char linea_leida[200];
 	bool nombre_ok=false, num_segmentos_ok=false, modo_giro_mapa_ok=false, punto_giro_ok=false, angulo_max_ok=false, pos_inicial_ok=false, gravedad_ok=false, imagen_moneda_ok=false, imagen_fondo_ok=false; 
-	bool ruta_musica_ok=false;
+	bool ruta_musica_ok=false, angulo_flippers_ok=false;
 	bool escala_presente=false, num_pinball_bumpers_presente=false;
 	float escala;
 	bool fondo_giratorio_ok=false, imagen_fondo_giratorio_ok=false, pos_fondo_giratorio_ok=false, centro_giro_fondo_giratorio_ok=false ;
@@ -185,25 +185,51 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				}
 				else
 				{
+					int temp_segmento_invisible;
 					sscanf(linea_leida, "segmento[%d]",&segmento_actual); // Leemos primero el segmento actual, para poder hacer el direccionamiento en las siguientes instrucciones
-					if ( sscanf(linea_leida, "segmento[%d]=((%lf,%lf),(%lf,%lf),%d)", 	&segmento_actual, 
+					if ( sscanf(linea_leida, "segmento[%d]=((%lf,%lf),(%lf,%lf),%d, %d)", 	&segmento_actual, 
 														&(mapa_a_cargar.Mapa[segmento_actual].start.x),
 														&(mapa_a_cargar.Mapa[segmento_actual].start.y),
 														&(mapa_a_cargar.Mapa[segmento_actual].end.x),
 														&(mapa_a_cargar.Mapa[segmento_actual].end.y),
-														&(mapa_a_cargar.Mapa[segmento_actual].type)            ) == 6 )
+														&(mapa_a_cargar.Mapa[segmento_actual].type),            
+														&(temp_segmento_invisible)					) == 7 )
 					{
 						segmento_ok[segmento_actual] = true;
 						#ifdef DEBUG_INFO
-						printf("Linea %d, segmento %d --> Inicio x=%f, y=%f; Fin x=%f, y=%f; tipo=%d \n", 	linea, 
+						printf("Linea %d, segmento %d --> Inicio x=%f, y=%f; Fin x=%f, y=%f; tipo=%d; invisible=%d \n", 	linea, 
 																	segmento_actual,
 																	mapa_a_cargar.Mapa[segmento_actual].start.x,
 																	mapa_a_cargar.Mapa[segmento_actual].start.y,
 																	mapa_a_cargar.Mapa[segmento_actual].end.x,
 																	mapa_a_cargar.Mapa[segmento_actual].end.y,
-																	mapa_a_cargar.Mapa[segmento_actual].type );
+																	mapa_a_cargar.Mapa[segmento_actual].type,
+																	temp_segmento_invisible		 );
 
 						#endif
+						switch (temp_segmento_invisible)
+						{
+							case 0:
+								mapa_a_cargar.Mapa[segmento_actual].invisible = false;
+								#ifdef DEBUG_INFO
+								printf("Linea %d, segmento invisible=false \n", linea);
+								#endif
+								break;
+							case 1:
+								mapa_a_cargar.Mapa[segmento_actual].invisible = true;
+								#ifdef DEBUG_INFO
+								printf("Linea %d, segmento invisible=true \n", linea);
+								#endif
+								break;
+							default:
+								// Valor no válido, se toma el valor por defecto
+								mapa_a_cargar.Mapa[segmento_actual].invisible = false;
+								#ifdef DEBUG_INFO
+								printf("Linea %d, dato invisible tiene un valor no valido, se supone visible. \n", linea);
+								#endif
+								break;
+						}
+
 					}
 					else
 					{	
@@ -390,6 +416,21 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 					}
 				}
 			}
+			else if (strstr(linea_leida, "angulo_flippers") != NULL )
+			{
+				if ( sscanf(linea_leida, "angulo_flippers=%f", &(mapa_a_cargar.angulo_flippers) ) == 1 )
+				{
+					angulo_flippers_ok = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, angulo_flippers=%f\n", linea, mapa_a_cargar.angulo_flippers );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, angulo_flippers --> No se han podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
 			///////////////////////////////////////////////////////////
 			// Seguir añadiendo nuevas opciones aqui
 			//////////////////////////////////////////////////////////
@@ -403,6 +444,17 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	}
 
 	fclose(archivo);
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// Buscar si hay flippers
+	mapa_a_cargar.mapa_contiene_flippers = false;
+	for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
+	{
+		if ( (mapa_a_cargar.Mapa[segmento_actual].type == pinball_flipper_L ) || (mapa_a_cargar.Mapa[segmento_actual].type == pinball_flipper_R ) )
+		{
+			mapa_a_cargar.mapa_contiene_flippers = true;
+		}
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Verificamos que lo tengamos todo (que al archivo no le faltasen datos)
@@ -426,12 +478,14 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 						printf("Falta la posición del centro de giro del fondo giratorio (y hay fondo giratorio).\n");
 	if ( ruta_musica_ok == false )
 						printf("Falta especificar la ruta de la musica.\n");
+	if ( mapa_a_cargar.mapa_contiene_flippers == true && angulo_flippers_ok == false )
+						printf("Falta especificar el angulo de los flippers (el mapa contiene flippers).\n");
 
 
 	if (nombre_ok==false || num_segmentos_ok==false || modo_giro_mapa_ok==false || (mapa_a_cargar.TipoGiro == punto_fijo && punto_giro_ok==false ) || 
 		angulo_max_ok==false || pos_inicial_ok==false || gravedad_ok==false || imagen_moneda_ok==false || imagen_fondo_ok==false || 
 		fondo_giratorio_ok==false || (mapa_a_cargar.HayFondoGiratorio == true && imagen_fondo_giratorio_ok == false) || (mapa_a_cargar.HayFondoGiratorio == true && pos_fondo_giratorio_ok == false ) || (mapa_a_cargar.HayFondoGiratorio == true && centro_giro_fondo_giratorio_ok == false ) ||
-		ruta_musica_ok == false )
+		ruta_musica_ok == false  || ( mapa_a_cargar.mapa_contiene_flippers == true && angulo_flippers_ok == false ) )
 	{
 		printf("Archivo de mapa incompleto\n");
 		exit(-1);
@@ -450,7 +504,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 		{
 			if (bumper_ok[i]==false)
 			{
-				printf("Bumper %d no definido\n");
+				printf("Bumper %d no definido\n", i);
 				exit(-1);
 			}
 		}		
@@ -531,6 +585,18 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 		mapa_a_cargar.Pos_y_arriba_fondo_giratorio = mapa_a_cargar.Pos_y_arriba_fondo_giratorio * escala;
 		mapa_a_cargar.Pos_x_derecha_fondo_giratorio = mapa_a_cargar.Pos_x_derecha_fondo_giratorio * escala;
 		mapa_a_cargar.Pos_y_abajo_fondo_giratorio = mapa_a_cargar.Pos_y_abajo_fondo_giratorio * escala;
+		// Bumpers
+		if ( mapa_a_cargar.NumeroPinballBumpers != 0 )
+		{
+			for ( bumper_actual=0; bumper_actual<mapa_a_cargar.NumeroPinballBumpers; bumper_actual++)
+			{
+				mapa_a_cargar.Bumpers[bumper_actual].centro.x *= escala;
+				mapa_a_cargar.Bumpers[bumper_actual].centro.y *= escala;
+				mapa_a_cargar.Bumpers[bumper_actual].radio *= escala; 
+				mapa_a_cargar.Bumpers[bumper_actual].velocidad_salida *= escala;
+			}
+		}
+
 	}
 
 	#ifdef DEBUG_INFO

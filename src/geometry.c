@@ -44,6 +44,17 @@ void GiraMapaCompleto( struct segmento* inicial, struct segmento* girado, struct
 
 }
 
+void CopiaSegmentosSinGiro( struct segmento* origen, struct segmento* destino, int num_segmentos )
+{
+	// Para el caso sin rotación, simplemente copia los puntos sin aplicar un giro
+	int segm;
+	for ( segm = 0 ; segm < num_segmentos ; segm++ )
+	{
+		destino[segm].start = origen[segm].start;
+		destino[segm].end   = origen[segm].end;
+	}
+}
+
 void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct punto centro_giro, int num_bumpers, double angulo )	// Nuevo 9/2/2020
 {
 	int bumper;
@@ -53,6 +64,19 @@ void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct p
 		for ( bumper = 0 ; bumper < num_bumpers ; bumper++ )
 		{
 			girado[bumper] = GiraPunto( centro_giro , inicial[bumper].centro, angulo );
+		}
+	}
+}
+
+void CopiaBumpersSinGiro( struct pinball_bumper* origen, struct punto* destino, int num_bumpers )
+{
+	// Para el caso sin rotación, simplemente copia los puntos sin aplicar un giro
+	int bumper;
+	if ( num_bumpers != 0 )
+	{
+		for ( bumper = 0 ; bumper < num_bumpers ; bumper++ )
+		{
+			destino[bumper] = origen[bumper].centro;
 		}
 	}
 }
@@ -395,3 +419,47 @@ struct punto CalculaPosTangenteCirculoCirculo ( struct punto centro_circulo_A, s
 	return nuevo_centro_circulo_B;
 }
 
+//////////////////////////////////////////////////////////////////////
+// Nuevo 23/2/2020
+// Los siguientes algoritmos están extraídos de la página:
+// https://blackpawn.com/texts/pointinpoly/default.html
+
+double ProductoVectorial2D_ComponenteZ( struct punto A, struct punto B )	// Z component of the cross product of two 2D vectors
+{
+	// Esta funcion realiza el producto vectorial de dos vectores 2D, y solo devuelve la componente Z
+	return (A.x*B.y - A.y*B.x);
+}
+
+bool MismoLado(struct punto P1, struct punto P2, struct punto A, struct punto B)
+{
+	// Esta funcion indica si los puntos P1 y P2 están al mismo lado (o no) de la linea definida por los puntos A y B
+	float prod_vect_1, prod_vect_2;
+	struct punto B_A =  { B.x - A.x  , B.y - A.y  };
+	struct punto P1_A = { P1.x - A.x , P1.y - A.y };
+	struct punto P2_A = { P2.x - A.x , P2.y - A.y };
+
+	prod_vect_1 = ProductoVectorial2D_ComponenteZ(B_A, P1_A);
+	prod_vect_2 = ProductoVectorial2D_ComponenteZ(B_A, P2_A);
+
+	if ( prod_vect_1 * prod_vect_2 >= 0 )	// Si prod_vect_1 y prod_vect_2 tienen el mismo signo....
+	{
+		return true;
+	}
+	else // Si tienen signos distintos...
+	{
+		return false;
+	}
+}
+
+bool PuntoDentroDeTriangulo(struct punto P, struct punto A, struct punto B,struct punto C)
+{
+	// Verificar si un punto P está dentro de un triangulo definido por los vértices A,B,C
+	if ( MismoLado(P,A, B,C) && MismoLado(P,B, A,C) && MismoLado(P,C, A,B) )
+	{ 
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}

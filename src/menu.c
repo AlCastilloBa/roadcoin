@@ -496,6 +496,51 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla opciones de juego
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla opciones
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos de pantalla opciones de juego...\n");
+	#endif
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_opc_juego]), menu_opc_juego, "Opciones juego\0", "images/gradient_gray.jpg", 3 ) )
+	{
+		printf( "Error al inicializar pantalla opciones de juego.\n" ); 
+		success = false;
+	}
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 0 de pantalla menu opciones de juego...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_juego].botones_pantalla[0]) , 0, boton_moneda_puede_volar, boton_conmutar, "Moneda vuela (DIFICIL)\0" , 2, 1  ) )
+	{
+		printf( "Error al inicializar boton 0 en menu opciones de juego.\n" ); 
+		success = false;
+	}
+	pantallas_menu_principal[menu_opc_juego].botones_pantalla[0].estado_on_off = opciones_juego.map_rot_makes_coin_fly;
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 1 de pantalla menu opciones de juego...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_juego].botones_pantalla[1]) , 1, boton_limitar_vel_moneda, boton_conmutar, "Limitar Velocidad\0" , 0, 2  ) )
+	{
+		printf( "Error al inicializar boton 1 en menu opciones de juego.\n" ); 
+		success = false;
+	}
+	pantallas_menu_principal[menu_opc_juego].botones_pantalla[1].estado_on_off = opciones_juego.limit_coin_speed;
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 2 de pantalla menu opciones de juego...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_juego].botones_pantalla[2]) , 2, boton_opcjgo_atras, boton_pulsar, "      Atras      \0" , 1, 0  ) )
+	{
+		printf( "Error al inicializar boton 2 en menu opciones de juego.\n" ); 
+		success = false;
+	}
+
+
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla menu provisional de seleccion de niveles
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla seleccion provisional de seleccion de niveles
@@ -530,7 +575,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 2 de pantalla menu provisional seleccion nivel...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[2]) , 2, boton_provisional_nivel_03, boton_pulsar, "Nivel 3           \0" , 1, 3  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[2]) , 2, boton_provisional_nivel_03, boton_pulsar, "Piramide          \0" , 1, 3  ) )
 	{
 		printf( "Error al inicializar boton 2 en menu provisional seleccion nivel.\n" ); 
 		success = false;
@@ -797,13 +842,13 @@ void bucle_principal_menu_principal( void )
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
 				case boton_provisional_nivel_03:
-					/*#ifdef DEBUG_INFO
+					#ifdef DEBUG_INFO
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
-					bucle_principal_juego();
+					bucle_principal_juego( "maps/pyramid");
 					//Activar variables ratón una vez el juego ha terminado
 					SDL_ShowCursor(SDL_ENABLE);
-					SDL_SetRelativeMouseMode(SDL_FALSE);*/
+					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
 				case boton_provisional_nivel_04:
 					#ifdef DEBUG_INFO
@@ -815,13 +860,13 @@ void bucle_principal_menu_principal( void )
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
 				case boton_provisional_nivel_05:
-					/*#ifdef DEBUG_INFO
+					#ifdef DEBUG_INFO
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
-					bucle_principal_juego();
+					bucle_principal_juego("maps/test_pinball_1");
 					//Activar variables ratón una vez el juego ha terminado
 					SDL_ShowCursor(SDL_ENABLE);
-					SDL_SetRelativeMouseMode(SDL_FALSE);*/
+					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
 				case boton_salir:
 					quit = true;
@@ -829,6 +874,7 @@ void bucle_principal_menu_principal( void )
 				case boton_opciones:
 				case boton_opcvid_atras:
 				case boton_opcsnd_atras:
+				case boton_opcjgo_atras:
 					menu_activo = menu_opciones;
 					boton_seleccionado = 0;
 					break;
@@ -843,6 +889,10 @@ void bucle_principal_menu_principal( void )
 					break;
 				case boton_sonido:
 					menu_activo = menu_opc_sonido;
+					boton_seleccionado = 0;
+					break;
+				case boton_opc_juego:
+					menu_activo = menu_opc_juego;
 					boton_seleccionado = 0;
 					break;
 				case boton_fullscreen:
@@ -866,6 +916,14 @@ void bucle_principal_menu_principal( void )
 				case boton_activar_sonido:
 					opciones_juego.sound_enabled = !opciones_juego.sound_enabled;
 					pantallas_menu_principal[menu_opc_sonido].botones_pantalla[1].estado_on_off = opciones_juego.sound_enabled;
+					break;
+				case boton_moneda_puede_volar:
+					opciones_juego.map_rot_makes_coin_fly = !opciones_juego.map_rot_makes_coin_fly;
+					pantallas_menu_principal[menu_opc_juego].botones_pantalla[0].estado_on_off = opciones_juego.map_rot_makes_coin_fly;
+					break;
+				case boton_limitar_vel_moneda:
+					opciones_juego.limit_coin_speed = !opciones_juego.limit_coin_speed;
+					pantallas_menu_principal[menu_opc_juego].botones_pantalla[1].estado_on_off = opciones_juego.limit_coin_speed;
 					break;
 				default:
 					// No hacemos nada --- Do nothing

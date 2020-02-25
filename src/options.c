@@ -14,7 +14,7 @@ struct opciones CargarArchivoOpciones()
 
 	char linea_leida[200];
 	bool fullscreen_ok=false, screen_x_resolution_ok=false, screen_y_resolution_ok=false, mouse_sensitivity_ok=false, wireframe_ok=false, textured_objects_ok=false;
-	bool music_enabled_ok=false, sound_enabled_ok=false;
+	bool music_enabled_ok=false, sound_enabled_ok=false, map_rot_makes_coin_fly_ok=false, limit_coin_speed_ok=false;
 
 	FILE *archivo;
 	int linea=0;
@@ -277,6 +277,80 @@ struct opciones CargarArchivoOpciones()
 					#endif
 				}
 			}
+			else if (strstr(linea_leida, "map_rot_makes_coin_fly") != NULL )
+			{
+				int dato_leido;
+				if ( sscanf(linea_leida, "map_rot_makes_coin_fly=%d", &dato_leido ) == 1 )
+				{
+					switch (dato_leido)
+					{
+						case 0:
+							opciones_cargadas.map_rot_makes_coin_fly = false;
+							map_rot_makes_coin_fly_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, map_rot_makes_coin_fly=false \n", linea);
+							#endif
+							break;
+						case 1:
+							opciones_cargadas.map_rot_makes_coin_fly = true;
+							map_rot_makes_coin_fly_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, map_rot_makes_coin_fly=true \n", linea);
+							#endif
+							break;
+						default:
+							// Valor no válido, se toma el valor por defecto
+							map_rot_makes_coin_fly_ok = false;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, map_rot_makes_coin_fly tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
+							#endif
+							break;
+					}
+				}
+				else
+				{	
+					#ifdef DEBUG_INFO
+					printf("Linea %d, map_rot_makes_coin_fly --> No se han podido leer todos los valores. Se tomará el valor por defecto.\n", linea);
+					#endif
+				}
+			}
+			else if (strstr(linea_leida, "limit_coin_speed") != NULL )
+			{
+				int dato_leido;
+				if ( sscanf(linea_leida, "limit_coin_speed=%d", &dato_leido ) == 1 )
+				{
+					switch (dato_leido)
+					{
+						case 0:
+							opciones_cargadas.limit_coin_speed = false;
+							limit_coin_speed_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, limit_coin_speed=false \n", linea);
+							#endif
+							break;
+						case 1:
+							opciones_cargadas.limit_coin_speed = true;
+							limit_coin_speed_ok = true;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, limit_coin_speed=true \n", linea);
+							#endif
+							break;
+						default:
+							// Valor no válido, se toma el valor por defecto
+							limit_coin_speed_ok = false;
+							#ifdef DEBUG_INFO
+							printf("Opciones: Linea %d, limit_coin_speed tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
+							#endif
+							break;
+					}
+				}
+				else
+				{	
+					#ifdef DEBUG_INFO
+					printf("Linea %d, limit_coin_speed --> No se han podido leer todos los valores. Se tomará el valor por defecto.\n", linea);
+					#endif
+				}
+			}
 			/////////////////////////////////////////////////////////////////////
 			// Seguir añadiendo opciones aqui
 			/////////////////////////////////////////////////////////////////////
@@ -334,6 +408,16 @@ struct opciones CargarArchivoOpciones()
 		printf("Falta sound_enabled. Se toma el valor por defecto.\n");
 		opciones_cargadas.sound_enabled=OPTIONS_DEFAULT_SOUND_ENABLED;
 	}
+	if (map_rot_makes_coin_fly_ok == false)
+	{
+		printf("Falta map_rot_makes_coin_fly. Se toma el valor por defecto.\n");
+		opciones_cargadas.map_rot_makes_coin_fly=OPTIONS_DEFAULT_MAP_ROT_MAKES_COIN_FLY;
+	}
+	if (limit_coin_speed_ok == false)
+	{
+		printf("Falta limit_coin_speed. Se toma el valor por defecto.\n");
+		opciones_cargadas.limit_coin_speed=OPTIONS_DEFAULT_LIMIT_COIN_SPEED;
+	}
 
 	#ifdef DEBUG_INFO
 	printf("Opciones cargadas. Continuamos.\n" );
@@ -347,12 +431,57 @@ struct opciones CargarArchivoOpciones()
 
 void GuardarArchivoOpciones ( struct opciones opciones_a_guardar )
 {
-	// (TODO) Pendiente de hacer
+	FILE *archivo;
 	// Abrir archivo como escritura, sobreescribir todo el contenido
-
-
+	archivo = fopen( "settings", "w" );
+	if (archivo == NULL)
+	{
+		printf("Error: No se puede abrir el archivo \"settings\" \n" );
+		exit(-1);
+	}
 
 	// Escribir las lineas una a una
+	if ( opciones_a_guardar.fullscreen )
+		fprintf( archivo, "fullscreen=1\n" );
+	else
+		fprintf( archivo, "fullscreen=0\n" );
+
+	fprintf( archivo, "screen_x_resolution=%d\n", opciones_a_guardar.screen_x_resolution );
+
+	fprintf( archivo, "screen_y_resolution=%d\n", opciones_a_guardar.screen_y_resolution );
+
+	if ( opciones_a_guardar.wireframe )
+		fprintf( archivo, "wireframe=1\n" );
+	else
+		fprintf( archivo, "wireframe=0\n" );
+
+	if ( opciones_a_guardar.textured_objects )
+		fprintf( archivo, "textured_lines=1\n" );
+	else
+		fprintf( archivo, "textured_lines=0\n" );
+
+	fprintf( archivo, "mouse_sensitivity=%f\n", opciones_a_guardar.mouse_sensitivity );
+
+	if ( opciones_a_guardar.music_enabled )
+		fprintf( archivo, "music_enabled=1\n" );
+	else
+		fprintf( archivo, "music_enabled=0\n" );
+
+	if ( opciones_a_guardar.sound_enabled )
+		fprintf( archivo, "sound_enabled=1\n" );
+	else
+		fprintf( archivo, "sound_enabled=0\n" );
+
+	if ( opciones_a_guardar.map_rot_makes_coin_fly )
+		fprintf( archivo, "map_rot_makes_coin_fly=1\n" );
+	else
+		fprintf( archivo, "map_rot_makes_coin_fly=0\n" );
+
+	if ( opciones_a_guardar.limit_coin_speed )
+		fprintf( archivo, "limit_coin_speed=1\n" );
+	else
+		fprintf( archivo, "limit_coin_speed=0\n" );
 
 
+	fclose(archivo);
 }

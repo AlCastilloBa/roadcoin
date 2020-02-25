@@ -6,6 +6,7 @@
 // The following structure "options" contais all game settings
 struct opciones
 {
+	// Opciones de video --- Video options
 	bool fullscreen;
 	int screen_x_resolution;
 	int screen_y_resolution;
@@ -14,9 +15,13 @@ struct opciones
 	bool textured_objects;
 
 	float mouse_sensitivity;
-	
+	// Opciones de sonido --- Sound options	
 	bool music_enabled;
 	bool sound_enabled;
+
+	// Opciones de juego --- Game options
+	bool map_rot_makes_coin_fly;	// Giro del mapa hace que la moneda vuele (DIFICIL)
+	bool limit_coin_speed;
 
 };
 
@@ -33,6 +38,11 @@ struct opciones
 
 #define OPTIONS_DEFAULT_MUSIC_ENABLED true;
 #define OPTIONS_DEFAULT_SOUND_ENABLED true;
+
+#define OPTIONS_DEFAULT_MAP_ROT_MAKES_COIN_FLY false;
+#define OPTIONS_DEFAULT_LIMIT_COIN_SPEED false;
+
+
 
 // Declaración de funciones
 // Function declaration

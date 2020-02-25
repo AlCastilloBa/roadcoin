@@ -36,6 +36,8 @@ struct vector_fuerza CalculaReaccionNormalExtremoSegmento ( struct punto, struct
 
 struct vector_velocidad AnulaVelocidadNormalASegmento( struct vector_velocidad, double); 
 
+//struct vector_velocidad AnulaVelocidadEntradaNormalASegmento( struct vector_velocidad , double );
+
 struct vector_velocidad VelAngular2VelLineal ( struct punto, struct punto, double, double );
 
 double VelAng2Angulo ( double, double, double );
@@ -46,4 +48,7 @@ struct vector_velocidad AnulaVelocidadTangencialARecta( struct vector_velocidad,
 
 struct vector_velocidad VelocidadSobreRecta ( double, struct punto, struct punto );
 
+double modulo_vector_velocidad(struct vector_velocidad);
+
+double modulo_vector_velocidad_cuadrado(struct vector_velocidad);
 

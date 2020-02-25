@@ -166,6 +166,39 @@ struct vector_velocidad AnulaVelocidadNormalASegmento( struct vector_velocidad v
 }
 
 
+/*struct vector_velocidad AnulaVelocidadEntradaNormalASegmento( struct vector_velocidad velocidad_inicial, double angulo_segmento)
+{
+	// Similar a la anterior, pero solo anula la velocidad si esta se dirige hacia el segmento.
+	// No anula la velocidad en el caso de que sea de salida.
+	// PENDIENTE DE PROBAR QUE FUNCIONA CORRECTAMENTE (TODO)
+
+	struct punto vector_unitario_normal, vector_velocidad_inicial;
+	struct vector_velocidad velocidad_tangencial;
+	double prod_escalar_v_n;
+
+	//Convertimos velocidad desde struct vector_velocidad a struct punto
+	vector_velocidad_inicial.x = velocidad_inicial.vx;
+	vector_velocidad_inicial.y = velocidad_inicial.vy;
+
+	vector_unitario_normal.x = sin(angulo_segmento);	// Resultado debe ser positivo
+	vector_unitario_normal.y = -cos(angulo_segmento);	// Resultado debe ser negativo
+
+	prod_escalar_v_n = ProductoEscalar2D (vector_velocidad_inicial, vector_unitario_normal);
+	
+	velocidad_tangencial.vx = velocidad_inicial.vx - prod_escalar_v_n * vector_unitario_normal.x;
+	velocidad_tangencial.vy = velocidad_inicial.vy - prod_escalar_v_n * vector_unitario_normal.y;
+	
+	if ( prod_escalar_v_n < 0 )
+	{
+		return velocidad_tangencial;
+	}
+	else
+	{
+		return velocidad_inicial;
+	}
+}*/
+
+
 struct vector_velocidad VelAngular2VelLineal ( struct punto centro_giro, struct punto pos_real, double angulo_girado, double delta_tiempo )
 {
 	// Nota: angulo en grados, delta_tiempo en segundos
@@ -293,3 +326,12 @@ struct vector_velocidad VelocidadSobreRecta ( double modulo_velocidad_resultado,
 
 }
 
+double modulo_vector_velocidad(struct vector_velocidad vel)
+{
+	return sqrt( (vel.vx*vel.vx) + (vel.vy*vel.vy) );
+}
+
+double modulo_vector_velocidad_cuadrado(struct vector_velocidad vel)
+{
+	return (vel.vx*vel.vx) + (vel.vy*vel.vy) ;
+}

@@ -15,7 +15,11 @@ struct punto GiraPunto ( struct punto, struct punto, double);
 
 void GiraMapaCompleto( struct segmento*, struct segmento*, struct punto, int, double  );
 
+void CopiaSegmentosSinGiro( struct segmento*, struct segmento*, int );
+
 void GiraBumpers( struct pinball_bumper*, struct punto*, struct punto, int, double );
+
+void CopiaBumpersSinGiro( struct pinball_bumper*, struct punto*, int );
 
 float AnguloSegmento (struct segmento );
 
@@ -62,5 +66,13 @@ double WrapAngle_m180_180 (double );
 float AnguloRecta (struct punto, struct punto );
 
 struct punto CalculaPosTangenteCirculoCirculo ( struct punto, struct punto, double, double);
+
+double ProductoVectorial2D_ComponenteZ( struct punto, struct punto );
+
+bool MismoLado(struct punto, struct punto, struct punto, struct punto);
+
+bool PuntoDentroDeTriangulo(struct punto, struct punto, struct punto,struct punto);
+
+
 
 
