@@ -3,8 +3,8 @@ screen_x_resolution=1024
 screen_y_resolution=768
 wireframe=0
 textured_lines=1
-mouse_sensitivity=0.05
-
-
-
-
+mouse_sensitivity=0.050000
+music_enabled=1
+sound_enabled=1
+map_rot_makes_coin_fly=0
+limit_coin_speed=1
