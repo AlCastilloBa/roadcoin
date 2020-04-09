@@ -1,0 +1,4 @@
+Para da uniformidad al texto, la imagen de cada letra tendrá un tamaño de 52 x 50 (pixeles).
+
+In order to give text uniformity, every character image should have a  size of 52 x 50 (pixels).
+
