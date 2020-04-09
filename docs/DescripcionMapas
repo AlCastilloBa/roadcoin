@@ -163,6 +163,35 @@ bumper[3]=((424,33),32,200)
 # [EN] Pinball flippers angle (in degrees). This is the angle the flippers will rotate, when the button is pressed.
 angulo_flippers=30
 
+# [ES] Tiempo inicial de la cuenta atras. Es opcional, si no se añade un tiempo, el tiempo de la partida podrá ser infinito.
+# [EN] Countdown start time. This is optional. If no time is included, there is no time limit.
+tiempo_cuenta_atras=100
+
+# [ES] Numero de "zonas circulares de aceleración".
+# # Nota: es opcional, si no está definido, se sobreentiende que será cero (ningúna "zona circular de aceleración").
+# [EN] Number of "round acceleration zones".
+# # Note: optional. If it is not defined, it will be implied that it will be zero (no "round acceleration zones").
+num_zonas_acel_circ=5
+
+# [ES] Especificación de las "zonas circulares de aceleración". Cada linea indicará una zona, y seguirá la siguiente estructura.
+# bumper[ num_bumper ]=(( coord_x_centro , coord_y_centro ) , radio_bumper , velocidad_salida_bumper )
+# zona_acel_circ[ num_zona ]=(( coord_x_centro , coord_y_centro ) , radio , angulo, velocidad )
+# Nota: la primera zona siempre será [0].
+# [EN] "Round acceleration zone" specification. Each line will specify a zone, and must follow the following structure.
+# zona_acel_circ[ num_zona ]=(( center_x_coord , center_y_coord ) , radius , angle, speed )
+# Note: the first zone will always be number [0].
+zona_acel_circ[0]=((559,0),32,0, 200)
+zona_acel_circ[1]=((625,36),32,90,200)
+zona_acel_circ[2]=((539,30),32,270, 200)
+zona_acel_circ[3]=((424,33),32,45, 200)
+
+# [ES] Parametro opcional para forzar a que la moneda no gira.
+# Es util para imagenes de esferas lisas con reflejos (por ejemplo, bolas de metal pulido).
+# [EN] Optional parameter to force thar the coin does not rotate.
+# This can be useful in case of spheres with glares (for example, smooth metal balls).
+no_rot_moneda
+
+
 
 # Nota: ara hacer esto bien, esto pide un formato XML con etiquetas
 Nota: ver "minixml", "libxml", "expat", "xerces", etc.

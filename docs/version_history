@@ -45,6 +45,17 @@ v0.1-beta.2
 - The game writes the options when closing to the settings file.
 - Added a "no rotation" option for the map. When used, the map will not rotate.
 - Added pinball flippers code. The pinball flippers can be specified on map file, and can be operated with the mouse buttons.
+---------------------
+- Added a countdown time system. Some maps can include it, and a countdown appears on the lower right part of the screen. When this counter reaches zero, the player loses.
+- Added "round acceleration zones", that can be included in maps, and create an acceleration on the coin on a certain direction.
+- Added a parameter to prevent coin rotation in some maps.
+- Bugfixes in map loading functions in order to prevend segmentation faults and glibc errors, when maps are not correctly declared.
+- Bugfix in loading texture function, related to transparency.
+- Bugfix, flipper sound played during pause.
+- Added a semi-transparent background for in game texts (to be able to see them with white backgrounds).
+- Menu: checkboxes can now be clicked directly in the checkbox icon.
+- Menu: Added code for numeric values setting. Added mouse sensitivity setting.
+- Menu: Added a level select screen and the possibility to have separate level sets.
 
 
 
