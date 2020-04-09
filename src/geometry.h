@@ -19,7 +19,11 @@ void CopiaSegmentosSinGiro( struct segmento*, struct segmento*, int );
 
 void GiraBumpers( struct pinball_bumper*, struct punto*, struct punto, int, double );
 
+void GiraZonasAcelCirc( struct zona_aceleracion_circular*, struct punto*, struct punto, int, double );
+
 void CopiaBumpersSinGiro( struct pinball_bumper*, struct punto*, int );
+
+void CopiaZonasAcelCircSinGiro( struct zona_aceleracion_circular*, struct punto*, int );
 
 float AnguloSegmento (struct segmento );
 

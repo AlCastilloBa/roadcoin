@@ -31,7 +31,7 @@ SDL_Texture* CargaTextura( char* ruta_textura, int* dim_x, int* dim_y, bool tran
 		exit(-1);
 	} 
 	////Color key image 
-	if (transparente=true)
+	if (transparente ==true)
 	{
 		SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 0, 0xFF, 0xFF ) );  // Color cyan es transparente
 	}
@@ -110,3 +110,20 @@ void CambiarModoPantallaCompleta( bool PantallaCompleta, SDL_Window* window )
 	}
 
 }
+
+
+// Pruebas 19/3/2020 (TODO)
+int Digito_N_esimo (int n, int entero)
+{
+	// Esta función devuelve el digito "n" del numero "entero"
+	// n=0 --> devuelve digito de unidades
+	// n=1 --> devuelve digito de las decenas
+	// n=2 --> devuelve digito de las centenas
+	// ...etc
+	while(n--)
+	{
+		entero/=10;
+	}
+	return entero%10;
+}
+

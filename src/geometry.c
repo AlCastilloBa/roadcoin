@@ -55,7 +55,7 @@ void CopiaSegmentosSinGiro( struct segmento* origen, struct segmento* destino, i
 	}
 }
 
-void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct punto centro_giro, int num_bumpers, double angulo )	// Nuevo 9/2/2020
+void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct punto centro_giro, int num_bumpers, double angulo )
 {
 	int bumper;
 	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
@@ -64,6 +64,19 @@ void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct p
 		for ( bumper = 0 ; bumper < num_bumpers ; bumper++ )
 		{
 			girado[bumper] = GiraPunto( centro_giro , inicial[bumper].centro, angulo );
+		}
+	}
+}
+
+void GiraZonasAcelCirc( struct zona_aceleracion_circular* inicial, struct punto* girado, struct punto centro_giro, int num_zonas_acel, double angulo )	// Nuevo 22/3/2020
+{
+	int zona_acel;
+	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
+	if ( num_zonas_acel != 0 )
+	{
+		for ( zona_acel = 0 ; zona_acel < num_zonas_acel ; zona_acel++ )
+		{
+			girado[zona_acel] = GiraPunto( centro_giro , inicial[zona_acel].centro, angulo );
 		}
 	}
 }
@@ -80,6 +93,20 @@ void CopiaBumpersSinGiro( struct pinball_bumper* origen, struct punto* destino, 
 		}
 	}
 }
+
+void CopiaZonasAcelCircSinGiro( struct zona_aceleracion_circular* origen, struct punto* destino, int num_zonas_acel )
+{
+	// Para el caso sin rotación, simplemente copia los puntos sin aplicar un giro
+	int zona_acel;
+	if ( num_zonas_acel != 0 )
+	{
+		for ( zona_acel = 0 ; zona_acel < num_zonas_acel ; zona_acel++ )
+		{
+			destino[zona_acel] = origen[zona_acel].centro;
+		}
+	}
+}
+
 
 float AnguloSegmento (struct segmento segm )
 {

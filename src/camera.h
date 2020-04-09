@@ -18,5 +18,5 @@ enum modo_camara
 
 
 
-struct punto CalculaCamara( enum modo_camara, int, int, int, int, struct punto, int, struct segmento*,  struct segmento*, int, int, int, int, int*, int*, int*, int*, int, struct punto*, struct punto* );
+struct punto CalculaCamara( enum modo_camara, int, int, int, int, struct punto, int, struct segmento*,  struct segmento*, int, int, int, int, int*, int*, int*, int*, int, struct punto*, struct punto*,  int, struct punto*, struct punto* );
 

@@ -15,7 +15,9 @@ struct punto CalculaCamara( 		enum modo_camara modo, int resolucion_x_pantalla, 
 					int pos_real_fondo_giratorio_izquierda, int pos_real_fondo_giratorio_arriba, int pos_real_fondo_giratorio_derecha, int pos_real_fondo_giratorio_abajo, 
 					int* pos_cam_fondo_giratorio_izquierda, int* pos_cam_fondo_giratorio_arriba, int* pos_cam_fondo_giratorio_derecha, int* pos_cam_fondo_giratorio_abajo,
 					int num_pinball_bumpers,
-					struct punto* pinball_bumpers_pos_real, struct punto* pinball_bumpers_pos_pantalla  ) 
+					struct punto* pinball_bumpers_pos_real, struct punto* pinball_bumpers_pos_pantalla,
+					int num_zonas_aceleracion_circular,
+					struct punto* zonas_acel_circ_pos_real, struct punto* zonas_acel_circ_pos_pantalla  ) 
 {
 	// Nota: 	posición real --> posición en coordenadas del juego, antes de calcular la posición en la pantala
 	// 		posición en pantalla --> coordenadas de la pantalla, tras calcular la posición
@@ -23,6 +25,7 @@ struct punto CalculaCamara( 		enum modo_camara modo, int resolucion_x_pantalla, 
 	int desplazamiento_x, desplazamiento_y;		// Offset x, Offset y
 	int segm;
 	int bumper;
+	int zona_acel_circ;
 
 	// Calculamos el desplazamiento
 	switch ( modo )
@@ -68,6 +71,13 @@ struct punto CalculaCamara( 		enum modo_camara modo, int resolucion_x_pantalla, 
 		pinball_bumpers_pos_pantalla[bumper].x = pinball_bumpers_pos_real[bumper].x - desplazamiento_x;
 		pinball_bumpers_pos_pantalla[bumper].y = pinball_bumpers_pos_real[bumper].y - desplazamiento_y;
 	}
+	// Calculamos la posición de las zonas circulares de aceleración // TODO PRUEBAS 22/3/2020
+	for ( zona_acel_circ = 0 ; zona_acel_circ < num_zonas_aceleracion_circular ; zona_acel_circ ++ )
+	{
+		zonas_acel_circ_pos_pantalla[zona_acel_circ].x = zonas_acel_circ_pos_real[zona_acel_circ].x - desplazamiento_x;
+		zonas_acel_circ_pos_pantalla[zona_acel_circ].y = zonas_acel_circ_pos_real[zona_acel_circ].y - desplazamiento_y;
+	}
+
 
 	return posicion_moneda_en_pantalla;
 }

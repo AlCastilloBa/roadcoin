@@ -45,7 +45,7 @@ struct vector_velocidad Aceleracion2Velocidad( struct vector_velocidad vinicial,
 }
 
 
-struct vector_fuerza SumaFuerzas( struct vector_fuerza gravedad , struct vector_fuerza* normales_segmentos, int numero_segmentos )
+struct vector_fuerza SumaFuerzas( struct vector_fuerza gravedad , struct vector_fuerza* normales_segmentos, int numero_segmentos, struct vector_fuerza* zonas_aceleracion_circular, int numero_zonas_acel_circ )
 {
 	// Nota: (TODO) Añadir más tipos de fuerzas
 	int i;
@@ -57,6 +57,12 @@ struct vector_fuerza SumaFuerzas( struct vector_fuerza gravedad , struct vector_
 		resultante.fx += normales_segmentos[i].fx;
 		resultante.fy += normales_segmentos[i].fy;
 	}
+	for (i=0 ; i< numero_zonas_acel_circ ; i++ )		// TODO NUEVO PRUEBAS 22/3/2020
+	{
+		resultante.fx += zonas_aceleracion_circular[i].fx;
+		resultante.fy += zonas_aceleracion_circular[i].fy;
+	}
+
 	return resultante;
 }
 

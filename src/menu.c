@@ -5,12 +5,13 @@
 #include <SDL_ttf.h>
 #include <stdio.h> 
 #include <stdbool.h>
+#include <math.h>
 
 
 #include "game.h"
 //#include "physics.h"
 //#include "camera.h"
-//#include "maps.h"
+#include "maps.h"
 //#include "geometry.h"
 #include "options.h"
 #include "menu.h"
@@ -18,22 +19,29 @@
 
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
-//#define DEBUG_INFO
+// #define DEBUG_INFO
 
 
-#define PORCENTAJE_ANCHO_TITULOS 70
-#define PORCENTAJE_ALTO_TITULOS 16
-#define PORCENTAJE_ANCHO_BOTONES 70
-#define PORCENTAJE_MARGEN_SUPERIOR 30
+#define PORCENTAJE_ANCHO_TITULOS 70.0
+#define PORCENTAJE_ALTO_TITULOS 16.0
+#define PORCENTAJE_ANCHO_BOTONES 70.0
+#define PORCENTAJE_MARGEN_SUPERIOR 30.0
 //#define PORCENTAJE_MARGEN_INFERIOR 20
-#define PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES 10
-#define PORCENTAJE_ALTO_BOTON 8
+#define PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES 10.0
+#define PORCENTAJE_ALTO_BOTON 8.0
 //#define PORCENTAJE_ANCHO_CARACTER_MENU 3
+
+// Variables que definen la proporcion de los elementos de un boton de tipo "valor numérico"
+#define PORCNT_ANCHO_TITULO_BOT_VAL_NUM 40.0
+#define PORCNT_ANCHO_VALOR_BOT_VAL_NUM 40.0
+#define PORCNT_ANCHO_MAS_BOT_VAL_NUM 10.0
+#define PORCNT_ANCHO_MENOS_BOT_VAL_NUM 10.0
+//#define PORCNT_ANCHO_DIGITO_BOT_VAL_NUM 12.5
 
 
 /////////////////////////////////////////////////////////////////////////
 // Variables globales
-//The window renderer 
+//The window renderer total_digitos
 extern SDL_Renderer* gRenderer;				// Definido en "game.c"
 // Variables globales opciones
 extern struct opciones opciones_juego;			// Definido en "game.c"
@@ -51,8 +59,27 @@ SDL_Color gColorTextoSeleccionado = { 255 , 255 , 0 }; 	// Amarillo --- Yellow
 SDL_Texture* gWhiteCheckBoxChecked = NULL;
 SDL_Texture* gWhiteCheckBoxUnchecked = NULL;
 
+SDL_Texture* gWhiteArrowMinus = NULL;	// Pruebas 6/4/2020
+SDL_Texture* gWhiteArrowPlus = NULL;
+
+SDL_Texture* gWhiteLeftArrow = NULL;	// Pruebas 8/4/2020
+SDL_Texture* gWhiteRightArrow = NULL;
+SDL_Texture* gYellowLeftArrow = NULL;
+SDL_Texture* gYellowRightArrow = NULL;
+
 Mix_Music *gMusicaMenu = NULL;
 Mix_Chunk *gSonidoClickBoton = NULL;
+
+SDL_Texture* gTexturaNumeroMenu[10] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};		// Numbers (0 to 9) texture // Pruebas 6/4/2020
+SDL_Texture* gTexturaPuntoMenu = NULL;	// Dot character texture (for numbers)
+SDL_Texture* gTexturaComaMenu = NULL;	// Comma character texture (for numbers)
+
+// Prueba 8/4/2020
+struct ConjuntoMapas* gListaConjuntosMapasJuego = NULL;	// Pointer to game level-sets list
+int gNumeroConjuntosMapas = 0;
+
+
+
 
 bool raton_sobre_boton (struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )
 {
@@ -71,6 +98,56 @@ bool raton_sobre_boton (struct boton_menu boton_consultado, int pos_raton_x, int
 	}
 }
 
+bool raton_sobre_boton_mas_valor_numerico ( struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )
+{
+	// Esta función indica si el ratón está posicionado sobre el pulsador (+) de un botón tipo "valor numerico"
+	// This function tells whether or not the mouse is over the (+) pushbutton inside a "numeric value" type button
+	if ( boton_consultado.clase_boton == boton_valor_numerico )
+	{
+		if ( 	(pos_raton_x >= boton_consultado.borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM + PORCNT_ANCHO_VALOR_BOT_VAL_NUM + PORCNT_ANCHO_MENOS_BOT_VAL_NUM)/100) ) && 
+			(pos_raton_x <= boton_consultado.borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM + PORCNT_ANCHO_VALOR_BOT_VAL_NUM + PORCNT_ANCHO_MENOS_BOT_VAL_NUM + PORCNT_ANCHO_MAS_BOT_VAL_NUM)/100) ) &&
+			(pos_raton_y >= boton_consultado.borde_arriba   ) &&
+			(pos_raton_y <= boton_consultado.borde_abajo    ) )
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}	
+	}
+	else
+	{
+		printf("Error de programación: boton número %d no es tipo valor numerico, pero se ha programado como si lo fuera\n", boton_consultado.identificador_boton );
+		return false;
+	}
+} 
+
+bool raton_sobre_boton_menos_valor_numerico ( struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )
+{
+	// Esta función indica si el ratón está posicionado sobre el pulsador (+) de un botón tipo "valor numerico"
+	// This function tells whether or not the mouse is over the (+) pushbutton inside a "numeric value" type button
+	if ( boton_consultado.clase_boton == boton_valor_numerico )
+	{
+		if ( 	(pos_raton_x >= boton_consultado.borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM + PORCNT_ANCHO_VALOR_BOT_VAL_NUM )/100) ) && 
+			(pos_raton_x <= boton_consultado.borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM + PORCNT_ANCHO_VALOR_BOT_VAL_NUM + PORCNT_ANCHO_MENOS_BOT_VAL_NUM)/100) ) &&
+			(pos_raton_y >= boton_consultado.borde_arriba   ) &&
+			(pos_raton_y <= boton_consultado.borde_abajo    ) )
+		{
+			return true;
+		}	
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		printf("Error de programación: boton número %d no es tipo valor numerico, pero se ha programado como si lo fuera\n", boton_consultado.identificador_boton );
+		return false;
+	}
+} 
+
 bool inicializa_datos_boton( struct boton_menu* boton, int indice_boton, enum listado_botones ident_boton, enum tipo_boton tipo, char* texto_boton, int boton_anterior, int boton_siguiente  )
 {
 	// La funcion "inicializar_menu_principal" es muy extensa, con código muy parecido. Se crea esta función para intentar reducir la extension del código.
@@ -84,7 +161,7 @@ bool inicializa_datos_boton( struct boton_menu* boton, int indice_boton, enum li
 	boton->borde_izquierdo = (opciones_juego.screen_x_resolution)*(100-PORCENTAJE_ANCHO_BOTONES)/2/100;
 	boton->borde_derecho = (opciones_juego.screen_x_resolution)*(100+PORCENTAJE_ANCHO_BOTONES)/2/100;
 	boton->borde_arriba = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + indice_boton*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES)/100;
-	boton->borde_abajo = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + indice_boton*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES + PORCENTAJE_ALTO_BOTON)/100;;
+	boton->borde_abajo = (opciones_juego.screen_y_resolution)*(PORCENTAJE_MARGEN_SUPERIOR + indice_boton*PORCENTAJE_OFFSET_VERTICAL_ENTRE_BOTONES + PORCENTAJE_ALTO_BOTON)/100;
 	boton->textura_boton_reposo = RenderizaTextoEnTextura( 	boton->texto, 
 								gFuenteTexto, 
 								gColorTextoReposo, 
@@ -155,12 +232,25 @@ bool inicializa_datos_pantalla_menu( struct pantalla_menu* pantalla, enum pantal
 
 
 
+
+
+
+//  _                    _                                    _       _
+// | |    ___   __ _  __| |  _ __ ___   ___ _ __  _   _    __| | __ _| |_ __ _
+// | |   / _ \ / _` |/ _` | | '_ ` _ \ / _ \ '_ \| | | |  / _` |/ _` | __/ _` |
+// | |__| (_) | (_| | (_| | | | | | | |  __/ | | | |_| | | (_| | (_| | || (_| |
+// |_____\___/ \__,_|\__,_| |_| |_| |_|\___|_| |_|\__,_|  \__,_|\__,_|\__\__,_|
+
+
+
 bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principal, */int numero_pantallas )
 {
 	// Esta funcion inicializa los valores de las estructuras de las imagenes del menu.
 	// Reserva la memoria para el menu, inicializa variables, e inicializa graficos
 	// (TODO)
 	bool success = true;
+	int i, conjunto_actual, mapa_actual;
+	bool lista_mapas_ok = true;
 
 	#ifdef DEBUG_INFO
 	printf("Cargando texturas generales del menu...\n");
@@ -170,6 +260,46 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	if( gWhiteCheckBoxChecked == NULL || gWhiteCheckBoxUnchecked == NULL ) 
 	{ 
 		printf( "Error al cargar texturas checkbox.\n" ); 
+		success = false; 
+	}
+
+	gWhiteArrowMinus = CargaTextura( "images/white_arrow_minus.png", NULL, NULL, true );		// Pruebas 6/4/2020
+	gWhiteArrowPlus = CargaTextura( "images/white_arrow_plus.png" , NULL, NULL, true );		// Pruebas 6/4/2020
+	if( gWhiteArrowMinus == NULL || gWhiteArrowPlus == NULL ) 
+	{ 
+		printf( "Error al cargar texturas flechas mas y menos.\n" ); 
+		success = false; 
+	}
+	// Pruebas 8/4/2020
+	gWhiteLeftArrow	= CargaTextura( "images/white_left_arrow.png", NULL, NULL, true );	// Pruebas 8/4/2020
+	gWhiteRightArrow = CargaTextura( "images/white_right_arrow.png", NULL, NULL, true );	// Pruebas 8/4/2020
+	gYellowLeftArrow = CargaTextura( "images/yellow_left_arrow.png", NULL, NULL, true );	// Pruebas 8/4/2020
+	gYellowRightArrow = CargaTextura( "images/yellow_right_arrow.png", NULL, NULL, true );	// Pruebas 8/4/2020
+	if ( gWhiteLeftArrow == NULL || gWhiteRightArrow == NULL || gYellowLeftArrow == NULL || gYellowRightArrow == NULL )
+	{
+		printf( "Error al cargar texturas flechas izquierda y derecha.\n" ); 
+		success = false; 
+	}
+
+
+	// Pruebas 6/4/2020
+	gTexturaNumeroMenu[0] = CargaTextura( "images/chars/lunasol/0.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[1] = CargaTextura( "images/chars/lunasol/1.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[2] = CargaTextura( "images/chars/lunasol/2.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[3] = CargaTextura( "images/chars/lunasol/3.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[4] = CargaTextura( "images/chars/lunasol/4.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[5] = CargaTextura( "images/chars/lunasol/5.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[6] = CargaTextura( "images/chars/lunasol/6.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[7] = CargaTextura( "images/chars/lunasol/7.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[8] = CargaTextura( "images/chars/lunasol/8.png" , NULL, NULL, true );
+	gTexturaNumeroMenu[9] = CargaTextura( "images/chars/lunasol/9.png" , NULL, NULL, true );
+	gTexturaPuntoMenu = CargaTextura( "images/chars/lunasol/dot.png" , NULL, NULL, true );
+	gTexturaComaMenu = CargaTextura( "images/chars/lunasol/comma.png" , NULL, NULL, true );
+	if ( gTexturaNumeroMenu[0] == NULL || gTexturaNumeroMenu[1] == NULL || gTexturaNumeroMenu[2] == NULL || gTexturaNumeroMenu[3] == NULL || gTexturaNumeroMenu[4]== NULL || 
+		gTexturaNumeroMenu[5] == NULL || gTexturaNumeroMenu[6] == NULL || gTexturaNumeroMenu[7] == NULL || gTexturaNumeroMenu[8] == NULL || gTexturaNumeroMenu[9] == NULL || 
+		gTexturaPuntoMenu == NULL || gTexturaComaMenu == NULL )
+	{
+		printf( "Failed to load number texture image!\n" ); 
 		success = false; 
 	}
 
@@ -493,6 +623,42 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		success = false;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla opciones de controles ( Nuevo 6/4/2020, PRUEBAS )
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla opciones
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos de pantalla opciones de controles...\n");
+	#endif
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_opc_control]), menu_opc_control, "Opciones control\0", "images/blob_gradient.jpeg", 3 ) )
+	{
+		printf( "Error al inicializar pantalla opciones de sonido.\n" ); 
+		success = false;
+	}
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 0 de pantalla menu opciones de controles...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_control].botones_pantalla[0]) , 0, boton_sensibilidad_raton, boton_valor_numerico, "Sens raton:   \0" , 1, 1  ) )
+	{
+		printf( "Error al inicializar boton 0 en menu opciones de controles.\n" ); 
+		success = false;
+	}
+	pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico = opciones_juego.mouse_sensitivity;
+	pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_minimo = 0.001;
+	pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_maximo = 1;
+	pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_incremento = 0.001;
+	pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_digitos_izq_coma = 1;	
+	pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_digitos_dcha_coma = 4;
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 1 de pantalla menu opciones de controles...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_control].botones_pantalla[1]) , 1, boton_opcctl_atras, boton_pulsar, "      Atras      \0" , 0, 0  ) )
+	{
+		printf( "Error al inicializar boton 1 en menu opciones de controles.\n" ); 
+		success = false;
+	}
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
@@ -584,7 +750,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 3 de pantalla menu provisional seleccion nivel...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[3]) , 3, boton_provisional_nivel_04, boton_pulsar, "Test2             \0" , 2, 4  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[3]) , 3, boton_provisional_nivel_04, boton_pulsar, "Laberinto Circular\0" , 2, 4  ) )
 	{
 		printf( "Error al inicializar boton 3 en menu provisional seleccion nivel.\n" ); 
 		success = false;
@@ -593,7 +759,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos boton 4 de pantalla menu provisional seleccion nivel...\n");
 	#endif
-	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[4]) , 4, boton_provisional_nivel_05, boton_pulsar, "Nivel 4           \0" , 3, 5  ) )
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_niveles_provisional].botones_pantalla[4]) , 4, boton_provisional_nivel_05, boton_pulsar, "Super Pinball    \0" , 3, 5  ) )
 	{
 		printf( "Error al inicializar boton 4 en menu provisional seleccion nivel.\n" ); 
 		success = false;
@@ -607,6 +773,345 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		printf( "Error al inicializar boton 5 en menu provisional seleccion nivel.\n" ); 
 		success = false;
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla selección de conjunto de niveles --- Level set selection screen (Nuevo 8/4/2020)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla selección de conjunto de niveles
+	// Esta pantalla no se parece a ninguna de las anteriores, por lo que la configuro a mano
+
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos de pantalla seleccion de conjunto de niveles...\n");
+	#endif
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_elige_conjunto_niveles]), menu_elige_conjunto_niveles, "Conjunto niveles\0", "images/blue_neon_grid.jpeg", 8 ) )
+	{
+		printf( "Error al inicializar pantalla seleccion de conjunto de niveles.\n" ); 
+		success = false;
+	}
+	//-------------------------------------------------------
+	// Leemos fichero level set
+	gListaConjuntosMapasJuego = LeerConjuntosMapasJuego ( &gNumeroConjuntosMapas );
+	if ( gListaConjuntosMapasJuego==NULL || gNumeroConjuntosMapas==0 )
+	{
+		printf( "Ha sucedido algo inesperado al leer la lista de conjuntos de mapas.\n" );
+		printf( "Revise que el contenido de maps/levelsets_list es el correcto y que existe al menos un conjunto de mapas\n");
+		success = false;
+	}
+	else
+	{
+		#ifdef DEBUG_INFO
+		printf("Se han cargado datos de %d conjuntos de mapas...\n", gNumeroConjuntosMapas );
+		#endif
+
+		// Cargamos las imágenes y creamos las texturas de los textos
+		for ( i = 0 ; i < gNumeroConjuntosMapas ; i++ )
+		{
+			char cadena_numeracion[10];
+			#ifdef DEBUG_INFO
+			printf("Cargando textura %s...\n", gListaConjuntosMapasJuego[i].RutaImagen);
+			#endif
+			gListaConjuntosMapasJuego[i].TexturaImagen = CargaTextura( gListaConjuntosMapasJuego[i].RutaImagen, NULL, NULL, true );
+			if ( gListaConjuntosMapasJuego[i].TexturaImagen == NULL )
+			{
+				printf("Error al cargar la textura %s \n", gListaConjuntosMapasJuego[i].RutaImagen );
+				success = false;
+			}
+			// TODO, añadir tamaños para mantener la relacion de aspecto
+			gListaConjuntosMapasJuego[i].TexturaNombreDir = RenderizaTextoEnTextura( gListaConjuntosMapasJuego[i].Directorio, gFuenteTexto, gColorTextoReposo, NULL, NULL   );
+			gListaConjuntosMapasJuego[i].TexturaDescripcion = RenderizaTextoEnTextura( gListaConjuntosMapasJuego[i].Descripcion, gFuenteTexto, gColorTextoReposo, NULL, NULL   );
+			sprintf(cadena_numeracion, "%d/%d\0", i+1, gNumeroConjuntosMapas );
+			gListaConjuntosMapasJuego[i].TexturaNumeracion = RenderizaTextoEnTextura( cadena_numeracion, gFuenteTexto, gColorTextoReposo, NULL, NULL   );
+		}
+
+		// Boton 0 - Flecha izquierda
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].identificador_boton = boton_conj_mapas_flechaizq;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].borde_izquierdo = 0.1*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].borde_derecho = 0.2*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].borde_arriba = 0.45*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].textura_boton_reposo = gWhiteLeftArrow;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].textura_boton_seleccionado = gYellowLeftArrow;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].boton_siguiente = 2;
+
+		// Boton 1 - Flecha derecha
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].identificador_boton = boton_conj_mapas_flechader;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].borde_izquierdo = 0.8*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].borde_derecho = 0.9*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].borde_arriba = 0.45*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].textura_boton_reposo = gWhiteRightArrow;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].textura_boton_seleccionado = gYellowRightArrow;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].boton_siguiente = 2;
+
+		// Boton 2 - Seleccionar conjunto de mapas
+
+		if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[2]) , 5 /*pos 5, no 2*/, boton_conj_mapas_seleccionar, boton_pulsar, "   Seleccionar   \0" , 4, 4  ) )
+		{
+			printf( "Error al inicializar boton 2 en seleccion de conjunto de niveles.\n" ); 
+			success = false;
+		}
+
+		// Boton 3 - Imagen conjunto de mapas
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].identificador_boton = boton_conj_mapas_imagen;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].borde_izquierdo = 0.55*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].borde_derecho = 0.75*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].borde_arriba = 0.3*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].borde_abajo = 0.7*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].textura_boton_reposo = gListaConjuntosMapasJuego[0].TexturaImagen;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].textura_boton_seleccionado = gListaConjuntosMapasJuego[0].TexturaImagen;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].boton_siguiente = 2;
+
+
+		// Boton 4 - Atras
+		if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[4]) , 6 /*pos 6, no 4*/, boton_conj_mapas_atras, boton_pulsar, "      Atras      \0" , 2, 2  ) )
+		{
+			printf( "Error al inicializar boton 4 en seleccion de conjunto de niveles.\n" ); 
+			success = false;
+		}
+
+		// Boton 5 - Nombre conjunto de mapas
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].identificador_boton = boton_conj_mapas_directorio;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].borde_derecho = 0.50*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].borde_arriba = 0.3*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].borde_abajo = 0.35*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].textura_boton_reposo = gListaConjuntosMapasJuego[0].TexturaNombreDir;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].textura_boton_seleccionado = gListaConjuntosMapasJuego[0].TexturaNombreDir;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].boton_siguiente = 2;
+
+		// Boton 6 - Descripcion conjunto de mapas
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].identificador_boton = boton_conj_mapas_descripcion;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].borde_derecho = 0.50*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].borde_arriba = 0.5*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].textura_boton_reposo = gListaConjuntosMapasJuego[0].TexturaDescripcion;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].textura_boton_seleccionado = gListaConjuntosMapasJuego[0].TexturaDescripcion;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].boton_siguiente = 2;
+
+		// Boton 7 - Numeracion conjunto de mapas
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].identificador_boton = boton_conj_mapas_numeracion;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].borde_izquierdo = 0.35*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].borde_derecho = 0.45*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].borde_arriba = 0.65*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].borde_abajo = 0.7*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].textura_boton_reposo = gListaConjuntosMapasJuego[0].TexturaNumeracion;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].textura_boton_seleccionado = gListaConjuntosMapasJuego[0].TexturaNumeracion;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].boton_siguiente = 2;
+
+	}
+
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla selección de nivel (dentro de un conjunto de niveles) --- Level selection screen (inside a level set) (Nuevo 8/4/2020)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla selección de nivel
+	// Esta pantalla no se parece a ninguna de las anteriores, por lo que la configuro a mano
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos de pantalla seleccion de nivel...\n");
+	#endif
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_elige_nivel]), menu_elige_nivel, "Seleccion  nivel\0", "images/pink_neon_grid.jpg", 12 ) )
+	{
+		printf( "Error al inicializar pantalla seleccion de nivel.\n" ); 
+		success = false;
+	}
+
+	lista_mapas_ok = true;
+	// Leemos todos los ficheros level list (uno por cada conjunto)
+	for ( i = 0 ; i < gNumeroConjuntosMapas ; i++ )
+	{
+		gListaConjuntosMapasJuego[i].mapas_individuales = LeerInfoMapasDeConjunto( gListaConjuntosMapasJuego[i].Directorio , &(gListaConjuntosMapasJuego[i].Numero_Mapas) );
+		if ( gListaConjuntosMapasJuego[i].mapas_individuales == NULL || gListaConjuntosMapasJuego[i].Numero_Mapas == 0 )
+		{
+			printf( "Ha sucedido algo inesperado al leer la lista de mapas del conjunto %s.\n", gListaConjuntosMapasJuego[i].Directorio );
+			printf( "Revise que el contenido de maps/%s/level_list es el correcto y que existe al menos un mapa declarado.\n", gListaConjuntosMapasJuego[i].Directorio);
+			success = false;
+			lista_mapas_ok = false;
+		}
+	} 
+
+
+
+
+	if (lista_mapas_ok == true)
+	{
+		// Cargamos las imágenes y texturas de textos asociadas a cada mapa
+		for ( conjunto_actual = 0 ; conjunto_actual < gNumeroConjuntosMapas ; conjunto_actual++ )
+		{
+			for ( mapa_actual = 0; mapa_actual < gListaConjuntosMapasJuego[conjunto_actual].Numero_Mapas ; mapa_actual++ )
+			{
+				char cadena_numeracion[10];
+				// Lo siguiente, pendiente de implementar las imagenes de descripcion del mapa
+				/*#ifdef DEBUG_INFO
+				printf("Cargando textura %s...\n", gListaConjuntosMapasJuego[i].mapas_individuales.RutaImagen);
+				#endif
+				gListaConjuntosMapasJuego[i].TexturaImagen = CargaTextura( gListaConjuntosMapasJuego[i].RutaImagen, NULL, NULL, true );
+				if ( gListaConjuntosMapasJuego[i].TexturaImagen == NULL )
+				{
+					printf("Error al cargar la textura %s \n", gListaConjuntosMapasJuego[i].RutaImagen );
+					success = false;
+				}
+				// TODO, añadir tamaños para mantener la relacion de aspecto
+				*/
+				gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNombreMapa = RenderizaTextoEnTextura( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.NombreMapa, gFuenteTexto, gColorTextoReposo, NULL, NULL   );
+				gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaDescripcionMapa = RenderizaTextoEnTextura( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.DescripcionMapa, gFuenteTexto, gColorTextoReposo, NULL, NULL   );
+				sprintf(cadena_numeracion, "%d/%d\0", mapa_actual+1, gListaConjuntosMapasJuego[conjunto_actual].Numero_Mapas );
+				gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNumeracion = RenderizaTextoEnTextura( cadena_numeracion, gFuenteTexto, gColorTextoReposo, NULL, NULL   );	
+				// TODO SEGUIR AÑADIENDO TEXTURAS 
+
+			}
+		}
+
+		// Boton 0 -- Flecha izquierda --- Left arrow
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].identificador_boton = boton_mapa_flechaizq;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].borde_izquierdo = 0.1*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].borde_derecho = 0.2*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].borde_arriba = 0.45*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].textura_boton_reposo = gWhiteLeftArrow;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].textura_boton_seleccionado = gYellowLeftArrow;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[0].boton_siguiente = 2;
+
+		// Boton 1 -- Flecha derecha --- Right arrow
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].identificador_boton = boton_mapa_flechader;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].borde_izquierdo = 0.8*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].borde_derecho = 0.9*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].borde_arriba = 0.45*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].textura_boton_reposo = gWhiteRightArrow;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].textura_boton_seleccionado = gYellowRightArrow;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[1].boton_siguiente = 2;
+
+		// Boton 2 -- Jugar --- Play selected level
+		if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_elige_nivel].botones_pantalla[2]) , 5 /*pos 5, no 2*/, boton_mapa_jugar, boton_pulsar, "      Jugar      \0" , 4, 4  ) )
+		{
+			printf( "Error al inicializar boton 2 en seleccion de nivel.\n" ); 
+			success = false;
+		}
+
+		// Boton 3 -- Imagen Mapa --- Level image
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].identificador_boton = boton_mapa_imagen;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].borde_izquierdo = 0.55*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].borde_derecho = 0.75*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].borde_arriba = 0.3*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].borde_abajo = 0.7*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].textura_boton_reposo = NULL;  /* TODO PENDIENTE IMPLEMENTAR IMAGENES MAPA */
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].textura_boton_seleccionado = NULL; /* TODO PENDIENTE IMPLEMENTAR IMAGENES MAPA */
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[3].boton_siguiente = 2;
+
+		// Boton 4 -- Atras --- Go back
+		if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_elige_nivel].botones_pantalla[4]) , 6 /*pos 6, no 4*/, boton_mapa_atras, boton_pulsar, "      Atras      \0" , 2, 2  ) )
+		{
+			printf( "Error al inicializar boton 4 en seleccion de nivel.\n" ); 
+			success = false;
+		}
+
+		// Boton 5 -- Nombre Mapa --- Level name
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].identificador_boton = boton_mapa_nombre;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].borde_derecho = 0.50*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].borde_arriba = 0.3*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].borde_abajo = 0.35*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].textura_boton_reposo = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].textura_boton_seleccionado = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].boton_siguiente = 2;
+
+		// Boton 6 -- Descrpción del mapa --- Level description
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].identificador_boton = boton_mapa_descripcion;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].borde_derecho = 0.50*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].borde_arriba = 0.5*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].textura_boton_reposo = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].textura_boton_seleccionado = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].boton_siguiente = 2;
+
+		// Boton 7 -- Modo de giro --- Rotation mode
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].identificador_boton = boton_mapa_modogiro;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].borde_derecho = 0.50*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].borde_arriba = 0.5*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].textura_boton_reposo = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].textura_boton_seleccionado = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[7].boton_siguiente = 2;
+
+		// Boton 8 -- Angulo máximo --- maximum angle
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].identificador_boton = boton_mapa_angmax;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].borde_derecho = 0.50*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].borde_arriba = 0.5*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].textura_boton_reposo = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].textura_boton_seleccionado = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[8].boton_siguiente = 2;
+
+		// Boton 9 -- Gravedad --- Gravity
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].identificador_boton = boton_mapa_gravedad;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].borde_derecho = 0.50*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].borde_arriba = 0.5*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].textura_boton_reposo = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].textura_boton_seleccionado = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[9].boton_siguiente = 2;
+
+		// Boton 10 -- Tiempo cuenta atras -- Count down time
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].identificador_boton = boton_mapa_tiempo;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].borde_derecho = 0.50*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].borde_arriba = 0.5*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].borde_abajo = 0.55*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].textura_boton_reposo = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].textura_boton_seleccionado = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[10].boton_siguiente = 2;
+
+		// Boton 11 -- Numeración --- Numbering (ex. 7/9)
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].identificador_boton = boton_mapa_numeracion;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].clase_boton = boton_pulsar;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].borde_izquierdo = 0.35*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].borde_derecho = 0.45*(opciones_juego.screen_x_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].borde_arriba = 0.65*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].borde_abajo = 0.7*(opciones_juego.screen_y_resolution);
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].textura_boton_reposo = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].textura_boton_seleccionado = NULL;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].boton_anterior = 2;
+		pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].boton_siguiente = 2;
+	}
+
+
 
 
 	//-----------------------------------------------------------------------------------------
@@ -627,6 +1132,17 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	return success;
 }
 
+//  _     _ _
+// | |   (_) |__   ___ _ __ __ _ _ __   _ __ ___   ___ _ __ ___
+// | |   | | '_ \ / _ \ '__/ _` | '__| | '_ ` _ \ / _ \ '_ ` _ \
+// | |___| | |_) |  __/ | | (_| | |    | | | | | |  __/ | | | | |
+// |_____|_|_.__/ \___|_|  \__,_|_|    |_| |_| |_|\___|_| |_| |_|
+//  _____
+// |  ___| __ ___  ___   _ __ ___   ___ _ __ ___   ___  _ __ _   _
+// | |_ | '__/ _ \/ _ \ | '_ ` _ \ / _ \ '_ ` _ \ / _ \| '__| | | |
+// |  _|| | |  __/  __/ | | | | | |  __/ | | | | | (_) | |  | |_| |
+// |_|  |_|  \___|\___| |_| |_| |_|\___|_| |_| |_|\___/|_|   \__, |
+//                                                           |___/
 
 bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_principal, */ int numero_pantallas ) 
 {
@@ -635,7 +1151,7 @@ bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_prin
 	#endif 
 
 	// Recorrer con un bucle for liberando la memoria de los botones
-	int menu_actual, boton_actual;
+	int menu_actual, boton_actual, conjunto_actual, mapa_actual;
 	for ( menu_actual=0 ; menu_actual < numero_pantallas ; menu_actual++ )
 	{
 		for ( boton_actual=0 ; boton_actual < pantallas_menu_principal[menu_actual].numero_botones ;  boton_actual++ )
@@ -654,8 +1170,54 @@ bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_prin
 	}
 	free ( pantallas_menu_principal );
 
-	SDL_DestroyTexture(gWhiteCheckBoxChecked); gWhiteCheckBoxChecked = NULL;
-	SDL_DestroyTexture(gWhiteCheckBoxChecked); gWhiteCheckBoxChecked = NULL;
+	// Liberar conjuntos de mapas e informacion de mapas --- Free level-sets and level information
+	for ( conjunto_actual = 0 ; conjunto_actual < gNumeroConjuntosMapas ; conjunto_actual++ )
+	{
+		#ifdef DEBUG_INFO
+		printf("Liberando textura %s...\n", gListaConjuntosMapasJuego[conjunto_actual].RutaImagen);
+		#endif
+		SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].TexturaImagen ); gListaConjuntosMapasJuego[conjunto_actual].TexturaImagen = NULL;
+		SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].TexturaNombreDir ); gListaConjuntosMapasJuego[conjunto_actual].TexturaNombreDir = NULL;
+		SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].TexturaDescripcion ); gListaConjuntosMapasJuego[conjunto_actual].TexturaDescripcion = NULL;
+		SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].TexturaNumeracion );  gListaConjuntosMapasJuego[conjunto_actual].TexturaNumeracion = NULL;
+
+		// Liberamos información de los mapas
+		for (mapa_actual = 0 ; mapa_actual < gListaConjuntosMapasJuego[conjunto_actual].Numero_Mapas ; mapa_actual++ )
+		{
+				SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNombreMapa ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNombreMapa = NULL;
+				SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaDescripcionMapa ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaDescripcionMapa = NULL;
+				SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaImagenMapa ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaImagenMapa = NULL;
+				SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaModoGiro ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaModoGiro = NULL;
+				SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaAnguloMaximo ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaAnguloMaximo = NULL;
+				SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaGravedad ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaGravedad = NULL;
+				SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaTiempo ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaTiempo = NULL;
+				SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNumeracion ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNumeracion = NULL;
+		}
+		free ( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales ); gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales = NULL;
+	} 
+	free( gListaConjuntosMapasJuego ); gListaConjuntosMapasJuego = NULL;
+
+	// Liberar texturas generales del menú --- Free general menu textures
+	SDL_DestroyTexture( gWhiteCheckBoxChecked ); gWhiteCheckBoxChecked = NULL;
+	SDL_DestroyTexture( gWhiteCheckBoxChecked ); gWhiteCheckBoxChecked = NULL;
+	SDL_DestroyTexture( gWhiteArrowMinus ); gWhiteArrowMinus = NULL;
+	SDL_DestroyTexture( gWhiteArrowPlus ); gWhiteArrowPlus = NULL;
+	SDL_DestroyTexture( gWhiteLeftArrow ); gWhiteLeftArrow = NULL;
+	SDL_DestroyTexture( gWhiteRightArrow ); gWhiteRightArrow = NULL;
+	SDL_DestroyTexture( gYellowLeftArrow ); gYellowLeftArrow = NULL;
+	SDL_DestroyTexture( gYellowRightArrow ); gYellowRightArrow = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[0] ); gTexturaNumeroMenu[0] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[1] ); gTexturaNumeroMenu[1] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[2] ); gTexturaNumeroMenu[2] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[3] ); gTexturaNumeroMenu[3] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[4] ); gTexturaNumeroMenu[4] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[5] ); gTexturaNumeroMenu[5] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[6] ); gTexturaNumeroMenu[6] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[7] ); gTexturaNumeroMenu[7] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[8] ); gTexturaNumeroMenu[8] = NULL;
+	SDL_DestroyTexture( gTexturaNumeroMenu[9] ); gTexturaNumeroMenu[9] = NULL;
+	SDL_DestroyTexture( gTexturaPuntoMenu ); gTexturaPuntoMenu = NULL;
+	SDL_DestroyTexture( gTexturaComaMenu ); gTexturaComaMenu = NULL;
 
 	// Liberar musica y sonidos --- Free music and sounds
 	Mix_FreeMusic( gMusicaMenu ); gMusicaMenu = NULL;
@@ -678,6 +1240,8 @@ void bucle_principal_menu_principal( void )
 	enum pantalla_menu_principal menu_activo;	// Menu activo actualmente y representado en la pantalla --- Currently active menu, displayed on screen
 	int boton_seleccionado, i;
 	bool algun_boton_seleccionado, boton_pulsado;
+
+	int conjunto_niveles_seleccionado_actualmente = 0, nivel_seleccionado_actualmente = 0;
 
 	/* Movido a variables globales
 	struct pantalla_menu* pantallas_menu_principal;
@@ -743,9 +1307,17 @@ void bucle_principal_menu_principal( void )
 						break; 
 					case SDLK_LEFT:
 						// (TODO) Techa izquierda
+						if ( menu_activo == menu_elige_conjunto_niveles )
+						{
+							boton_seleccionado = 0;
+						}
 						break;
 					case SDLK_RIGHT:
 						// (TODO) Tecla derecha
+						if ( menu_activo == menu_elige_conjunto_niveles )
+						{
+							boton_seleccionado = 1;
+						}
 						break;
 					case SDLK_UP:
 						// Techa arriba
@@ -820,7 +1392,9 @@ void bucle_principal_menu_principal( void )
 			{
 
 				case boton_jugar:
-					menu_activo = menu_niveles_provisional;
+				case boton_mapa_atras:
+					//menu_activo = menu_niveles_provisional;	// Para DEBUG
+					menu_activo = menu_elige_conjunto_niveles;
 					boton_seleccionado = 0;
 					break;
 				case boton_provisional_nivel_01:
@@ -854,7 +1428,7 @@ void bucle_principal_menu_principal( void )
 					#ifdef DEBUG_INFO
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
-					bucle_principal_juego( "maps/test_map_2");
+					bucle_principal_juego( "maps/round_labyrinth");
 					//Activar variables ratón una vez el juego ha terminado
 					SDL_ShowCursor(SDL_ENABLE);
 					SDL_SetRelativeMouseMode(SDL_FALSE);
@@ -863,7 +1437,7 @@ void bucle_principal_menu_principal( void )
 					#ifdef DEBUG_INFO
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
-					bucle_principal_juego("maps/test_pinball_1");
+					bucle_principal_juego("maps/super_pinball");
 					//Activar variables ratón una vez el juego ha terminado
 					SDL_ShowCursor(SDL_ENABLE);
 					SDL_SetRelativeMouseMode(SDL_FALSE);
@@ -875,11 +1449,13 @@ void bucle_principal_menu_principal( void )
 				case boton_opcvid_atras:
 				case boton_opcsnd_atras:
 				case boton_opcjgo_atras:
+				case boton_opcctl_atras:
 					menu_activo = menu_opciones;
 					boton_seleccionado = 0;
 					break;
 				case boton_opc_atras:
 				case boton_nivel_prov_atras:
+				case boton_conj_mapas_atras:
 					menu_activo = menu_principal;
 					boton_seleccionado = 0;
 					break;
@@ -893,6 +1469,10 @@ void bucle_principal_menu_principal( void )
 					break;
 				case boton_opc_juego:
 					menu_activo = menu_opc_juego;
+					boton_seleccionado = 0;
+					break;
+				case boton_controles:
+					menu_activo = menu_opc_control;
 					boton_seleccionado = 0;
 					break;
 				case boton_fullscreen:
@@ -925,6 +1505,109 @@ void bucle_principal_menu_principal( void )
 					opciones_juego.limit_coin_speed = !opciones_juego.limit_coin_speed;
 					pantallas_menu_principal[menu_opc_juego].botones_pantalla[1].estado_on_off = opciones_juego.limit_coin_speed;
 					break;
+				case boton_sensibilidad_raton:
+					if ( raton_sobre_boton_menos_valor_numerico( pantallas_menu_principal[menu_opc_control].botones_pantalla[0], pos_raton_x, pos_raton_y) )
+					{
+						// Se ha pulsado menos
+						pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico -= pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_incremento;
+						if ( pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico < pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_minimo )
+						{
+							// Estamos por debajo del minimo, volvemos al minimo
+							pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico = pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_minimo;
+						}
+						opciones_juego.mouse_sensitivity = pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico;
+					}
+					if ( raton_sobre_boton_mas_valor_numerico( pantallas_menu_principal[menu_opc_control].botones_pantalla[0], pos_raton_x, pos_raton_y) )
+					{
+						// Se ha pulsado mas
+						pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico += pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_incremento;
+						if ( pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico > pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_maximo )
+						{
+							// Estamos por encima del maximo, volvemos al maximo
+							pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico = pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_maximo;
+						}
+						opciones_juego.mouse_sensitivity = pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico;
+					}
+					break;
+				case boton_conj_mapas_flechaizq:
+					conjunto_niveles_seleccionado_actualmente++;
+					if ( conjunto_niveles_seleccionado_actualmente >= gNumeroConjuntosMapas )
+					{
+						conjunto_niveles_seleccionado_actualmente = 0;		// Se salimos por la derecha volvemos al principio
+					}
+					// Actualizamos imagenes y texturas textos
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaImagen;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaImagen;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaNombreDir;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaNombreDir;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaDescripcion;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaDescripcion;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaNumeracion;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaNumeracion;
+					break;
+				case boton_conj_mapas_flechader:
+					conjunto_niveles_seleccionado_actualmente--;
+					if ( conjunto_niveles_seleccionado_actualmente < 0 )
+					{
+						conjunto_niveles_seleccionado_actualmente = (gNumeroConjuntosMapas-1);		// Si salimos por la izquierda vamos al máximo
+					}
+					// Actualizamos imagenes y texturas textos
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaImagen;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaImagen;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaNombreDir;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaNombreDir;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaDescripcion;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaDescripcion;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaNumeracion;
+					pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].TexturaNumeracion;
+					break;
+				case boton_conj_mapas_seleccionar:
+					menu_activo = menu_elige_nivel;
+					// Actualizamos la informacion con el primer mapa del conjunto de niveles seleccionado
+					nivel_seleccionado_actualmente = 0;
+					boton_seleccionado = 0;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNombreMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNombreMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaDescripcionMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaDescripcionMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNumeracion;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNumeracion;
+					break;
+				case boton_mapa_flechaizq:
+					nivel_seleccionado_actualmente--;
+					if ( nivel_seleccionado_actualmente < 0 )
+					{
+						nivel_seleccionado_actualmente = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].Numero_Mapas -1 ;	// Si salimos por la izquierda vamos al máximo
+					}
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNombreMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNombreMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaDescripcionMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaDescripcionMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNumeracion;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNumeracion;	
+					break;
+				case boton_mapa_flechader:
+					nivel_seleccionado_actualmente++;
+					if ( nivel_seleccionado_actualmente >= gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].Numero_Mapas )
+					{
+						nivel_seleccionado_actualmente = 0;	// Si salimos por la derecha volvemos al principio
+					}
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNombreMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[5].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNombreMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaDescripcionMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[6].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaDescripcionMapa;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].textura_boton_reposo = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNumeracion;
+					pantallas_menu_principal[menu_elige_nivel].botones_pantalla[11].textura_boton_seleccionado = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].TexturaNumeracion;
+					break;
+				case boton_mapa_jugar:
+					#ifdef DEBUG_INFO
+					printf("Comenzando bucle principal del juego...\n");
+					#endif
+					bucle_principal_juego( gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].RutaMapa );
+					//Activar variables ratón una vez el juego ha terminado
+					SDL_ShowCursor(SDL_ENABLE);
+					SDL_SetRelativeMouseMode(SDL_FALSE);
+					break;
 				default:
 					// No hacemos nada --- Do nothing
 					break;
@@ -949,7 +1632,7 @@ void bucle_principal_menu_principal( void )
 		// Dibuja titulo --- Draw menu title (Nota: SDL_Rect es un struct)
 		renderQuad.x = pantallas_menu_principal[menu_activo].borde_izquierdo_titulo; 									/* Coord X esquina superior izquierda */
 		renderQuad.y = pantallas_menu_principal[menu_activo].borde_arriba_titulo; 										/* Coord Y esquina superior izqeuirda */
-		renderQuad.w = pantallas_menu_principal[menu_activo].borde_derecho_titulo - pantallas_menu_principal[menu_bienvenida].borde_izquierdo_titulo; 	/* Ancho */
+		renderQuad.w = pantallas_menu_principal[menu_activo].borde_derecho_titulo - pantallas_menu_principal[menu_bienvenida].borde_izquierdo_titulo ; 	/* Ancho */
 		renderQuad.h = pantallas_menu_principal[menu_activo].borde_abajo_titulo - pantallas_menu_principal[menu_bienvenida].borde_arriba_titulo;		/* Alto */
 		SDL_RenderCopy( gRenderer, pantallas_menu_principal[menu_activo].textura_titulo, NULL, &renderQuad );
 
@@ -975,9 +1658,9 @@ void bucle_principal_menu_principal( void )
 						}
 						break;
 					case boton_conmutar:
-						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo; 									/* Coord X esquina superior izquierda */
+						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (int) (opciones_juego.screen_y_resolution) * PORCENTAJE_ALTO_BOTON/100 /*Para dejar hueco al checkbox*/; 									/* Coord X esquina superior izquierda */
 						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 										/* Coord Y esquina superior izqeuirda */
-						renderQuad.w = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_derecho - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo; 	/* Ancho */
+						renderQuad.w = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_derecho - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo - (int) (opciones_juego.screen_y_resolution) * PORCENTAJE_ALTO_BOTON/100 /*Para dejar hueco al checkbox*/; 	/* Ancho */
 						renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;
 						if ( boton_seleccionado == i )
 						{
@@ -987,9 +1670,9 @@ void bucle_principal_menu_principal( void )
 						{
 							SDL_RenderCopy( gRenderer, pantallas_menu_principal[menu_activo].botones_pantalla[i].textura_boton_reposo, NULL, &renderQuad );
 						}
-						// Dibujar caja que indique el estado de la seleccion --- Draw tickbo
+						// Dibujar caja que indique el estado de la seleccion --- Draw tickbox
 						renderQuad.w =  (int) (opciones_juego.screen_y_resolution) * PORCENTAJE_ALTO_BOTON/100 ; 		/* Ancho */ /* Ancho igual que alto de boton --- Tickbox width equal to button height */
-						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo - renderQuad.w; 			/* Coord X esquina superior izquierda */
+						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo /*- renderQuad.w*/; 			/* Coord X esquina superior izquierda */
 						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 							/* Coord Y esquina superior izqeuirda */
 						renderQuad.h = renderQuad.w;												/* Alto */
 						if ( pantallas_menu_principal[menu_activo].botones_pantalla[i].estado_on_off )
@@ -1000,6 +1683,84 @@ void bucle_principal_menu_principal( void )
 						{
 							SDL_RenderCopy( gRenderer, gWhiteCheckBoxUnchecked, NULL, &renderQuad );
 						}
+						break;
+					case boton_valor_numerico:		// Pruebas 6/4/2020
+						// Dibujar texto
+						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo; 									/* Coord X esquina superior izquierda */
+						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 										/* Coord Y esquina superior izqeuirda */
+						renderQuad.w = ( pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_derecho - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo ) * PORCNT_ANCHO_TITULO_BOT_VAL_NUM/100; 	/* Ancho */
+						renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;
+						if ( boton_seleccionado == i )
+						{
+							SDL_RenderCopy( gRenderer, pantallas_menu_principal[menu_activo].botones_pantalla[i].textura_boton_seleccionado, NULL, &renderQuad );
+						}
+						else
+						{
+							SDL_RenderCopy( gRenderer, pantallas_menu_principal[menu_activo].botones_pantalla[i].textura_boton_reposo, NULL, &renderQuad );
+						}
+						// Dibujar valor numérico
+						// (TODO)
+						{
+							// Creamos un entero desplazando hacia la izquierda todo (sin coma)
+							long entero_auxiliar_para_valor_numerico = pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico * pow(10, pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma) ;
+							int total_digitos; /*Incluida la coma*/
+							int digito_actual, posicion_actual;
+
+							total_digitos = pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_izq_coma + pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma + 1;
+							posicion_actual = 0;
+							// Representacion_digitos a la izquierda de la coma
+							for ( digito_actual = ( pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_izq_coma + pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma) - 1; digito_actual >= pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma ; digito_actual-- )
+							{
+								// Posicionamos el digito
+								renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM)/100 ) + posicion_actual*(opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;		// Coord X de esquina superior izquierda
+								renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;		// Coord Y de esquina superior izquierda
+								renderQuad.w = (opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;				// Ancho
+								renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;				// Alto
+								// Calculamos y a la vez dibujamos el dígito
+								SDL_RenderCopy( gRenderer, gTexturaNumeroMenu[ Digito_N_esimo(digito_actual ,entero_auxiliar_para_valor_numerico) ], NULL, &renderQuad );
+								posicion_actual++;
+							}
+
+							// Representación de la coma
+							if ( pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma > 0 )
+							{
+								// Posicionamos la coma
+								renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM)/100 ) + posicion_actual*(opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;		// Coord X de esquina superior izquierda
+								renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;		// Coord Y de esquina superior izquierda
+								renderQuad.w = (opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;				// Ancho
+								renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;				// Alto
+								// Dibujamos la coma
+								SDL_RenderCopy( gRenderer, gTexturaComaMenu, NULL, &renderQuad );
+								posicion_actual++;
+							}
+
+							// Representación dígitos a la derecha de la coma
+
+							for ( digito_actual =  pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma - 1; digito_actual >= 0 ; digito_actual-- )
+							{
+								// Posicionamos el digito
+								renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM)/100 ) + posicion_actual*(opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;		// Coord X de esquina superior izquierda
+								renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;		// Coord Y de esquina superior izquierda
+								renderQuad.w = (opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;				// Ancho
+								renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;				// Alto
+								// Calculamos y a la vez dibujamos el dígito
+								SDL_RenderCopy( gRenderer, gTexturaNumeroMenu[ Digito_N_esimo(digito_actual ,entero_auxiliar_para_valor_numerico) ], NULL, &renderQuad );
+								posicion_actual++;
+							}
+						}
+						// Dibujar botones <-/+> (TODO)
+						// Boton -
+						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM + PORCNT_ANCHO_VALOR_BOT_VAL_NUM)/100 ); 			/* Coord X esquina superior izquierda */
+						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 							/* Coord Y esquina superior izqeuirda */
+						renderQuad.w = (opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_MENOS_BOT_VAL_NUM/100) ; 		/* Ancho */ /* Ancho igual que alto de boton --- Tickbox width equal to button height */
+						renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;												/* Alto */
+						SDL_RenderCopy( gRenderer, gWhiteArrowMinus, NULL, &renderQuad );
+						// Boton +
+						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM + PORCNT_ANCHO_VALOR_BOT_VAL_NUM + PORCNT_ANCHO_MENOS_BOT_VAL_NUM)/100 ); 			/* Coord X esquina superior izquierda */
+						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 							/* Coord Y esquina superior izqeuirda */
+						renderQuad.w = (opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_MAS_BOT_VAL_NUM/100) ; 		/* Ancho */ /* Ancho igual que alto de boton --- Tickbox width equal to button height */
+						renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;												/* Alto */
+						SDL_RenderCopy( gRenderer, gWhiteArrowPlus, NULL, &renderQuad );
 						break;
 					default:
 						printf("Error en el menu %d, boton %d no tiene definido el tipo.\n", menu_activo, i);
@@ -1028,7 +1789,7 @@ void bucle_principal_menu_principal( void )
 
 		#ifdef DEBUG_INFO
 		printf("Pos raton = %d, %d\n", pos_raton_x, pos_raton_y );
-		system("clear");		// Borra la terminal para leer el estado actual (MUY LENTO)
+		//system("clear");		// Borra la terminal para leer el estado actual (MUY LENTO)
 		#endif
 
 		///////////////////////////////////////////////////////////////////////////////////////

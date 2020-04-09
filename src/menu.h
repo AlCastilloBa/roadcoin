@@ -5,16 +5,17 @@
 // Listado de las pantallas del menu principal
 enum pantalla_menu_principal
 {
-	menu_bienvenida,	// Welcome screen.
-	menu_principal,		// Incluye botones: jugar, opciones, creditos, salir
-	menu_jugar,		// Incluye botones: Campañas, Practicar
-	menu_campana,
-	menu_niveles_provisional,
+	menu_bienvenida,			// Welcome screen.
+	menu_principal,				// Incluye botones: jugar, opciones, creditos, salir
+	menu_jugar,				// Incluye botones: Campañas, Practicar
+	menu_niveles_provisional,		// Temporary level select page (for debugging purposes only )
+	menu_elige_conjunto_niveles,		// Select level set.
+	menu_elige_nivel,			// Select level (from one level set).
 	menu_practicar,
-	menu_opciones,		// Incluye botones: Video, Sonido, Controles, Juego, Idioma, Atras
+	menu_opciones,				// Incluye botones: Video, Sonido, Controles, Juego, Idioma, Atras
 	menu_creditos,
 	menu_opc_video,
-	menu_opc_sonido,	// Incluye botones: Sonido, Musica
+	menu_opc_sonido,			// Incluye botones: Sonido, Musica
 	menu_opc_control,
 	menu_opc_juego,
 	meno_opc_idioma,
@@ -56,16 +57,43 @@ enum listado_botones
 	boton_limitar_vel_moneda,	// Limit coin speed button
 	boton_opcjgo_atras,		// Go back
 
+	// Menu opciones control
+	boton_sensibilidad_raton,	// Mouse sensitivity button
+	boton_opcctl_atras,		// Go back
+
 	// Menu seleccion niveles provisional
 	boton_provisional_nivel_01, boton_provisional_nivel_02, boton_provisional_nivel_03, boton_provisional_nivel_04, boton_provisional_nivel_05,
-	boton_nivel_prov_atras
+	boton_nivel_prov_atras,
+
+	// Menu seleccion conjunto de niveles
+	boton_conj_mapas_flechaizq,		// Left arrow
+	boton_conj_mapas_flechader,		// Right arrow
+	boton_conj_mapas_seleccionar,		// Select
+	boton_conj_mapas_imagen,		// Level set image
+	boton_conj_mapas_atras,			// Go back
+	boton_conj_mapas_directorio,		// Directory name
+	boton_conj_mapas_descripcion,		// Description
+	boton_conj_mapas_numeracion,		// Numbering (ex. 7/9)
+	// Menu seleccion de mapa (de un conjunto de mapas)
+	boton_mapa_flechaizq,			// Left arrow
+	boton_mapa_flechader,			// Right arrow
+	boton_mapa_jugar,			// Play selected level
+	boton_mapa_imagen,			// Level image
+	boton_mapa_atras,			// Go back
+	boton_mapa_nombre,			// Level name
+	boton_mapa_descripcion,			// Level description
+	boton_mapa_modogiro,			// Rotation mode
+	boton_mapa_angmax,			// maximum angle
+	boton_mapa_gravedad,			// Gravity
+	boton_mapa_tiempo,			// Count down time
+	boton_mapa_numeracion			// Numbering (ex. 7/9)
 };
 
 enum tipo_boton
 {
 	boton_pulsar,				// Push button (OK)
 	boton_conmutar,				// Toggle button (OK)
-	boton_valor_entero,			// Integer value input button (TODO)
+	boton_valor_numerico,			// Numeric value input button (TODO)
 	boton_seleccionar_lista			// Select from list button (TODO)
 };
 
@@ -91,8 +119,13 @@ struct boton_menu
 	
 	// Para boton de conmutación -- For toggle button
 	bool estado_on_off;						// On/off status for toggle button
-	// Para boton de introducir entero --- For integer value input button
-	int valor_entero;						// Integer value for integer value input button
+	// Para boton de introducir valor numerico --- For numeric value input button
+	double valor_numerico;						// Numeric value for numeric value input button
+	double valor_numerico_rango_minimo;				// Maximum range for numeric value input button
+	double valor_numerico_rango_maximo;				// Minimum range for numeric value input button
+	double valor_numerico_incremento;				// Increment for numeric value input button
+	int valor_numerico_digitos_izq_coma;				// Digits before the point (left)
+	int valor_numerico_digitos_dcha_coma;			// Digits after the point (right)
 };
 
 struct pantalla_menu
@@ -121,6 +154,10 @@ enum resultado
 };
 
 bool raton_sobre_boton (struct boton_menu, int, int );
+
+bool raton_sobre_boton_menos_valor_numerico ( struct boton_menu, int, int );
+
+bool raton_sobre_boton_menos_valor_numerico ( struct boton_menu, int, int );
 
 bool inicializa_datos_boton( struct boton_menu*, int, enum listado_botones, enum tipo_boton, char*, int, int  );
 

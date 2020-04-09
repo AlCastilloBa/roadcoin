@@ -26,7 +26,7 @@ struct punto Velocidad2Posicion(struct punto, struct vector_velocidad, float );
 
 struct vector_velocidad Aceleracion2Velocidad(struct vector_velocidad, struct vector_aceleracion, float );
 
-struct vector_fuerza SumaFuerzas( struct vector_fuerza, struct vector_fuerza*, int );
+struct vector_fuerza SumaFuerzas( struct vector_fuerza, struct vector_fuerza*, int , struct vector_fuerza*, int );
 
 struct vector_aceleracion Fuerza2Aceleracion( struct vector_fuerza, double);
 
