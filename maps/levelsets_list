@@ -1,0 +1,7 @@
+num_levelsets=2
+directorio[0]=TestMaps
+descripcion[0]=Niveles de prueba
+ruta_imagen[0]=images/test.jpg
+directorio[1]=FirstMaps
+descripcion[1]=Primer conjunto de niveles
+ruta_imagen[1]=images/FirstMaps.png

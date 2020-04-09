@@ -1,0 +1,63 @@
+# Mapa de prueba
+#################################################
+# Nombre del mapa
+nombre=TESTMAP2
+
+#Numero de segmentos
+num_segmentos=7
+
+# Giro mapa respecto a punto fijo
+modo_giro_mapa=1
+
+# Posicion del punto de giro del mapa
+punto_giro=(400,300)
+
+# Angulo maximo (en grados)
+angulo_max=720
+
+# Posicion inicial de la moneda
+pos_inicial_moneda=(20,0)
+
+# Ruta imagen de la moneda
+imagen_moneda=images/moneda6.png
+
+
+# Ruta imagen del fondo
+imagen_fondo=images/fondo_nubes.png
+
+# Ruta de la musica
+ruta_musica=music/AncientPassageMysteriousSpookyGameMusicbyHeatleyBros.mp3
+
+# Fondo giratorio
+fondo_giratorio=0
+
+
+# Gravedad
+gravedad=800
+
+# Segmentos
+segmento[0]=((0,25),(300,100),0,0)
+segmento[1]=((300,200),(900,50),0,0)
+segmento[2]=((0,150),(300,300),0,0)
+segmento[3]=((300,400),(900,250),0,0)
+segmento[4]=((0,250),(300,500),0,0)
+segmento[5]=((300,600),(900,550),0,0)
+segmento[6]=((700,350),(700,700),0,0)
+
+# Bumpers
+num_bumpers=8
+bumper[0]=((700,700),32,500)
+bumper[1]=((700,350),32,500)
+bumper[2]=((300,600),64,500)
+bumper[3]=((300,500),32,500)
+bumper[4]=((600,450),32,500)
+bumper[5]=((300,500),32,500)
+bumper[6]=((0,250),64,500)
+bumper[7]=((0,150),32,500)
+
+# Zonas de aceleración
+num_zonas_acel_circ=4
+zona_acel_circ[0]=((100,100),50,0, 1000)
+zona_acel_circ[1]=((500,100),50,90,1000)
+zona_acel_circ[2]=((600,300),50,270, 1000)
+zona_acel_circ[3]=((600,600),200,45, 1000)
