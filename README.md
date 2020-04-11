@@ -4,7 +4,9 @@ Videogame inspired on old mechanical-based coin operated machines. A coin was gu
 
 The objective of this project is not only recreate these machines, but also make it extensible with several maps stored on files. Additionally, other forces appart from gravity will be recreated, such as springs, black holes, magnets,...
 
-![Screenshot001](/images/screenshots/v0.1-beta.1.png)
+| ![Screenshot001](/images/screenshots/v0.1-beta.1.png)       |  ![Screenshot007](/images/screenshots/Screenshot007.png) |
+| ----------------------------------------------------------- | -------------------------------------------------------- |
+| ![Screenshot008](/images/screenshots/Screenshot008.png)     |  ![Screenshot009](/images/screenshots/Screenshot009.png) |
 
 ## Technical details
 The mazes are composed of a set of line segments. Normally these segments will be walls, but other segment types will be available, such as "goal" and "death" line segments. Additional elements have been included, such as bumpers and flippers so far.
@@ -22,7 +24,7 @@ Currently compiles for GNU/Linux (using gcc), and for Windows (using MinGW).
 * To compile for Windows with MinGW, use `mingw32-make.exe -f ./Makefile_windows_minGW`, but check "include" and "lib" paths first. Additionally, an "exe" is included (remember SDL2, SDL2image, SDL2ttf, SDL2mixer dll libraries are needed).
 
 ## Current state
-Work in progress. The basic game physics have been implemented. It is minimally playable, but a lot of features are still to be programmed.
+Work in progress. The basic game physics have been implemented. It has a functional menu, and all levels can be played directly through this menu. Currently the game consist on five levels, and all levels are playable. A lot of features are still to be programmed...
 
 ## Controls
 Game can be controlled with a mouse. Moving mouse left and right rotates the map.
