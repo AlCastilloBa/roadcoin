@@ -45,6 +45,8 @@ v0.1-beta.2
 - The game writes the options when closing to the settings file.
 - Added a "no rotation" option for the map. When used, the map will not rotate.
 - Added pinball flippers code. The pinball flippers can be specified on map file, and can be operated with the mouse buttons.
+
+v0.2-beta.3
 ---------------------
 - Added a countdown time system. Some maps can include it, and a countdown appears on the lower right part of the screen. When this counter reaches zero, the player loses.
 - Added "round acceleration zones", that can be included in maps, and create an acceleration on the coin on a certain direction.
@@ -56,6 +58,16 @@ v0.1-beta.2
 - Menu: checkboxes can now be clicked directly in the checkbox icon.
 - Menu: Added code for numeric values setting. Added mouse sensitivity setting.
 - Menu: Added a level select screen and the possibility to have separate level sets.
+--------------------
+- Bugfix: menu button data was not being freed correctly (caused double free glibc error on some menu layouts).
+- Added a game logo in the welcome screen.
+- Bugfix: countdown setting was not correctly managed. It worked due to "remaining memory garbage".
+- Round acceleration zones can be set to non-visible, for aestethic reasons. This is used on "superpinball" map.
+- Adjacency is not taken into account when the angle between two line segments is greater than a value. 
+  This was intended to solve sticky behaviour in corners. While it does not addess the problem completely, i think it could be useful.
+- Added a function to draw textures while keeping the original image aspect ratio. Three modes (stretch, original aspect ratio, original aspect ratio fill).
+  Used this function to keep aspect ratio in game texts and menu elements. This makes game text a little more homogeneous (but still can be improved).
+--------------------
 
 
 

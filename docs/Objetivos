@@ -32,25 +32,26 @@ Objetivos del proyecto para la version v0.1-beta.1:
           forma que no se calculen las fuerzas normales en los extremos.
 
 Objetivos para siguientes versiones:
-[      ] Evitar que, si la velocidad de la moneda es alta, se pueda atravesar un segmento.
-[      ] Solo anular velocidad normal al segmento cuando esta velocidad es en la direccion hacia el segmento.
-	[      ] La deteccion de adyacencias provoca problemas en el caso de que el angulo sea 90º, 
-		 se queda enganchada en lugar de caer en precipicios en angulo recto. (Depende del anterior)
-[      ] Menú elegante.
+[ BOOM ] Menú elegante.
 [ BOOM ] Poner un cuadro semi-transparente detras de los textos para que se puedan ver bien.
-[      ] Hacer que los flippers puedan enviar la bola hacia abajo cuando bajan.
-[      ] Gestion de mapas y conjuntos de mapas.
-[      ] Pasar mapas de ficheros guarros a ficheros XML elegantes.
-[      ] Joystick.
-[      ] Sonidos (golpes de la moneda).
+[ BOOM ] Imagenes de descripcion de los mapas.
+[ BOOM ] Gestion de mapas y conjuntos de mapas.
 [ BOOM ] Mapas con graficos con texturas y un fondo (que no den ganas de llorar
      al ver la pantalla).
 [ BOOM ] Musica de verbena de pueblo.
 [ BOOM ] Cuenta atrás, para poner nervioso al jugador y que falle.
-[      ] Sistema de puntos (score).
-[      ] Premios que den puntos y que sean dificiles de coger
-     (como las guindas del comecocos).
-[      ] Editor de niveles.
+
+Relacionados con el motor/fisicas:
+[      ] Evitar que, si la velocidad de la moneda es alta, se pueda atravesar un segmento. (Feature)
+[      ] Solo anular velocidad normal al segmento cuando esta velocidad es en la direccion hacia el segmento.
+	[      ] La deteccion de adyacencias provoca problemas en el caso de que el angulo sea 90º, 
+		 se queda enganchada en lugar de caer en precipicios en angulo recto. (Depende del anterior)
+[      ] Ver por que la moneda se queda pegada al techo (¿Se cancela correctamente la velocidad?) (Bug)
+[      ] En ciertas ocasiones, la moneda rebota en el final de un segmento, cuando debería caer. Investigar auq lo provoca. (Bug)
+[  NO  ] Hacer que los flippers puedan enviar la bola hacia abajo cuando bajan.
+		Nota: Programado y probado, pero desactivado porque los mapas no estan pensados para ello.
+[      ] Joystick.
+[      ] Sonidos (golpes de la moneda).
 [      ] Que los golpes de la moneda provoquen vibraciones joystick.
 [      ] Quelos golpes de la moneda puedan hacer girar el mapa (esto pone de los nervios).
 [      ] Plataformas móviles (esto tambien pone de los nervios).
@@ -60,11 +61,39 @@ Objetivos para siguientes versiones:
 	[      ] Imanes
 	[      ] Viento
 	[ BOOM ] Pinball Pop Bumpers
-	...etc
+	[      ] Segmentos bumpers
 [      ] Enemigos que vayan recorriendo conjuntos de segmentos adyacentes.
 [      ] Powerups que cambien el tamaño de la moneda temporalmente.
 [      ] Eliminar botes molestos que quitan realismo.
-[      ] En el mapa, especificar textos en segmentos, que sean mostrados al tocarlos.
-[      ] En ciertas ocasiones, la moneda rebota en el final de un segmento, cuando debería caer. Investigar auq lo provoca.
 
-.... ETC
+
+Estetica:
+[      ] Textos: gestionar tamaño de texto en textura para que los caracteres tengan el mismo tamaño siempre. Actualmente el menu queda feo.
+[ BOOM ] Las zonas de aceleración pueden ser invisibles (por estetica).
+[ BOOM ] Mapa super pinball.
+[      ] Pasar mapas de ficheros guarros a ficheros XML elegantes.
+[      ] En el mapa, especificar textos en segmentos, que sean mostrados al tocarlos.
+[      ] Textura de los segmentos personalizables en el fichero de mapa.
+[      ] Mostrar el centro de giro (conmutar con una tecla).
+
+Mapas:
+[      ] Super pinball. Arreglar chimenea con flippers que hacen que la bola se salga. añadir segmentos normales a los lados.
+
+Motivacion para jugar:
+[      ] Sistema de puntos (score).
+[      ] Premios que den puntos y que sean dificiles de coger
+     (como las guindas del comecocos).
+[      ] El bucle del juego devuelve una struct con resultado (puntos, tiempo, etc). El juego guarda las estadisticas de los niveles de alguna forma (completado, tiempo record, puntos record, etc).
+[      ] Editor de niveles.
+
+Ideas de nuevos niveles:
+[      ] Laberinto madera con agujeros.
+[      ] Mapa estilo DonKey Kong con plataformas moviles.
+[      ] Montaña rusa.
+[      ] Cerdo hucha con un laberinto dentro.
+[      ] Bitcoin en un grafico de evolucion.
+[      ] Moneda que se va por el desague atravesando tuberias...
+[      ] Mapa basado en pacman, con comecocos que se intentan comer la moneda...
+
+
+
