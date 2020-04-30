@@ -77,6 +77,8 @@ bool MismoLado(struct punto, struct punto, struct punto, struct punto);
 
 bool PuntoDentroDeTriangulo(struct punto, struct punto, struct punto,struct punto);
 
+double AnguloRadEntreDosSegmentos ( struct segmento, struct segmento );
+
 
 
 

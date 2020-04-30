@@ -11,8 +11,8 @@
 #include "maps.h"
 #include "geometry.h"
 #include "options.h"
-#include "menu.h"
 #include "graphics.h"
+#include "menu.h"
 #include "camera.h"
 
 
@@ -79,6 +79,12 @@ int gDimTexturaPinballFlipper_L_X; int gDimTexturaPinballFlipper_L_Y;
 int gDimTexturaPinballFlipper_R_X; int gDimTexturaPinballFlipper_R_Y;
 int gDimTexturaCronometroX; int gDimTexturaCronometroY;	
 int gDimTexturaNumeroX; int gDimTexturaNumeroY; 
+int gDimTexturaPausaX; int gDimTexturaPausaY;
+int gDimPulseTeclaX; int gDimPulseTeclaY;
+int gDimNombreMapaX; int gDimNombreMapaY; 
+int gDimDescripcionMapaX; int gDimDescripcionMapaY;
+int gDimTextoPierdeX; int gDimTextoPierdeY;
+int gDimTextoVictoriaX; int gDimTextoVictoriaY;
 
 //Variables globales control
 float inc_angulo_teclado = 1.0f;
@@ -260,7 +266,7 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 	#ifdef DEBUG_INFO
 	printf("Inicializando la fuente de los textos del juego...\n");
 	#endif
-	gFuenteTextoJuego = TTF_OpenFont( "fonts/lunasol.ttf", 28 );
+	gFuenteTextoJuego = TTF_OpenFont( /*"fonts/lunasol.ttf"*/ "fonts/ethnocen.ttf", /*28*/ 36 );
 	if( gFuenteTextoJuego == NULL )
 	{
 		printf( "Failed to load font! SDL_ttf Error: %s\n", TTF_GetError() );
@@ -268,13 +274,13 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 	}
 
 	//Cargar textura de pausa --- Load pause texture
-	gTexturaPausa = RenderizaTextoEnTextura("Pausa", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	gTexturaPausa = RenderizaTextoEnTextura("Pausa", gFuenteTextoJuego, gColorBlanco, &gDimTexturaPausaX, &gDimTexturaPausaY );
 	// Cargar textura de pulse cualquier tecla --- Load texture Press any key
-	gPulseTecla = RenderizaTextoEnTextura("Pulse cualquier tecla", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	gPulseTecla = RenderizaTextoEnTextura("Pulse cualquier tecla", gFuenteTextoJuego, gColorBlanco, &gDimPulseTeclaX, &gDimPulseTeclaY );
 	// Cargar textura de Nombre Mapa --- Load Map Name texture
-	gNombreMapa = RenderizaTextoEnTextura(nombre_mapa, gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	gNombreMapa = RenderizaTextoEnTextura(nombre_mapa, gFuenteTextoJuego, gColorBlanco, &gDimNombreMapaX, &gDimNombreMapaY );
 	// Cargar textura de Descripcion Mapa --- Load Map Description texture
-	gDescripcionMapa = RenderizaTextoEnTextura(descripcion_mapa, gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	gDescripcionMapa = RenderizaTextoEnTextura(descripcion_mapa, gFuenteTextoJuego, gColorBlanco, &gDimDescripcionMapaX, &gDimDescripcionMapaY );
 	// Cargar textura de icono de victoria
 	gIconoVictoria = CargaTextura( "images/finish.png" , &gDimIconoVictoriaX, &gDimIconoVictoriaY, true );
 	if( gIconoVictoria == NULL ) 
@@ -282,7 +288,7 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 		printf( "Failed to load texture image!\n" ); 
 		success = false; 
 	} 
-	// Cargar textura de icono de victoria
+	// Cargar textura de icono de derrota --- Load "you lost" icon texture
 	gIconoPierde = CargaTextura( "images/cry.png" , &gDimIconoPierdeX, &gDimIconoPierdeY, true );
 	if( gIconoPierde == NULL ) 
 	{ 
@@ -290,9 +296,9 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 		success = false; 
 	} 
 	//Cargar textura de texto de victoria --- Load victory text texture
-	gTextoVictoria = RenderizaTextoEnTextura("Completado        ", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	gTextoVictoria = RenderizaTextoEnTextura("Completado", gFuenteTextoJuego, gColorBlanco, &gDimTextoVictoriaX, &gDimTextoVictoriaY );
 	//Cargar textura de texto de perder --- Load lose text texture
-	gTextoPierde = RenderizaTextoEnTextura("Pierdes una moneda", gFuenteTextoJuego, gColorBlanco, NULL, NULL );
+	gTextoPierde = RenderizaTextoEnTextura("Pierdes una moneda", gFuenteTextoJuego, gColorBlanco, &gDimTextoPierdeX, &gDimTextoPierdeY );
 
 	// Nuevo 9/1/2020
 	gTexturaPinballBumper = CargaTextura( "images/pinball_bumper.png" , NULL, NULL, true );
@@ -352,7 +358,7 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 		success = false; 
 	}
 	SDL_SetTextureBlendMode( gTexturaFondoSemiTranspTexto, SDL_BLENDMODE_BLEND /*alpha blending*/ );
-	SDL_SetTextureAlphaMod( gTexturaFondoSemiTranspTexto, 0.4*255 /*alpha=opacity*/);
+	SDL_SetTextureAlphaMod( gTexturaFondoSemiTranspTexto, 0.6*255 /*alpha=opacity*/);
 
 	// NUEVO PRUEBAS 2/1/2020
 
@@ -496,7 +502,7 @@ int main( int argc, char* args[] )
 		printf( "Failed to initialize!\n" );
 		exit(-1);
 	} 
-
+	
 	//Load media 
 	#ifdef DEBUG_INFO
 	printf("Cargando archivos intro...\n");
@@ -516,7 +522,7 @@ int main( int argc, char* args[] )
 	SDL_UpdateWindowSurface( gIntroWindow );
 
 	 //Espera para que se vea la imagen 
-	SDL_Delay( 3000 ); 
+	SDL_Delay( 200 ); 
 	
 	cerrar_intro();
 
@@ -581,8 +587,9 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	bool win = false;		// Player won, and the game is frozen displaying results
 	bool lose = false;		// Player lost, and the game is frozen displaying results
 
-	bool pinball_flipper_L_activo = false, pinball_flipper_R_activo = false;	// Pruebas 21/2/2020, Pinball flippers (TODO)
-	bool flanco_asc_pinball_flipper_L = false, flanco_asc_pinball_flipper_R = false;	// Pruebas 21/2/2020, Pinball flippers (TODO)
+	bool pinball_flipper_L_activo = false, pinball_flipper_R_activo = false;
+	bool flanco_asc_pinball_flipper_L = false, flanco_asc_pinball_flipper_R = false;	
+	bool flanco_desc_pinball_flipper_L = false, flanco_desc_pinball_flipper_R = false;	// Pruebas 22/4/2020, Pinball flippers, flanco descendente (TODO)
 
 	enum resultado resultado_final = abortado;
 
@@ -753,6 +760,9 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	if ( mapa_original.CuentaAtras == true ) 
 	{
 		TiempoActualCuentaAtras = TiempoInicialCuentaAtras = mapa_original.SegundosCuentaAtras * 1000;	// Pasamos de segundos a milisegundos
+		#ifdef DEBUG_INFO
+		printf("Tiempo inicial se ajusta a %d TiempoActualCuentaAtras milisegundos ...\n");
+		#endif
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -808,7 +818,8 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		printf("Frame %d, time %d, FPS=%f, ang=%f \n", contador_frames, deltaTime, 1/tiempo_imagen, angulo);
 		#endif
 
-		flanco_asc_pinball_flipper_L = flanco_asc_pinball_flipper_R = false;		// Nuevo 21/2/2020, PRUEBAS PINBALL FLIPPER (TODO)
+		flanco_asc_pinball_flipper_L = flanco_asc_pinball_flipper_R = false;
+		flanco_desc_pinball_flipper_L = flanco_desc_pinball_flipper_R = false;		// Nuevo 22/4/2020, pruebas pinball flipper flanco descendente (TODO)
 
 		//////////////////////////////////////////////////////////////////////////////////////
 		//  _____       _                 _              _____                   _   
@@ -923,14 +934,14 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					quit = true;
 				}
 				//////////////////////////////////////////////
-				// Pruebas 21/2/2020 (TODO)
+				// Gestion pinball flippers
 				if ( e.button.button == SDL_BUTTON_LEFT )
 				{
 					if ( mapa_original.mapa_contiene_flippers && !pause )
 					{
 						pinball_flipper_L_activo = true;
 						flanco_asc_pinball_flipper_L = true;
-						//  Reproducir sonido de flipper (PENDIENTE TODO) 
+						//  Reproducir sonido de flipper 
 						if ( opciones_juego.sound_enabled )
 						{
 							Mix_PlayChannel( -1, gSonidoPinballFlipper, 0 );
@@ -943,7 +954,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					{
 						pinball_flipper_R_activo = true;
 						flanco_asc_pinball_flipper_R = true;
-						//  Reproducir sonido de flipper (PENDIENTE TODO)
+						//  Reproducir sonido de flipper
 						if ( opciones_juego.sound_enabled )
 						{
 							Mix_PlayChannel( -1, gSonidoPinballFlipper, 0 );
@@ -954,16 +965,18 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			}
 
 			////////////////////////////////////////
-			// Pruebas 21/2/2020 (TODO)
+			// Gestion pinball flippers
 			if ( e.type == SDL_MOUSEBUTTONUP )
 			{
 				if ( e.button.button == SDL_BUTTON_LEFT )
 				{
 					pinball_flipper_L_activo = false;
+					flanco_desc_pinball_flipper_L = true;	// Nuevo 22/4/2020 (pruebas TODO)
 				}
 				if (e.button.button == SDL_BUTTON_RIGHT)
 				{
 					pinball_flipper_R_activo = false;
+					flanco_desc_pinball_flipper_R = true;	// Nuevo 22/4/2020 (pruebas TODO)
 				}
 			}	
 		}
@@ -1323,7 +1336,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					}
 
 					/////////////////////////////////////////////////////////////////////////////
-					// Nuevo 21/2/2020, PRUEBAS (TODO) PINBALL FLIPPERS
+					// Gestion de pinball flippers, en caso de contacto directo con el segmento tipo flipper
 					if ( mapa_original.mapa_contiene_flippers)
 					{
 						if ( (mapa_original.Mapa[segmento_actual].type == pinball_flipper_L && flanco_asc_pinball_flipper_L) || (mapa_original.Mapa[segmento_actual].type == pinball_flipper_R && flanco_asc_pinball_flipper_R) )
@@ -1368,8 +1381,9 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			}
 
 			/////////////////////////////////////////////////////////////////////////////////////
-			// Pinball flippers, en el caso de que el angulo sea grande de tla forma que la moneda quede por debajo de la posicion elevada del flipper, pero esté dentro del triangulo que describe....
-			// Pruebas 22/2/2020 (TODO)
+			// Pinball flippers, en el caso de que el angulo sea grande de tal forma que la moneda quede por debajo de la posicion elevada del flipper, 
+			// pero esté dentro del triangulo que describe....
+			// Se pulsa el boton (flanco ascendente)
 			if ( mapa_original.mapa_contiene_flippers && flanco_asc_pinball_flipper_L )
 			{
 				for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
@@ -1416,6 +1430,54 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					}
 				}
 			}
+			// Se suelta el boton (flanco descendente) ( pruebas 22/4/2020 TODO)
+			// Nota: funciona, pero los mapas no están diseñados para ello, por lo tanto se deshabilita (espero que de momento)
+			//if ( mapa_original.mapa_contiene_flippers && flanco_desc_pinball_flipper_L )	// Nuevo 22/4/2020 (TODO)
+			//{
+			//	for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
+			//	{
+			//		if ((mapa_original.Mapa[segmento_actual].type == pinball_flipper_L) && (tipo_interferencia_segmento[segmento_actual] == 0))
+			//		{
+			//			if ( PuntoDentroDeTriangulo( pos_real_moneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, GiraPunto( segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end, -mapa_original.angulo_flippers) ) )
+			//			{
+			//				pos_real_moneda = GiraPunto ( segmentos_girados[segmento_actual].start, pos_real_moneda, mapa_original.angulo_flippers /*grados*/);
+			//				velocidad_real_moneda = SumaVelocidad( 	velocidad_real_moneda,     
+			//									VelocidadSobreRecta ( 	2000 /*modulo_vector_velocidad( VelAngular2VelLineal( 	mapa_original.PuntoGiroFijo, 
+			//																		PuntoProyectadoSobreRecta( pos_real_moneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end),
+			//																		(angulo-angulo_anterior), 
+			//																		tiempo_imagen 
+			//																		) )*/, 
+			//												PuntoProyectadoSobreRecta( pos_real_moneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end), /*Punto 1 recta*/
+			//												pos_real_moneda 	/* Punto 2 recta*/
+			//												) 
+			//										);
+			//			}
+			//		}
+			//	}
+			//}
+			//if ( mapa_original.mapa_contiene_flippers && flanco_desc_pinball_flipper_R )	//Nuevo 22/4/2020 (TODO)
+			//{
+			//	for ( segmento_actual = 0 ; segmento_actual < mapa_original.NumeroSegmentos ; segmento_actual++ )
+			//	{
+			//		if ((mapa_original.Mapa[segmento_actual].type == pinball_flipper_R) && (tipo_interferencia_segmento[segmento_actual] == 0))
+			//		{
+			//			if ( PuntoDentroDeTriangulo( pos_real_moneda, segmentos_girados[segmento_actual].end, segmentos_girados[segmento_actual].start, GiraPunto( segmentos_girados[segmento_actual].end, segmentos_girados[segmento_actual].start, mapa_original.angulo_flippers) ) )
+			//			{
+			//				pos_real_moneda = GiraPunto ( segmentos_girados[segmento_actual].end, pos_real_moneda, -mapa_original.angulo_flippers /*grados*/);
+			//				velocidad_real_moneda = SumaVelocidad( 	velocidad_real_moneda,     
+			//									VelocidadSobreRecta ( 	2000 /*modulo_vector_velocidad( VelAngular2VelLineal( 	mapa_original.PuntoGiroFijo, 
+			//																		PuntoProyectadoSobreRecta( pos_real_moneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end),
+			//																		(angulo-angulo_anterior), 
+			//																		tiempo_imagen 
+			//																		) )*/, 
+			//												PuntoProyectadoSobreRecta( pos_real_moneda, segmentos_girados[segmento_actual].start, segmentos_girados[segmento_actual].end), /*Punto 1 recta*/
+			//												pos_real_moneda 	/* Punto 2 recta*/
+			//												) 
+			//										);
+			//			}
+			//		}
+			//	}
+			//}
 			//////////////////////////////////////////////////////
 
 			////////////////////////////////////////////////////////////////////////////////////
@@ -1507,12 +1569,15 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		{
 			for ( zona_acel_circ_actual = 0 ; zona_acel_circ_actual < mapa_original.NumeroZonasAceleracionCircular ; zona_acel_circ_actual++ )
 			{
-				renderQuad.x = pos_pant_centros_zonaacelcirc_girados[zona_acel_circ_actual].x - mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].radio;		// Coord X de esquina superior izquierda
-				renderQuad.y = pos_pant_centros_zonaacelcirc_girados[zona_acel_circ_actual].y - mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].radio;		// Coord Y de esquina superior izquierda
-				renderQuad.w = 2*mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].radio;							// Ancho
-				renderQuad.h = 2*mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].radio;							// Alto
-				//SDL_RenderCopy( gRenderer, gTexturaPinballBumper, NULL, &renderQuad ); 	// Version sin rotacion
-				SDL_RenderCopyEx( gRenderer, gTexturaZonaAcelCirc, NULL, &renderQuad, angulo + mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].angulo, NULL /*Rota alrededor del centro*/, SDL_FLIP_NONE );
+				if ( mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].invisible == false )
+				{
+					renderQuad.x = pos_pant_centros_zonaacelcirc_girados[zona_acel_circ_actual].x - mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].radio;		// Coord X de esquina superior izquierda
+					renderQuad.y = pos_pant_centros_zonaacelcirc_girados[zona_acel_circ_actual].y - mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].radio;		// Coord Y de esquina superior izquierda
+					renderQuad.w = 2*mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].radio;							// Ancho
+					renderQuad.h = 2*mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].radio;							// Alto
+					//SDL_RenderCopy( gRenderer, gTexturaPinballBumper, NULL, &renderQuad ); 	// Version sin rotacion
+					SDL_RenderCopyEx( gRenderer, gTexturaZonaAcelCirc, NULL, &renderQuad, angulo + mapa_original.ZonasAceleracionCircular[zona_acel_circ_actual].angulo, NULL /*Rota alrededor del centro*/, SDL_FLIP_NONE );
+				}
 			}
 		}
 
@@ -1700,32 +1765,58 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		// Dibuja textos de intro del mapa
 		if ( intro_mapa )
 		{
-			// Cuadro Pulse cualquier tecla --- Press Any key label
-			renderQuad.x = 0.3*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			// Cuadro Nombre del Mapa --- Map name text
+			/*renderQuad.x = 0.3*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
 			renderQuad.y = 0.2*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
 			renderQuad.w = 0.3*opciones_juego.screen_x_resolution;				// Ancho
 			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
 			SDL_RenderCopy( gRenderer, gTexturaFondoSemiTranspTexto, NULL, &renderQuad );	// Pruebas 4/4/2020
-			SDL_RenderCopy( gRenderer, gNombreMapa, NULL, &renderQuad );	
+			//SDL_RenderCopy( gRenderer, gNombreMapa, NULL, &renderQuad );	*/
+			RepresentaTextura ( gRenderer, gTexturaFondoSemiTranspTexto, 
+					0 , 0 , 
+					0.3*opciones_juego.screen_x_resolution , (0.3+0.3)*opciones_juego.screen_x_resolution , 0.2*opciones_juego.screen_y_resolution, (0.2+0.1)*opciones_juego.screen_y_resolution, 
+					estirar_hasta_rellenar );
+			RepresentaTextura ( gRenderer, gNombreMapa, 
+					gDimNombreMapaX , gDimNombreMapaY , 
+					0.3*opciones_juego.screen_x_resolution , (0.3+0.3)*opciones_juego.screen_x_resolution , 0.2*opciones_juego.screen_y_resolution, (0.2+0.1)*opciones_juego.screen_y_resolution, 
+					con_relac_aspecto_no_rellenar );
 
-			// Cuadro Pulse cualquier tecla --- Press Any key label
-			renderQuad.x = 0.1*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+
+			// Cuadro Texto Descripción de mapa --- Map description text
+			/*renderQuad.x = 0.1*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
 			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
 			renderQuad.w = 0.8*opciones_juego.screen_x_resolution;				// Ancho
 			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
 			SDL_RenderCopy( gRenderer, gTexturaFondoSemiTranspTexto, NULL, &renderQuad );	// Pruebas 4/4/2020
-			SDL_RenderCopy( gRenderer, gDescripcionMapa, NULL, &renderQuad );	
+			SDL_RenderCopy( gRenderer, gDescripcionMapa, NULL, &renderQuad );	*/
+			RepresentaTextura ( gRenderer, gTexturaFondoSemiTranspTexto, 
+					0 , 0 , 
+					0.1*opciones_juego.screen_x_resolution , (0.1+0.8)*opciones_juego.screen_x_resolution , 0.4*opciones_juego.screen_y_resolution, (0.4+0.1)*opciones_juego.screen_y_resolution, 
+					estirar_hasta_rellenar );
+			RepresentaTextura ( gRenderer, gDescripcionMapa, 
+					gDimDescripcionMapaX , gDimDescripcionMapaY , 
+					0.1*opciones_juego.screen_x_resolution , (0.1+0.8)*opciones_juego.screen_x_resolution , 0.4*opciones_juego.screen_y_resolution, (0.4+0.1)*opciones_juego.screen_y_resolution, 
+					con_relac_aspecto_no_rellenar );
+
 		}
 
 		if ( intro_mapa || win || lose )
 		{
 			// Cuadro Pulse cualquier tecla --- Press Any key label
-			renderQuad.x = 0.2*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			/*renderQuad.x = 0.2*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
 			renderQuad.y = 0.8*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
 			renderQuad.w = 0.6*opciones_juego.screen_x_resolution;				// Ancho
 			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
 			SDL_RenderCopy( gRenderer, gTexturaFondoSemiTranspTexto, NULL, &renderQuad );	// Pruebas 4/4/2020
-			SDL_RenderCopy( gRenderer, gPulseTecla, NULL, &renderQuad );	
+			SDL_RenderCopy( gRenderer, gPulseTecla, NULL, &renderQuad );	*/
+			RepresentaTextura ( gRenderer, gTexturaFondoSemiTranspTexto, 
+					0 , 0 , 
+					0.2*opciones_juego.screen_x_resolution , (0.2+0.6)*opciones_juego.screen_x_resolution , 0.8*opciones_juego.screen_y_resolution, (0.8+0.1)*opciones_juego.screen_y_resolution, 
+					estirar_hasta_rellenar );
+			RepresentaTextura ( gRenderer, gPulseTecla, 
+					gDimPulseTeclaX , gDimPulseTeclaY , 
+					0.2*opciones_juego.screen_x_resolution , (0.2+0.6)*opciones_juego.screen_x_resolution , 0.8*opciones_juego.screen_y_resolution, (0.8+0.1)*opciones_juego.screen_y_resolution, 
+					con_relac_aspecto_no_rellenar );
 		}
 		
 		if ( win )
@@ -1738,14 +1829,21 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			SDL_RenderCopy( gRenderer, gIconoVictoria, NULL, &renderQuad );	
 
 
-			// Cuadro Texto Vctoria --- Press Any key label
-			renderQuad.x = 0.35*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			// Cuadro Texto Victoria --- You win text
+			/*renderQuad.x = 0.35*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
 			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
 			renderQuad.w = 0.5*opciones_juego.screen_x_resolution;				// Ancho
 			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
 			SDL_RenderCopy( gRenderer, gTexturaFondoSemiTranspTexto, NULL, &renderQuad );	// Pruebas 4/4/2020
-			SDL_RenderCopy( gRenderer, gTextoVictoria, NULL, &renderQuad );	
-
+			SDL_RenderCopy( gRenderer, gTextoVictoria, NULL, &renderQuad );	*/
+			RepresentaTextura ( gRenderer, gTexturaFondoSemiTranspTexto, 
+					0 , 0 , 
+					0.35*opciones_juego.screen_x_resolution , (0.35+0.4)*opciones_juego.screen_x_resolution , 0.5*opciones_juego.screen_y_resolution, (0.5+0.1)*opciones_juego.screen_y_resolution, 
+					estirar_hasta_rellenar );
+			RepresentaTextura ( gRenderer, gTextoVictoria, 
+					gDimTextoVictoriaX , gDimTextoVictoriaY , 
+					0.35*opciones_juego.screen_x_resolution , (0.35+0.4)*opciones_juego.screen_x_resolution , 0.5*opciones_juego.screen_y_resolution, (0.5+0.1)*opciones_juego.screen_y_resolution, 
+					con_relac_aspecto_no_rellenar );
 		}
 
 		if( lose )
@@ -1759,23 +1857,40 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 
 
 			// Cuadro Pulse cualquier tecla --- Press Any key label
-			renderQuad.x = 0.35*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			/*renderQuad.x = 0.35*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
 			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
 			renderQuad.w = 0.5*opciones_juego.screen_x_resolution;				// Ancho
 			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
 			SDL_RenderCopy( gRenderer, gTexturaFondoSemiTranspTexto, NULL, &renderQuad );	// Pruebas 4/4/2020
-			SDL_RenderCopy( gRenderer, gTextoPierde, NULL, &renderQuad );
+			SDL_RenderCopy( gRenderer, gTextoPierde, NULL, &renderQuad );*/
+			RepresentaTextura ( gRenderer, gTexturaFondoSemiTranspTexto, 
+					0 , 0 , 
+					0.35*opciones_juego.screen_x_resolution , (0.35+0.5)*opciones_juego.screen_x_resolution , 0.4*opciones_juego.screen_y_resolution, (0.4+0.1)*opciones_juego.screen_y_resolution, 
+					estirar_hasta_rellenar );
+			RepresentaTextura ( gRenderer, gTextoPierde, 
+					gDimTextoPierdeX , gDimTextoPierdeY , 
+					0.35*opciones_juego.screen_x_resolution , (0.35+0.5)*opciones_juego.screen_x_resolution , 0.4*opciones_juego.screen_y_resolution, (0.4+0.1)*opciones_juego.screen_y_resolution, 
+					con_relac_aspecto_no_rellenar );
+
 
 		}
 		// Dibuja cuadro de pausa
 		if ( pause )
 		{
-			renderQuad.x = 0.4*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
+			/*renderQuad.x = 0.4*opciones_juego.screen_x_resolution;		// Coord X de esquina superior izquierda
 			renderQuad.y = 0.4*opciones_juego.screen_y_resolution;		// Coord Y de esquina superior izquierda
 			renderQuad.w = 0.2*opciones_juego.screen_x_resolution;				// Ancho
 			renderQuad.h = 0.1*opciones_juego.screen_y_resolution;				// Alto
 			SDL_RenderCopy( gRenderer, gTexturaFondoSemiTranspTexto, NULL, &renderQuad );	// Pruebas 4/4/2020
-			SDL_RenderCopy( gRenderer, gTexturaPausa, NULL, &renderQuad );
+			SDL_RenderCopy( gRenderer, gTexturaPausa, NULL, &renderQuad );*/
+			RepresentaTextura ( gRenderer, gTexturaFondoSemiTranspTexto, 
+					0 , 0 , 
+					0.4*opciones_juego.screen_x_resolution , (0.4+0.2)*opciones_juego.screen_x_resolution , 0.4*opciones_juego.screen_y_resolution, (0.4+0.1)*opciones_juego.screen_y_resolution, 
+					estirar_hasta_rellenar );
+			RepresentaTextura ( gRenderer, gTexturaPausa, 
+					gDimTexturaPausaX , gDimTexturaPausaY , 
+					0.4*opciones_juego.screen_x_resolution , (0.4+0.2)*opciones_juego.screen_x_resolution , 0.4*opciones_juego.screen_y_resolution, (0.4+0.1)*opciones_juego.screen_y_resolution, 
+					con_relac_aspecto_no_rellenar );
 		}
 
 		//Update screen 

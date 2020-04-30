@@ -490,3 +490,28 @@ bool PuntoDentroDeTriangulo(struct punto P, struct punto A, struct punto B,struc
 		return false;
 	}
 }
+
+double AnguloRadEntreDosSegmentos ( struct segmento segm_A, struct segmento segm_B )
+{
+	// Esta función devuelve el angulo (en radianes) que forman dos segmentos
+	// Nuevo 18/4/2020
+	// Basado en la formula: Prod_escalar(A,B) = |A|*|B|*cos(angulo)
+	// prod_esc(A,B)*prod_esc(A,B) = |A|*|A|*|B|*|B|*cos(angulo)*cos(angulo)
+	// cos(angulo) = raiz( prod_esc(A,B)*prod_esc(A,B)/|A|*|A|*|B|*|B|)
+	struct punto vector_A, vector_B;
+	struct punto origen = {0.0, 0.0};
+	double prod_escalar, coseno_angulo;
+
+	vector_A.x = segm_A.end.x - segm_A.start.x;	vector_A.y = segm_A.end.y - segm_A.start.y;
+	vector_B.x = segm_B.end.x - segm_B.start.x;	vector_B.y = segm_B.end.y - segm_B.start.y;
+
+	prod_escalar = ProductoEscalar2D( vector_A, vector_B );
+
+	coseno_angulo = sqrt( ( prod_escalar*prod_escalar) / ( LongitudVector_Cuadrado( vector_A , origen ) * LongitudVector_Cuadrado( vector_B, origen ) ) );
+
+	return acos( coseno_angulo );
+}
+
+
+
+

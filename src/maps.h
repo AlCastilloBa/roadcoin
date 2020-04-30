@@ -59,6 +59,7 @@ struct zona_aceleracion_circular		// Nuevo 21/3/2020 (TODO) PRUEBAS
 	float angulo;			// Acceleration zone angle
 	float aceleracion;		// Acceleration zone speed
 	bool definido_OK;		// Is this round acceleration zone correctly defined and read?
+	bool invisible;			// Invisible
 };
 
 struct mapa
@@ -78,7 +79,7 @@ struct mapa
 	bool no_rot_moneda;				// No coin rotation (for this map)
 
 	bool CuentaAtras;				// This map has a time countdown
-	int SegundosCuentaAtras;			// Numer or secnods of the countdown
+	int SegundosCuentaAtras;			// Numer or seconds of the countdown
 
 	bool HayFondoGiratorio;				// Rotating background exists
 	char RutaImagenFondoGiratorio[255];		// Path to rotating background image
@@ -98,6 +99,9 @@ struct mapa
 
 	int NumeroZonasAceleracionCircular;		// Number of round acceleration zones
 	struct zona_aceleracion_circular *ZonasAceleracionCircular;	// Pointer to round acceleration zone memory area
+
+	char RutaImagenDescMenu[255];			// Nuevo 12/4/2020 - Path to image describing the map for the menu
+	bool RutaImagenDescMenu_Presente;		// Nuevo 12/4/2020
 };
 
 
@@ -106,11 +110,19 @@ struct ConjuntoMapas		// Level set
 {
 	char Directorio[255];			// Level set directory name
 	SDL_Texture* TexturaNombreDir;		// Level set directory name texture pointer
+	int TexturaNombreDir_DimX;		// Level set directory name texture X size
+	int TexturaNombreDir_DimY;		// Level set directory name texture Y size
 	char Descripcion[255];			// Level set description text
 	SDL_Texture* TexturaDescripcion;	// Level set description text texture pointer
+	int TexturaDescripcion_DimX;		// Level set description text texture X size
+	int TexturaDescripcion_DimY;		// Level set description text texture Y size
 	char RutaImagen[255];			// Level set image path
 	SDL_Texture* TexturaImagen;		// Level set image SDL2 texture pointer
+	int TexturaImagen_DimX;			// Level set image SDL2 texture, X image size
+	int TexturaImagen_DimY;			// Level set image SDL2 texture, Y image size
 	SDL_Texture* TexturaNumeracion;		// Level set numbering (ex. 5/14 )
+	int TexturaNumeracion_DimX;		// Level set numbering texture X texture size
+	int TexturaNumeracion_DimY;		// Level set numbering texture Y texture size
 	bool dir_definido_OK;			// Is this level set directory name correctly defined and read?
 	bool desc_definido_OK;			// Is this level set description correctly defined and read?
 	bool imag_definido_OK;			// Is this level set image path correctly defined and read?
@@ -124,13 +136,29 @@ struct InfoMapas		// Level info
 	struct mapa DatosMapa;			// Map information array for levels inside level set
 	bool mapa_definido_OK;
 	SDL_Texture* TexturaNombreMapa;
-	SDL_Texture* TexturaDescripcionMapa;
-	SDL_Texture* TexturaImagenMapa;
+	int TexturaNombreMapa_DimX;
+	int TexturaNombreMapa_DimY;
+	SDL_Texture* TexturaDescripcionMapa;	// Map description texture
+	int TexturaDescripcionMapa_DimX;
+	int TexturaDescripcionMapa_DimY;
+	SDL_Texture* TexturaImagenMapa;		// Map image SDL2 texture pointer
+	int TexturaImagenMapa_DimX;		// Map image SDL2 texture, X image size
+	int TexturaImagenMapa_DimY;		// Map image SDL2 texture, Y image size
 	SDL_Texture* TexturaModoGiro;
+	int TexturaModoGiro_DimX;
+	int TexturaModoGiro_DimY;
 	SDL_Texture* TexturaAnguloMaximo;
+	int TexturaAnguloMaximo_DimX;
+	int TexturaAnguloMaximo_DimY;
 	SDL_Texture* TexturaGravedad;
+	int TexturaGravedad_DimX;
+	int TexturaGravedad_DimY;
 	SDL_Texture* TexturaTiempo;
+	int TexturaTiempo_DimX;
+	int TexturaTiempo_DimY;
 	SDL_Texture* TexturaNumeracion;
+	int TexturaNumeracion_DimX;
+	int TexturaNumeracion_DimY;
 };
  
 

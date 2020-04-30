@@ -1,7 +1,4 @@
 
-
-
-
 // Listado de las pantallas del menu principal
 enum pantalla_menu_principal
 {
@@ -27,6 +24,10 @@ enum pantalla_menu_principal
 // Menu buttons list
 enum listado_botones
 {
+	// Pantalla bienvenida
+	boton_bienv_logo,	// Welcome screen, game logo
+	boton_bienv_pulse,	// Welcome screen, press any key
+	
 	// Menu principal
 	boton_jugar,		// Play button
 	boton_opciones,		// Option button
@@ -112,6 +113,7 @@ struct boton_menu
 	int textura_dim_x;						// Original texture x dimension (texture dimension, not button size)
 	int textura_dim_y;						// Original texture y dimension (texture dimension, not button size)
 	SDL_Texture* textura_boton_seleccionado;			// Button texture when selected
+	enum ModoRepresentacionTextura ModoRepresentacion;		// Texture display mode
 	// (TODO) Añadir más texturas, para estado reposo, raton encima, y hecho clic
 
 	int boton_anterior;						// Previous button
@@ -134,8 +136,9 @@ struct pantalla_menu
 	char titulo[100];						// Menu screen title
 	SDL_Texture* imagen_fondo_pantalla;				// Menu screen background image
 	SDL_Texture* textura_titulo;					// Menu screen title text texture
-	//int textura_titulo_dim_x;
-	//int textura_titulo_dim_y;
+	int textura_titulo_dim_x;
+	int textura_titulo_dim_y;
+	enum ModoRepresentacionTextura ModoRepresentacion;		// Texture display mode
 	int borde_izquierdo_titulo;
 	int borde_derecho_titulo;
 	int borde_arriba_titulo;
@@ -159,9 +162,9 @@ bool raton_sobre_boton_menos_valor_numerico ( struct boton_menu, int, int );
 
 bool raton_sobre_boton_menos_valor_numerico ( struct boton_menu, int, int );
 
-bool inicializa_datos_boton( struct boton_menu*, int, enum listado_botones, enum tipo_boton, char*, int, int  );
+bool inicializa_datos_boton( struct boton_menu*, int, enum listado_botones, enum tipo_boton, char*, int, int, enum ModoRepresentacionTextura  );
 
-bool inicializa_datos_pantalla_menu( struct pantalla_menu*, enum pantalla_menu_principal, char* , char*, int );
+bool inicializa_datos_pantalla_menu( struct pantalla_menu*, enum pantalla_menu_principal, char* , char*, int, enum ModoRepresentacionTextura );
 
 bool inicializar_menu_principal( /*struct pantalla_menu*, */int );
 
@@ -169,5 +172,8 @@ bool liberar_memoria_menu_principal( /*struct pantalla_menu*,*/ int );
 
 void bucle_principal_menu_principal( void );
 
+void ActualizaPunteros_Menu_EligeConjuntoNiveles ( struct pantalla_menu* , int  );
+
+void ActualizaPunteros_Menu_EligeNivel (struct pantalla_menu* , int, int );
 
 

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "maps.h"
+#include "geometry.h"	// Nuevo pruebas 18/4/2020
 
 
  #define DEBUG_INFO
@@ -64,6 +65,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				strcpy( cadena_aux, linea_leida);
 				token = strtok( cadena_aux, "=" ); token = strtok( NULL, "=" );
 				strcpy( mapa_a_cargar.DescripcionMapa, token);
+				Eliminar_NewLine_En_FinalCadena(mapa_a_cargar.DescripcionMapa ); 	// Nuevo 19/4/2020
 				descripcion_ok = true;
 				#ifdef DEBUG_INFO
 				printf("Linea %d, descripcion = %s\n", linea, mapa_a_cargar.DescripcionMapa);
@@ -472,7 +474,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				{
 					cuenta_atras_presente = true;
 					#ifdef DEBUG_INFO
-					printf("Linea %d, tiempo_cuenta_atras=%d\n", linea, mapa_a_cargar.SegundosCuentaAtras );
+					printf("Linea %d, tiempo_cuenta_atras = %d segundos.\n", linea, mapa_a_cargar.SegundosCuentaAtras );
 					#endif
 				}
 				else
@@ -522,31 +524,58 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				}
 				else
 				{
+					int temp_zona_acel_circ_invisible;
 					sscanf(linea_leida, "zona_acel_circ[%d]",&zona_acel_circ_actual); // Leemos primero el numero actual de zona de acel, para poder hacer el direccionamiento en las siguientes instrucciones
 					if ( zona_acel_circ_actual >= mapa_a_cargar.NumeroZonasAceleracionCircular )
 					{
-						printf("Se ha declarado un bumper con numero %d, que no cabe en el numero de zonas de aceleracion circular declarado %d.\n", zona_acel_circ_actual, mapa_a_cargar.NumeroZonasAceleracionCircular );
+						printf("Se ha declarado una zona acel circular con numero %d, que no cabe en el numero de zonas de aceleracion circular declarado %d.\n", zona_acel_circ_actual, mapa_a_cargar.NumeroZonasAceleracionCircular );
 						printf("Nota: se empieza a contar desde el indice 0\n");
 						exit(-1);
 					}
-					if ( sscanf(linea_leida, "zona_acel_circ[%d]=((%lf,%lf),%f,%f,%f)", 		&zona_acel_circ_actual, 
+					if ( sscanf(linea_leida, "zona_acel_circ[%d]=((%lf,%lf),%f,%f,%f,%d)", 		&zona_acel_circ_actual, 
 														&(mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].centro.x),
 														&(mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].centro.y),
 														&(mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].radio),
 														&(mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].angulo),
-														&(mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].aceleracion)            ) == 6 )
+														&(mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].aceleracion),
+														&(temp_zona_acel_circ_invisible )            ) == 7 )
 					{
 						zona_acel_circ_ok[zona_acel_circ_actual] = true;
 						#ifdef DEBUG_INFO
-						printf("Linea %d, zona_acel_circ %d --> Centro x=%f, y=%f; Radio=%f, Angulo=%f, Aceleracion=%f \n", 	linea, 
+						printf("Linea %d, zona_acel_circ %d --> Centro x=%f, y=%f; Radio=%f, Angulo=%f, Aceleracion=%f, Invisible=%d \n", 	linea, 
 																	bumper_actual,
 																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].centro.x,
 																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].centro.y,
 																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].radio,
 																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].angulo,
-																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].aceleracion );
+																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].aceleracion,
+																	temp_zona_acel_circ_invisible );
 
 						#endif
+						switch (temp_zona_acel_circ_invisible)
+						{
+							case 0:
+								mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].invisible = false;
+								#ifdef DEBUG_INFO
+								printf("Linea %d, zona acel circ invisible=false \n", linea);
+								#endif
+								break;
+							case 1:
+								mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].invisible = true;
+								#ifdef DEBUG_INFO
+								printf("Linea %d, zona acel circ invisible=true \n", linea);
+								#endif
+								break;
+							default:
+								// Valor no válido, se toma el valor por defecto
+								mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].invisible = false;
+								#ifdef DEBUG_INFO
+								printf("Linea %d, dato invisible tiene un valor no valido, se supone visible. \n", linea);
+								#endif
+								break;
+						}
+
+
 					}
 					else
 					{	
@@ -584,6 +613,13 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	{
 		mapa_a_cargar.CuentaAtras = false;
 		mapa_a_cargar.SegundosCuentaAtras = 0;
+		#ifdef DEBUG_INFO
+		printf("Tiempo de cuenta atrás no estaba definido en el mapa. No se tendrá en cuenta ninguna cuenta atrás. \n");
+		#endif
+	}
+	else
+	{
+		mapa_a_cargar.CuentaAtras = true;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -603,10 +639,10 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	{
 		printf("Falta el nombre del mapa.\n");
 	}
-	/*if (descripcion_ok == false )	// Al habilitar esto, el tiempo de cuenta atras deja de funcionar (TODO)
+	if (descripcion_ok == false )
 	{
 		printf("Falta la descripcion del mapa.\n");
-	}*/
+	}
 	if (num_segmentos_ok == false)
 	{
 		printf("Falta el número de segmentos.\n");
@@ -748,23 +784,33 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 			if ( segmento_actual == otro_segmento_actual )
 			{
 				continue;
-			}		
-			if ( ( mapa_a_cargar.Mapa[segmento_actual].start.x == mapa_a_cargar.Mapa[otro_segmento_actual].start.x ) && ( mapa_a_cargar.Mapa[segmento_actual].start.y == mapa_a_cargar.Mapa[otro_segmento_actual].start.y ) || 
-				( mapa_a_cargar.Mapa[segmento_actual].start.x == mapa_a_cargar.Mapa[otro_segmento_actual].end.x ) && ( mapa_a_cargar.Mapa[segmento_actual].start.y == mapa_a_cargar.Mapa[otro_segmento_actual].end.y ) )
-			{
-				mapa_a_cargar.Mapa[segmento_actual].start_adyacente_a_otro = true;
-				#ifdef DEBUG_INFO
-				printf("Detectada adyacencia en extremo start en segmento %d, con segmento %d\n", segmento_actual, otro_segmento_actual);
-				#endif
 			}
-			if ( ( mapa_a_cargar.Mapa[segmento_actual].end.x == mapa_a_cargar.Mapa[otro_segmento_actual].start.x ) && ( mapa_a_cargar.Mapa[segmento_actual].end.y == mapa_a_cargar.Mapa[otro_segmento_actual].start.y ) || 
-				( mapa_a_cargar.Mapa[segmento_actual].end.x == mapa_a_cargar.Mapa[otro_segmento_actual].end.x ) && ( mapa_a_cargar.Mapa[segmento_actual].end.y == mapa_a_cargar.Mapa[otro_segmento_actual].end.y ) )
+			if (  ( AnguloRadEntreDosSegmentos( mapa_a_cargar.Mapa[segmento_actual] , mapa_a_cargar.Mapa[otro_segmento_actual] )*180/PI ) < 45  ) // Pruebas nuevo 18/4/2020
 			{
-				mapa_a_cargar.Mapa[segmento_actual].end_adyacente_a_otro = true;
+				// No tenemos en cuenta la adyacencia si los dos segmentos forman mas de cierto angulo.
+				if ( ( mapa_a_cargar.Mapa[segmento_actual].start.x == mapa_a_cargar.Mapa[otro_segmento_actual].start.x ) && ( mapa_a_cargar.Mapa[segmento_actual].start.y == mapa_a_cargar.Mapa[otro_segmento_actual].start.y ) || 
+					( mapa_a_cargar.Mapa[segmento_actual].start.x == mapa_a_cargar.Mapa[otro_segmento_actual].end.x ) && ( mapa_a_cargar.Mapa[segmento_actual].start.y == mapa_a_cargar.Mapa[otro_segmento_actual].end.y ) )
+				{
+					mapa_a_cargar.Mapa[segmento_actual].start_adyacente_a_otro = true;
+					#ifdef DEBUG_INFO
+					printf("Detectada adyacencia en extremo start en segmento %d, con segmento %d\n", segmento_actual, otro_segmento_actual);
+					#endif
+				}
+				if ( ( mapa_a_cargar.Mapa[segmento_actual].end.x == mapa_a_cargar.Mapa[otro_segmento_actual].start.x ) && ( mapa_a_cargar.Mapa[segmento_actual].end.y == mapa_a_cargar.Mapa[otro_segmento_actual].start.y ) || 
+					( mapa_a_cargar.Mapa[segmento_actual].end.x == mapa_a_cargar.Mapa[otro_segmento_actual].end.x ) && ( mapa_a_cargar.Mapa[segmento_actual].end.y == mapa_a_cargar.Mapa[otro_segmento_actual].end.y ) )
+				{
+					mapa_a_cargar.Mapa[segmento_actual].end_adyacente_a_otro = true;
+					#ifdef DEBUG_INFO
+					printf("Detectada adyacencia en extremo end en segmento %d, con segmento %d\n", segmento_actual, otro_segmento_actual);
+					#endif
+				}
+			} // Pruebas nuevo 18/4/2020
+			/*else
+			{
 				#ifdef DEBUG_INFO
-				printf("Detectada adyacencia en extremo end en segmento %d, con segmento %d\n", segmento_actual, otro_segmento_actual);
+				printf("No se verifica adyacencia entre segmentos %d y %d ya que forman un angulo de %f grados \n", segmento_actual, otro_segmento_actual, AnguloRadEntreDosSegmentos( mapa_a_cargar.Mapa[segmento_actual] , mapa_a_cargar.Mapa[otro_segmento_actual] )*180/PI);
 				#endif
-			}		
+			}*/		
 		}
 	}
 
@@ -842,6 +888,9 @@ struct mapa LeerInfoArchivo( char *nombre_archivo )
 	bool cuenta_atras_presente=false;
 	FILE *archivo;
 	int linea=0;
+
+	mapa_a_leer.RutaImagenDescMenu_Presente = false;
+	mapa_a_leer.CuentaAtras = false;
 
 	archivo = fopen( nombre_archivo, "r" );
 	if (archivo == NULL)
@@ -927,6 +976,7 @@ struct mapa LeerInfoArchivo( char *nombre_archivo )
 				if ( sscanf(linea_leida, "tiempo_cuenta_atras=%d", &(mapa_a_leer.SegundosCuentaAtras) ) == 1 )
 				{
 					cuenta_atras_presente = true;
+					mapa_a_leer.CuentaAtras = true;
 					#ifdef DEBUG_INFO
 					printf("Leer info archivo: Linea %d, tiempo_cuenta_atras=%d\n", linea, mapa_a_leer.SegundosCuentaAtras );
 					#endif
@@ -936,6 +986,28 @@ struct mapa LeerInfoArchivo( char *nombre_archivo )
 					printf("Leer info archivo: Linea %d, tiempo_cuenta_atras --> No se ha podido leer el valor.\n", linea);
 					exit(-1);
 				}
+			}
+			else if (strstr(linea_leida, "imagen_desc_menu") != NULL )
+			{
+				if ( sscanf(linea_leida, "imagen_desc_menu=%s", mapa_a_leer.RutaImagenDescMenu ) == 1 )
+				{
+					mapa_a_leer.RutaImagenDescMenu_Presente = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, imagen_desc_menu=%s\n", linea, mapa_a_leer.RutaImagenDescMenu );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, imagen_desc_menu --> No se han podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
+			///////////////////////////////////////////////////////////
+			// Seguir añadiendo nuevas opciones aqui
+			//////////////////////////////////////////////////////////
+			else
+			{
+				printf("Linea %d, expresion no reconocida, se ignora.\n", linea);
 			}
 		}
 	}
