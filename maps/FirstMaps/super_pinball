@@ -23,13 +23,17 @@ imagen_moneda=images/metal_ball_1.png
 
 
 # Ruta imagen del fondo
-imagen_fondo=images/fondo_blanco.png
+imagen_fondo=images/space_cloud_background.jpeg
 
 # Fondo giratorio
 fondo_giratorio=1
 imagen_fnd_giratorio=images/super_pinball.png
 pos_fnd_giratorio=((0,0),(1000,779))
 centro_giro_fnd_gir=(0,0)
+
+# Ruta imagen para la descripcion en el menu
+imagen_desc_menu=images/level_desc/Pinball.png
+
 
 
 # Ruta de la musica
@@ -51,7 +55,7 @@ segmento[1]=((595,705),(507,777),0,1)
 
 segmento[2]=((594,604),(594,704),0,1)
 segmento[3]=((564,577),(594,604),0,1)
-segmento[4]=((564,577),(534,601),4,1)
+segmento[4]=((564,577),(534,601),4,0)
 segmento[5]=((564,577),(587,558),0,1)
 segmento[6]=((560,613),(560,692),0,1)
 segmento[7]=((560,692),(516,725),0,1)
@@ -356,54 +360,55 @@ bumper[41]=((898,589),10,500)
 # bumper[]=((,),10,500)
 
 # Zonas de aceleración
-num_zonas_acel_circ=45
-zona_acel_circ[0]=((653,758),15,0,9000)
-zona_acel_circ[1]=((653,715),15,0,9000)
-zona_acel_circ[2]=((653,663),15,0,9000)
-zona_acel_circ[3]=((653,607),15,315,9000)
-zona_acel_circ[4]=((612,566),15,315,9000)
-zona_acel_circ[5]=((395,499),15,90,9000)
-zona_acel_circ[6]=((370,296),15,315,9000)
-zona_acel_circ[7]=((348,245),15,0,9000)
-zona_acel_circ[8]=((348,196),15,0,9000)
-zona_acel_circ[9]=((355,157),15,45,9000)
-zona_acel_circ[10]=((599,292),15,45,9000)
-zona_acel_circ[11]=((622,248),15,0,9000)
-zona_acel_circ[12]=((622,196),15,0,9000)
-zona_acel_circ[13]=((611,163),15,315,9000)
-zona_acel_circ[14]=((611,503),15,45,9000)
-zona_acel_circ[15]=((679,491),15,90,9000)
-zona_acel_circ[16]=((735,479),15,45,9000)
-zona_acel_circ[17]=((741,439),15,0,9000)
-zona_acel_circ[18]=((741,374),15,0,9000)
-zona_acel_circ[19]=((741,308),15,0,9000)
-zona_acel_circ[20]=((741,245),15,0,9000)
-zona_acel_circ[21]=((741,175),15,0,9000)
-zona_acel_circ[22]=((379,79),15,135,9000)
-zona_acel_circ[23]=((741,131),15,0,9000)
-zona_acel_circ[24]=((722,41),15,315,9000)
-zona_acel_circ[25]=((669,37),15,270,9000)
-zona_acel_circ[26]=((588,37),15,270,9000)
-zona_acel_circ[27]=((625,94),15,45,9000)
-zona_acel_circ[28]=((685,96),15,90,9000)
-zona_acel_circ[29]=((799,96),15,90,9000)
-zona_acel_circ[30]=((304,44),15,45,9000)
-zona_acel_circ[31]=((398,41),15,90,9000)
-zona_acel_circ[32]=((490,37),30,180,9000)
-zona_acel_circ[33]=((978,573),15,270,9000)
+num_zonas_acel_circ=46
+zona_acel_circ[0]=((653,758),15,0,9000,1)
+zona_acel_circ[1]=((653,715),15,0,9000,1)
+zona_acel_circ[2]=((653,663),15,0,9000,1)
+zona_acel_circ[3]=((653,607),15,315,9000,1)
+zona_acel_circ[4]=((612,566),15,315,9000,1)
+zona_acel_circ[5]=((395,499),15,90,9000,1)
+zona_acel_circ[6]=((370,296),15,315,9000,1)
+zona_acel_circ[7]=((348,245),15,0,9000,1)
+zona_acel_circ[8]=((348,196),15,0,9000,1)
+zona_acel_circ[9]=((355,157),15,45,9000,1)
+zona_acel_circ[10]=((599,292),15,45,9000,1)
+zona_acel_circ[11]=((622,248),15,0,9000,1)
+zona_acel_circ[12]=((622,196),15,0,9000,1)
+zona_acel_circ[13]=((611,163),15,315,9000,1)
+zona_acel_circ[14]=((611,503),15,45,9000,1)
+zona_acel_circ[15]=((679,491),15,90,9000,1)
+zona_acel_circ[16]=((735,479),15,45,9000,1)
+zona_acel_circ[17]=((741,439),15,0,9000,1)
+zona_acel_circ[18]=((741,374),15,0,9000,1)
+zona_acel_circ[19]=((741,308),15,0,9000,1)
+zona_acel_circ[20]=((741,245),15,0,9000,1)
+zona_acel_circ[21]=((741,175),15,0,90000,1)
+zona_acel_circ[22]=((379,79),15,135,9000,1)
+zona_acel_circ[23]=((741,131),15,0,9000,1)
+zona_acel_circ[24]=((722,41),15,315,9000,1)
+zona_acel_circ[25]=((669,37),15,270,9000,1)
+zona_acel_circ[26]=((588,37),15,270,9000,1)
+zona_acel_circ[27]=((625,94),15,45,9000,1)
+zona_acel_circ[28]=((685,96),15,90,9000,1)
+zona_acel_circ[29]=((799,96),15,90,9000,1)
+zona_acel_circ[30]=((304,44),15,45,9000,1)
+zona_acel_circ[31]=((398,41),15,90,9000,1)
+zona_acel_circ[32]=((490,37),30,180,9000,1)
+zona_acel_circ[33]=((978,573),15,270,9000,1)
 
-zona_acel_circ[34]=((391,560),15,315,9000)
-zona_acel_circ[35]=((347,511),15,0,9000)
-zona_acel_circ[36]=((347,450),15,315,9000)
-zona_acel_circ[37]=((289,399),15,270,9000)
-zona_acel_circ[38]=((171,399),15,270,9000)
-zona_acel_circ[39]=((130,417),15,180,9000)
-zona_acel_circ[40]=((295,464),15,270,9000)
+zona_acel_circ[34]=((391,560),15,315,9000,1)
+zona_acel_circ[35]=((347,511),15,0,9000,1)
+zona_acel_circ[36]=((347,450),15,315,9000,1)
+zona_acel_circ[37]=((289,399),15,270,9000,1)
+zona_acel_circ[38]=((171,399),15,270,9000,1)
+zona_acel_circ[39]=((130,417),15,180,9000,1)
+zona_acel_circ[40]=((295,464),15,270,9000,1)
 
-zona_acel_circ[41]=((63,440),15,315,9000)
-zona_acel_circ[42]=((58,372),15,0,9000)
-zona_acel_circ[43]=((68,324),15,45,9000)
-zona_acel_circ[44]=((138,310),15,90,9000)
+zona_acel_circ[41]=((63,440),15,315,9000,1)
+zona_acel_circ[42]=((58,372),15,0,9000,1)
+zona_acel_circ[43]=((68,324),15,45,9000,1)
+zona_acel_circ[44]=((138,310),15,90,9000,1)
+zona_acel_circ[45]=((244,397),15,270,9000,1)
 
 
 # Escala

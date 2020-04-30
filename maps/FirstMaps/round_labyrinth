@@ -41,6 +41,9 @@ pos_fnd_giratorio=((0,0),(928,925))
 # Si tipo giro = 3 entonces girar respecto al origen
 centro_giro_fnd_gir=(0,0)
 
+# Ruta imagen para la descripcion en el menu
+imagen_desc_menu=images/level_desc/RoundLabyrinth.png
+
 # La moneda no gira
 no_rot_moneda
 

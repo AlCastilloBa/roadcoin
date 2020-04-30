@@ -57,7 +57,9 @@ bumper[7]=((0,150),32,500)
 
 # Zonas de aceleración
 num_zonas_acel_circ=4
-zona_acel_circ[0]=((100,100),50,0, 1000)
-zona_acel_circ[1]=((500,100),50,90,1000)
-zona_acel_circ[2]=((600,300),50,270, 1000)
-zona_acel_circ[3]=((600,600),200,45, 1000)
+zona_acel_circ[0]=((100,100),50,0,1000,0)
+zona_acel_circ[1]=((500,100),50,90,1000,0)
+zona_acel_circ[2]=((600,300),50,270,1000,0)
+zona_acel_circ[3]=((600,600),200,45,1000,0)
+
+

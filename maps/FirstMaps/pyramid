@@ -29,6 +29,10 @@ imagen_fnd_giratorio=images/pyramid_rot_bg.png
 pos_fnd_giratorio=((0,0),(995,658))
 centro_giro_fnd_gir=(0,0)
 
+# Ruta imagen para la descripcion en el menu
+imagen_desc_menu=images/level_desc/Pyramid.png
+
+
 # Factor de escala
 escala=6
 

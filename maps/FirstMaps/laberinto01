@@ -28,6 +28,9 @@ imagen_moneda=images/moneda5.png
 # Ruta imagen del fondo
 imagen_fondo=images/fondo_tablas_madera.jpg
 
+# Ruta imagen para la descripcion en el menu
+imagen_desc_menu=images/level_desc/Labyrinth.png
+
 # Ruta de la musica
 ruta_musica=music/AncientPassageMysteriousSpookyGameMusicbyHeatleyBros.mp3
 

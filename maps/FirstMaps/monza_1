@@ -35,6 +35,9 @@ ruta_musica=music/WarpPortal_FastDreamyGameMusicbyHeatleyBros.mp3
 #imagen_fondo=images/bamboo-spotlights-wood-wall-hd-wallpaper.jpg
 imagen_fondo=images/red_white_flag_bg.png
 
+# Ruta imagen para la descripcion en el menu
+imagen_desc_menu=images/level_desc/GrassRoad.png
+
 
 #Segmentos
 # Nivel Salida
