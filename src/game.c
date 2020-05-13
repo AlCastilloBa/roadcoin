@@ -14,6 +14,7 @@
 #include "graphics.h"
 #include "menu.h"
 #include "camera.h"
+#include "sound.h"
 
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
@@ -403,6 +404,13 @@ bool loadMainGameLoopMedia( 	char* ruta_imagen_moneda,
 	    success = false;
 	}
 
+	gSonidoGolpeMoneda = Mix_LoadWAV( "sound/coin_hit_1.wav" );	/* Prueba 25/5/2020 */
+	if ( gSonidoGolpeMoneda == NULL )
+	{
+	    printf( "Error al cargar sonido golpe moneda. SDL_mixer Error: %s\n", Mix_GetError() );
+	    success = false;
+	}
+
 	return success;
 }
 
@@ -445,6 +453,7 @@ bool freeMainGameLoopMedia()
 	Mix_FreeMusic( gMusicaJuego ); gMusicaJuego = NULL;
 	Mix_FreeChunk( gSonidoPinballBumper); gSonidoPinballBumper = NULL;
 	Mix_FreeChunk( gSonidoPinballFlipper); gSonidoPinballFlipper = NULL;
+	Mix_FreeChunk( gSonidoGolpeMoneda ); gSonidoGolpeMoneda = NULL;
 }
 
 
@@ -591,13 +600,15 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	bool flanco_asc_pinball_flipper_L = false, flanco_asc_pinball_flipper_R = false;	
 	bool flanco_desc_pinball_flipper_L = false, flanco_desc_pinball_flipper_R = false;	// Pruebas 22/4/2020, Pinball flippers, flanco descendente (TODO)
 
+	bool contacto_con_algun_segmento = false;	// Pruebas 12/5/2020 (TODO)
+
 	enum resultado resultado_final = abortado;
 
 	int contador_frames = 0;
 	SDL_Event e;		 //Event handler 
 	Uint32 currentTime = 0, lastTime, deltaTime, tiempo_imagen_sobrante; //Current time start time (milisegundos)
 
-	int TiempoInicialCuentaAtras, TiempoActualCuentaAtras;	// Tiempo restante partida (milisegundos TODO PRUEBAS 19/3/2020
+	int TiempoInicialCuentaAtras, TiempoActualCuentaAtras;	// Tiempo restante partida (milisegundos)
 
 	float tiempo_imagen;	//Tiempo de cada imagen, en segundos
 	float framerate_deseado = 30;
@@ -612,6 +623,8 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	struct punto pos_real_moneda_anterior;		// Posicion del centro de la moneda, pero en el fotograma anterior --- Coin center position, on previous frame
 
 	struct vector_velocidad velocidad_real_moneda;
+	struct vector_velocidad velocidad_real_moneda_anterior;		// Pruebas 12/5/2020 (TODO)
+
 	struct vector_aceleracion aceleracion_real_moneda;
 
 	struct mapa mapa_original;		// Mapa cargado desde archivo
@@ -820,6 +833,9 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 
 		flanco_asc_pinball_flipper_L = flanco_asc_pinball_flipper_R = false;
 		flanco_desc_pinball_flipper_L = flanco_desc_pinball_flipper_R = false;		// Nuevo 22/4/2020, pruebas pinball flipper flanco descendente (TODO)
+
+		velocidad_real_moneda_anterior = velocidad_real_moneda;		// Nuevo Pruebas 12/5/2020 (TODO)
+		contacto_con_algun_segmento = false;		// Nuevo Pruebas 12/5/2020 (TODO)
 
 		//////////////////////////////////////////////////////////////////////////////////////
 		//  _____       _                 _              _____                   _   
@@ -1188,6 +1204,10 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 						lose = true;
 						resultado_final = derrota;
 					}
+					if ( mapa_original.Mapa[segmento_actual].type == pared )
+					{
+						contacto_con_algun_segmento = true;	// Pruebas 12/5/2020
+					}
 				}
 
 			}
@@ -1378,6 +1398,20 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					fuerzas_normales_segmentos[segmento_actual].fx = 0; fuerzas_normales_segmentos[segmento_actual].fy = 0;
 				}
 
+			}
+			//////////////////////////////////////////////////////////////////////////////
+			// Gestion del sonido de golpe de la moneda al chocar contra un segmento
+			// Nuevo 12/5/2020 (TODO)
+			if ( opciones_juego.sound_enabled )
+			{
+				float diferencia_modulos_velocidades;
+				diferencia_modulos_velocidades = abs (modulo_vector_velocidad_cuadrado(velocidad_real_moneda_anterior) - modulo_vector_velocidad_cuadrado(velocidad_real_moneda) );
+
+				if ( contacto_con_algun_segmento && ( diferencia_modulos_velocidades > 0.1*mapa_original.Gravedad*mapa_original.Gravedad ) )
+				{
+					Volumen_Chunk_Escala( gSonidoGolpeMoneda, diferencia_modulos_velocidades, 0.5*mapa_original.Gravedad*mapa_original.Gravedad, 0.05*mapa_original.Gravedad*mapa_original.Gravedad);
+					Mix_PlayChannel( -1, gSonidoGolpeMoneda, 0 );
+				}
 			}
 
 			/////////////////////////////////////////////////////////////////////////////////////
