@@ -1,7 +1,7 @@
 # Makefoile for MinGW compiler under Windows
 
 #OBJS specifies which files to compile as part of the project 
-OBJS = src/game.c src/camera.c src/physics.c src/maps.c src/geometry.c src/options.c src/menu.c src/graphics.c
+OBJS = src/game.c src/camera.c src/physics.c src/maps.c src/geometry.c src/options.c src/menu.c src/graphics.c src/sound.c
 
 #CC specifies which compiler we're using 
 CC = gcc
