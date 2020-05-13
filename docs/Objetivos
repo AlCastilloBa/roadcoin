@@ -51,7 +51,7 @@ Relacionados con el motor/fisicas:
 [  NO  ] Hacer que los flippers puedan enviar la bola hacia abajo cuando bajan.
 		Nota: Programado y probado, pero desactivado porque los mapas no estan pensados para ello.
 [      ] Joystick.
-[      ] Sonidos (golpes de la moneda).
+[ BOOM ] Sonidos (golpes de la moneda).
 [      ] Que los golpes de la moneda provoquen vibraciones joystick.
 [      ] Quelos golpes de la moneda puedan hacer girar el mapa (esto pone de los nervios).
 [      ] Plataformas móviles (esto tambien pone de los nervios).
@@ -65,6 +65,10 @@ Relacionados con el motor/fisicas:
 [      ] Enemigos que vayan recorriendo conjuntos de segmentos adyacentes.
 [      ] Powerups que cambien el tamaño de la moneda temporalmente.
 [      ] Eliminar botes molestos que quitan realismo.
+[      ] Posibilidad de que los segmentos se puedan desactivar o borrar. Esto da mas estilos de juego:
+	[      ] Uso de llaves para abrir puertas.
+	[      ] Pulsar botones para hacer desaparecer segmentos. --> 
+	[      ] Ojo con las adyacencias, habría que recalcularlas durante el juego. Se puede hacer una funcion que las recalcule.
 
 
 Estetica:

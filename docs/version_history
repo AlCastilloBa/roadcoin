@@ -68,6 +68,8 @@ v0.2-beta.3
 - Added a function to draw textures while keeping the original image aspect ratio. Three modes (stretch, original aspect ratio, original aspect ratio fill).
   Used this function to keep aspect ratio in game texts and menu elements. This makes game text a little more homogeneous (but still can be improved).
 --------------------
+- Added coin hit sounds. Volume is scalled depending on the energy the coin loses.
+--------------------
 
 
 
