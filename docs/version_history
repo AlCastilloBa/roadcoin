@@ -70,6 +70,10 @@ v0.2-beta.3
 --------------------
 - Added coin hit sounds. Volume is scalled depending on the energy the coin loses.
 --------------------
+- Added a "please wait while loading menu" screen, in order to make the game appear less "glitchy".
+- Bugfix: in function that draws textures to screen, in fill mode.
+- Disabled intro screen (but the code is still there, just in case it is needed in the future).
+--------------------
 
 
 
