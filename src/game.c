@@ -23,8 +23,6 @@
 //Screen dimension constants 
 const int INTRO_SCREEN_WIDTH = 500; 
 const int INTRO_SCREEN_HEIGHT = 851;
-//const int GAME_SCREEN_WIDTH = 800; 	// Incluido en opciones
-//const int GAME_SCREEN_HEIGHT = 600;	// Incluido en opciones
 
 #define DESPLAZAMIENTO_CAMARA_USUARIO 10
 
@@ -38,7 +36,7 @@ SDL_Window* gGameWindow = NULL;
 SDL_Surface* gScreenSurface = NULL; 
 
 // Pantalla intro
-SDL_Surface* gscreenIntro = NULL; 
+SDL_Surface* gscreenIntro = NULL;
 
 //The window renderer 
 SDL_Renderer* gRenderer = NULL;
@@ -63,7 +61,7 @@ SDL_Texture* gTexturaCronometro = NULL;		// Stopwatch icon texture
 SDL_Texture* gTexturaNumero[10] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};		// Numbers (0 to 9) texture
 SDL_Texture* gTexturaZonaAcelCirc = NULL;	// Round Acceleration Zone Texture	// TODO PRUEBAS 22/3/2020
 SDL_Texture* gTexturaFondoSemiTranspTexto = NULL;	// Semi-transparent background for texts
-
+SDL_Texture* gTextureLoadingMenu = NULL;	// Pantalla espera carga menu (Pruebas 13/5/2020)
 
 TTF_Font *gFuenteTextoJuego = NULL;
 SDL_Color gColorBlanco = { 255 , 255 , 255 }; 	// Blanco
@@ -86,6 +84,7 @@ int gDimNombreMapaX; int gDimNombreMapaY;
 int gDimDescripcionMapaX; int gDimDescripcionMapaY;
 int gDimTextoPierdeX; int gDimTextoPierdeY;
 int gDimTextoVictoriaX; int gDimTextoVictoriaY;
+int gDimTextureLoadingMenuX; int gDimTextureLoadingMenuY;
 
 //Variables globales control
 float inc_angulo_teclado = 1.0f;
@@ -106,10 +105,8 @@ Mix_Chunk *gSonidoPinballFlipper = NULL;
 ///////////////////////////////////////////////////////////////////////////
 
 
-
-
-bool inicializar_intro() 
-{ 
+bool inicializar_bibliotecas_SDL()		// Nuevo 13/5/2020
+{
 	bool success = true; 			//Initialization flag 
 	int imgFlags = IMG_INIT_PNG; 		//Initialize PNG loading
 
@@ -147,6 +144,50 @@ bool inicializar_intro()
 		success = false;
 	}
 
+	 return success; 
+}
+
+
+
+bool inicializar_intro() 
+{ 
+	bool success = true; 			//Initialization flag 
+	int imgFlags = IMG_INIT_PNG; 		//Initialize PNG loading
+
+/*	//Initialize SDL (y joystick)
+	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )  //When there's an error, SDL_Init returns -1
+	{ 
+		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() ); 
+		success = false;
+		exit(-1);
+	} 
+	
+	//Inicializa SDL_Image
+	//Initialize PNG loading 
+	if( !( IMG_Init( imgFlags ) & imgFlags ) ) 
+	{ 
+		printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() ); 
+		success = false;
+		exit(-1);
+	}
+
+
+	// Inicializa SDL_ttf
+	if( TTF_Init() == -1 )
+	{
+		printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
+		success = false;
+	}
+
+
+	// Inicializa SDL_mixer
+	//Initialize SDL_mixer
+	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
+	{
+		printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+*/
  
 	//Create window 
 	gIntroWindow = SDL_CreateWindow( 	"Intro", 
@@ -175,8 +216,8 @@ bool inicializar_ventana_juego()
 	gGameWindow = SDL_CreateWindow( 	"Juego", 
 					SDL_WINDOWPOS_UNDEFINED, 
 					SDL_WINDOWPOS_UNDEFINED, 
-					/*GAME_SCREEN_WIDTH*/ opciones_juego.screen_x_resolution, 
-					/*GAME_SCREEN_HEIGHT*/ opciones_juego.screen_y_resolution, 
+					opciones_juego.screen_x_resolution, 
+					opciones_juego.screen_y_resolution, 
 					SDL_WINDOW_SHOWN ); 
 
 	if( gGameWindow == NULL ) 
@@ -202,6 +243,9 @@ bool inicializar_ventana_juego()
 	{
 		CambiarModoPantallaCompleta( true, gGameWindow );
 	}
+
+
+
 	return success;
 }
 
@@ -502,7 +546,18 @@ int main( int argc, char* args[] )
 
 	opciones_juego = CargarArchivoOpciones();
 
-	//Start up SDL and create window 
+	// Inicializar bibliotecas SDL --- Start up SDL libraries
+	#ifdef DEBUG_INFO
+	printf("Inicializando SDL...\n");
+	#endif
+	if( !inicializar_bibliotecas_SDL() ) 
+	{ 
+		printf( "Error al inicializar bibliotecas SDL!\n" );
+		exit(-1);
+	} 
+
+
+/*	//Create Intro window 
 	#ifdef DEBUG_INFO
 	printf("Inicializando intro...\n");
 	#endif
@@ -534,8 +589,7 @@ int main( int argc, char* args[] )
 	SDL_Delay( 200 ); 
 	
 	cerrar_intro();
-
-
+*/
 	#ifdef DEBUG_INFO
 	printf("Inicializando ventana del juego...\n");
 	#endif
@@ -544,6 +598,24 @@ int main( int argc, char* args[] )
 		printf( "Failed to initialize!\n" );
 		exit(-1);
 	} 
+
+	// Nuevo pruebas 13/5/2020 - Muestra una imagen indicando que se está cargando el menu
+	gTextureLoadingMenu = CargaTextura ( "images/loading_screen_1.jpg" , &gDimTextureLoadingMenuX, &gDimTextureLoadingMenuY, false );
+	if( gTextureLoadingMenu == NULL ) 
+	{
+		printf( "Error al cargar textura imagen cargando menu.\n" ); 
+	}
+	else
+	{
+		RepresentaTextura ( gRenderer, gTextureLoadingMenu, 
+				gDimTextureLoadingMenuX , gDimTextureLoadingMenuY, 
+				0 , opciones_juego.screen_x_resolution , 0 , opciones_juego.screen_y_resolution,
+				con_relac_aspecto_rellenar );
+		//Update screen 
+		SDL_RenderPresent( gRenderer );
+		// Borrar textura --- Delete texture
+		SDL_DestroyTexture ( gTextureLoadingMenu ); gTextureLoadingMenu = NULL;
+	}
 
 
 	////////////

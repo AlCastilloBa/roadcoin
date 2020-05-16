@@ -20,7 +20,7 @@
 
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
- #define DEBUG_INFO
+// #define DEBUG_INFO
 
 
 #define PORCENTAJE_ANCHO_TITULOS 70.0

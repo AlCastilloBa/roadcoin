@@ -214,8 +214,8 @@ void RepresentaTextura ( SDL_Renderer* renderizador, SDL_Texture* textura,
 				printf("RepresentaTextura: Error de programacion, se necesitan las dimensiones de la textura original.\n");
 				return;
 			}
-			relacion_aspecto_rectangulo = ( rectangulo_borde_derecho - rectangulo_borde_izquierdo ) / ( rectangulo_borde_inferior - rectangulo_borde_superior );
-			relacion_aspecto_textura = dim_X_textura_original / dim_Y_textura_original;
+			relacion_aspecto_rectangulo = (float)  ( rectangulo_borde_derecho - rectangulo_borde_izquierdo ) / ( rectangulo_borde_inferior - rectangulo_borde_superior );
+			relacion_aspecto_textura = (float) dim_X_textura_original / dim_Y_textura_original;
 			if ( relacion_aspecto_rectangulo < relacion_aspecto_textura )
 			{
 				// En este caso, los bordes superior e inferior de la textura coincidirán con los bordes superior e 
@@ -224,7 +224,7 @@ void RepresentaTextura ( SDL_Renderer* renderizador, SDL_Texture* textura,
 				// The texture will "spill" across left and right borders.
 				RenderQuadOrigen.y = 0;
 				RenderQuadOrigen.h = dim_Y_textura_original;
-				RenderQuadOrigen.w = dim_Y_textura_original * relacion_aspecto_textura;
+				RenderQuadOrigen.w = dim_Y_textura_original * /*relacion_aspecto_textura*/ relacion_aspecto_rectangulo;
 				RenderQuadOrigen.x = dim_X_textura_original/2 - RenderQuadOrigen.w/2;
 	
 				RenderQuadDest.x = rectangulo_borde_izquierdo;
@@ -240,7 +240,7 @@ void RepresentaTextura ( SDL_Renderer* renderizador, SDL_Texture* textura,
 				// The texture will "spill" across upper and lower borders.
 				RenderQuadOrigen.x = 0;
 				RenderQuadOrigen.w = dim_X_textura_original;
-				RenderQuadOrigen.h = dim_X_textura_original / relacion_aspecto_textura;
+				RenderQuadOrigen.h = dim_X_textura_original / /*relacion_aspecto_textura*/ relacion_aspecto_rectangulo ;
 				RenderQuadOrigen.y = dim_Y_textura_original/2 - RenderQuadOrigen.h/2;
 
 				RenderQuadDest.x = rectangulo_borde_izquierdo;

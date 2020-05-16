@@ -6,7 +6,7 @@
 #include "options.h"
 
 
-#define DEBUG_INFO
+//#define DEBUG_INFO
 
 struct opciones CargarArchivoOpciones()
 {

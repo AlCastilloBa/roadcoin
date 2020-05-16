@@ -7,7 +7,7 @@
 #include "geometry.h"	// Nuevo pruebas 18/4/2020
 
 
- #define DEBUG_INFO
+// #define DEBUG_INFO
 
 struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 {
@@ -598,7 +598,9 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 			//////////////////////////////////////////////////////////
 			else
 			{
+				#ifdef DEBUG_INFO
 				printf("Linea %d, expresion no reconocida, se ignora.\n", linea);
+				#endif
 			}
 
 		}
@@ -1007,7 +1009,9 @@ struct mapa LeerInfoArchivo( char *nombre_archivo )
 			//////////////////////////////////////////////////////////
 			else
 			{
+				#ifdef DEBUG_INFO
 				printf("Linea %d, expresion no reconocida, se ignora.\n", linea);
+				#endif
 			}
 		}
 	}
