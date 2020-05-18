@@ -74,7 +74,12 @@ v0.2-beta.3
 - Bugfix: in function that draws textures to screen, in fill mode.
 - Disabled intro screen (but the code is still there, just in case it is needed in the future).
 --------------------
-
-
-
+- Simplified loadMainGameLoopMedia function call.
+- Line segments texture can now be specified on level map file.
+- Bugfix: pinball flipper display depended on wall texture size, instead of flipper texture size.
+- Bugfix: memory for line segment textures was not being freed (memory leak).
+- There is not number limit for level map components (segments, areas, bumpers, etc). Now only system memory and performance limit the maximum number of elements.  
+- If the level icon image is not available, a new generic image is shown instead.
+- Translate all comments into English.
+---------------------
 
