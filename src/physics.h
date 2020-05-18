@@ -1,19 +1,20 @@
 
 // Nota: como "posicion" se usa "punto", definido en "maps.h".
+// Note: "point" is used as "position", it is defined in "maps.h"
 
-struct vector_velocidad
+struct vector_velocidad		// Speed vector
 {
 	double vx;
 	double vy;
 };
 
-struct vector_aceleracion
+struct vector_aceleracion	// Acceleration vector
 {
 	double ax;
 	double ay;
 };
 
-struct vector_fuerza
+struct vector_fuerza		// Force vector
 {
 	double fx;
 	double fy;

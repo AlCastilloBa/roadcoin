@@ -4,24 +4,25 @@
 #include <stdbool.h>
 #include <string.h>
 #include "maps.h"
-#include "geometry.h"	// Nuevo pruebas 18/4/2020
+#include "geometry.h"
 
 
 // #define DEBUG_INFO
 
-struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
+struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 {
 	struct mapa mapa_a_cargar;
 	struct punto punto_auxiliar;
 	char linea_leida[200];
 	bool nombre_ok=false, descripcion_ok=false, num_segmentos_ok=false, modo_giro_mapa_ok=false, punto_giro_ok=false, angulo_max_ok=false, pos_inicial_ok=false, gravedad_ok=false, imagen_moneda_ok=false, imagen_fondo_ok=false; 
 	bool ruta_musica_ok=false, angulo_flippers_ok=false;
-	bool escala_presente=false, num_pinball_bumpers_presente=false, cuenta_atras_presente=false /*(TODO PRUEBAS 19/3/2020)*/, num_zonas_acel_circ_presente=false /* TODO PRUEBAS 22/3/2020*/, no_rot_moneda_presente=false;
+	bool escala_presente=false, num_pinball_bumpers_presente=false, cuenta_atras_presente=false, num_zonas_acel_circ_presente=false, no_rot_moneda_presente=false;
 	float escala;
 	bool fondo_giratorio_ok=false, imagen_fondo_giratorio_ok=false, pos_fondo_giratorio_ok=false, centro_giro_fondo_giratorio_ok=false ;
-	bool segmento_ok[LIMITE_SEGMENTOS];
-	bool bumper_ok[LIMITE_BUMPERS];
-	bool zona_acel_circ_ok[LIMITE_ZONAS_ACEL_CIRC]; // TODO PRUEBAS 22/3/2020
+	bool imagen_segm_pared_presente=false, imagen_segm_meta_presente=false, imagen_segm_muerte_presente=false;		/* (TODO) PRUEBAS 17/5/2020 */
+	//bool segmento_ok[LIMITE_SEGMENTOS];
+	//bool bumper_ok[LIMITE_BUMPERS];
+	//bool zona_acel_circ_ok[LIMITE_ZONAS_ACEL_CIRC];
 	bool vector_segmentos_inicializado =false, vector_bumpers_inicializado=false, vector_zonas_acel_circ_inicializado=false;
 	FILE *archivo;
 	int linea=0;
@@ -43,7 +44,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 		#endif
 		if ( (linea_leida[0] == '#') || (linea_leida[0] == '\n') || (strlen(linea_leida)==0) )	//lo de ver si está vacia no funciona
 		{
-			//Es un comentario, no hacer nada
+			//Es un comentario, no hacer nada --- This is a remark, nothing has to be done
 			#ifdef DEBUG_INFO
 			printf("Linea %d es un comentario\n", linea );
 			#endif
@@ -78,7 +79,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				#ifdef DEBUG_INFO
 				printf("Linea %d, Numero segmentos = %d\n", linea, mapa_a_cargar.NumeroSegmentos);
 				#endif
-				// Reserva el vector de segmentos
+				// Reserva el vector de segmentos --- Allocate memory for array of segments
 				if ( vector_segmentos_inicializado ==  true )
 				{
 					printf( "Error: ¿Dos declaraciones de numero de segmentos?\n");
@@ -91,10 +92,11 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 					#ifdef DEBUG_INFO
 					printf("Memoria reservada para %d segmentos\n", mapa_a_cargar.NumeroSegmentos);
 					#endif
-					// TODO PRUEBA 23/3/2020 - Inicializamos todos los segmento OK a false
+					// Inicializamos todos los segmento OK a false --- Initialize al "segments OK" to false
 					for (i=0; i<mapa_a_cargar.NumeroSegmentos; i++)
 					{
-						segmento_ok[i]=false;
+						//segmento_ok[i]=false; (TODO) BORRAR
+						mapa_a_cargar.Mapa[i].definido_OK = false;	// Nuevo 17/5/2020 (TODO)
 					}
 				}
 			}
@@ -206,7 +208,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				else
 				{
 					int temp_segmento_invisible;
-					sscanf(linea_leida, "segmento[%d]",&segmento_actual); // Leemos primero el segmento actual, para poder hacer el direccionamiento en las siguientes instrucciones
+					sscanf(linea_leida, "segmento[%d]",&segmento_actual); // Leemos primero el segmento actual, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current segment first, in order to make the correct addressing on the following lines.
 					if ( segmento_actual >= mapa_a_cargar.NumeroSegmentos )
 					{
 						printf("Se ha declarado un segmento con numero %d, que no cabe en el numero de segmentos declarado %d.\n", segmento_actual, mapa_a_cargar.NumeroSegmentos );
@@ -221,7 +223,8 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 														&(mapa_a_cargar.Mapa[segmento_actual].type),            
 														&(temp_segmento_invisible)					) == 7 )
 					{
-						segmento_ok[segmento_actual] = true;
+						//segmento_ok[segmento_actual] = true; (TODO) BORRAR
+						mapa_a_cargar.Mapa[segmento_actual].definido_OK = true;	// Nuevo 17/5/2020 (TODO)
 						#ifdef DEBUG_INFO
 						printf("Linea %d, segmento %d --> Inicio x=%f, y=%f; Fin x=%f, y=%f; tipo=%d; invisible=%d \n", 	linea, 
 																	segmento_actual,
@@ -248,7 +251,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 								#endif
 								break;
 							default:
-								// Valor no válido, se toma el valor por defecto
+								// Valor no válido, se toma el valor por defecto --- Invalid value, using default value.
 								mapa_a_cargar.Mapa[segmento_actual].invisible = false;
 								#ifdef DEBUG_INFO
 								printf("Linea %d, dato invisible tiene un valor no valido, se supone visible. \n", linea);
@@ -288,7 +291,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 							#endif
 							break;
 						default:
-							// Valor no válido, se toma el valor por defecto
+							// Valor no válido, se toma el valor por defecto --- Invalid value, using default value.
 							fondo_giratorio_ok = false;
 							#ifdef DEBUG_INFO
 							printf("Linea %d, fondo_giratorio tiene un valor no permitido. \n", linea);
@@ -386,14 +389,14 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 			// | |_) | |_| | | | | | | |_) |  __/ |  \__ \
 			// |____/ \__,_|_| |_| |_| .__/ \___|_|  |___/
 			//                       |_|                  
-			else if (strstr(linea_leida, "num_bumpers") != NULL )	//Nuevo 9/2/2020
+			else if (strstr(linea_leida, "num_bumpers") != NULL )
 			{
 				sscanf(linea_leida, "num_bumpers=%d", &(mapa_a_cargar.NumeroPinballBumpers));
 				num_pinball_bumpers_presente = true;
 				#ifdef DEBUG_INFO
 				printf("Linea %d, Numero bumpers = %d\n", linea, mapa_a_cargar.NumeroPinballBumpers);
 				#endif
-				// Reserva el vector de bumpers
+				// Reserva el vector de bumpers --- Allocate memory for bumpers array
 				if ( vector_bumpers_inicializado ==  true )
 				{
 					printf( "Error: ¿Dos declaraciones de numero de bumpers?\n");
@@ -406,10 +409,11 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 					#ifdef DEBUG_INFO
 					printf("Memoria reservada para %d bumpers\n", mapa_a_cargar.NumeroPinballBumpers);
 					#endif
-					// TODO PRUEBA 23/3/2020 - Inicializamos todos los bumper OK a false
+					// Inicializamos todos los bumper OK a false --- Initialize all "bumper OK" to false
 					for (i=0; i<mapa_a_cargar.NumeroPinballBumpers; i++)
 					{
-						bumper_ok[i]=false;
+						// bumper_ok[i]=false; (TODO) BORRAR
+						mapa_a_cargar.Bumpers[i].definido_OK = false;   // (TODO) Pruebas 17/5/2020
 					}
 				}
 			}
@@ -422,7 +426,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				}
 				else
 				{
-					sscanf(linea_leida, "bumper[%d]",&bumper_actual); // Leemos primero el bumper actual, para poder hacer el direccionamiento en las siguientes instrucciones
+					sscanf(linea_leida, "bumper[%d]",&bumper_actual); // Leemos primero el bumper actual, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current segment first, in order to make the correct addressing on the following lines.
 					if ( bumper_actual >= mapa_a_cargar.NumeroPinballBumpers )
 					{
 						printf("Se ha declarado un bumper con numero %d, que no cabe en el numero de bumpers declarado %d.\n", bumper_actual, mapa_a_cargar.NumeroPinballBumpers );
@@ -435,7 +439,8 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 														&(mapa_a_cargar.Bumpers[bumper_actual].radio),
 														&(mapa_a_cargar.Bumpers[bumper_actual].velocidad_salida)            ) == 5 )
 					{
-						bumper_ok[bumper_actual] = true;
+						// bumper_ok[bumper_actual] = true; (TODO) BORRAR
+						mapa_a_cargar.Bumpers[bumper_actual].definido_OK = true;	// (TODO) Pruebas 17/5/2020
 						#ifdef DEBUG_INFO
 						printf("Linea %d, bumper %d --> Centro x=%f, y=%f; Radio=%f, Velocidad salida=%f \n", 	linea, 
 																	bumper_actual,
@@ -495,7 +500,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				#ifdef DEBUG_INFO
 				printf("Linea %d, num_zonas_acel_circ = %d\n", linea, mapa_a_cargar.NumeroZonasAceleracionCircular);
 				#endif
-				// Reserva el vector de zonas de aceleracion circular
+				// Reserva el vector de zonas de aceleracion circular --- Allocate memory for array of round acceleration zones
 				if ( vector_zonas_acel_circ_inicializado ==  true )
 				{
 					printf( "Error: ¿Dos declaraciones de zonas circulares de aceleración?\n");
@@ -508,10 +513,11 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 					#ifdef DEBUG_INFO
 					printf("Memoria reservada para %d zonas de aceleracion circular\n", mapa_a_cargar.NumeroZonasAceleracionCircular);
 					#endif
-					// TODO PRUEBA 23/3/2020 - Inicializamos todos los zona acel circ OK a false
+					// Inicializamos todos los zona acel circ OK a false --- Initialize all "round accel zones" to false
 					for (i=0; i<mapa_a_cargar.NumeroZonasAceleracionCircular; i++)
 					{
-						zona_acel_circ_ok[i]=false;
+						// zona_acel_circ_ok[i]=false; (TODO) BORRAR
+						mapa_a_cargar.ZonasAceleracionCircular[i].definido_OK = false;	// (TODO) Pruebas 17/5/2020
 					}
 				}
 			}
@@ -525,7 +531,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				else
 				{
 					int temp_zona_acel_circ_invisible;
-					sscanf(linea_leida, "zona_acel_circ[%d]",&zona_acel_circ_actual); // Leemos primero el numero actual de zona de acel, para poder hacer el direccionamiento en las siguientes instrucciones
+					sscanf(linea_leida, "zona_acel_circ[%d]",&zona_acel_circ_actual); // Leemos primero el numero actual de zona de acel, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current segment first, in order to make the correct addressing on the following lines.
 					if ( zona_acel_circ_actual >= mapa_a_cargar.NumeroZonasAceleracionCircular )
 					{
 						printf("Se ha declarado una zona acel circular con numero %d, que no cabe en el numero de zonas de aceleracion circular declarado %d.\n", zona_acel_circ_actual, mapa_a_cargar.NumeroZonasAceleracionCircular );
@@ -540,7 +546,8 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 														&(mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].aceleracion),
 														&(temp_zona_acel_circ_invisible )            ) == 7 )
 					{
-						zona_acel_circ_ok[zona_acel_circ_actual] = true;
+						// zona_acel_circ_ok[zona_acel_circ_actual] = true;	( TODO)
+						mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].definido_OK = true;	// (TODO) Pruebas 17/5/2020
 						#ifdef DEBUG_INFO
 						printf("Linea %d, zona_acel_circ %d --> Centro x=%f, y=%f; Radio=%f, Angulo=%f, Aceleracion=%f, Invisible=%d \n", 	linea, 
 																	bumper_actual,
@@ -593,9 +600,58 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				#endif
 
 			}
-			///////////////////////////////////////////////////////////
-			// Seguir añadiendo nuevas opciones aqui
-			//////////////////////////////////////////////////////////
+
+
+			// (TODO) Pruebas 17/5/2020
+			else if (strstr(linea_leida, "imagen_segm_pared") != NULL )
+			{
+				if ( sscanf(linea_leida, "imagen_segm_pared=%s", mapa_a_cargar.RutaImagenSegmentoPared ) == 1 )
+				{
+					imagen_segm_pared_presente = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, imagen_segm_pared=%s\n", linea, mapa_a_cargar.RutaImagenSegmentoPared );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, imagen_segm_pared --> No se ha podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
+			else if (strstr(linea_leida, "imagen_segm_meta") != NULL )
+			{
+				if ( sscanf(linea_leida, "imagen_segm_meta=%s", mapa_a_cargar.RutaImagenSegmentoMeta ) == 1 )
+				{
+					imagen_segm_meta_presente = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, imagen_segm_meta=%s\n", linea, mapa_a_cargar.RutaImagenSegmentoMeta );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, imagen_segm_meta --> No se ha podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
+			else if (strstr(linea_leida, "imagen_segm_muerte") != NULL )
+			{
+				if ( sscanf(linea_leida, "imagen_segm_muerte=%s", mapa_a_cargar.RutaImagenSegmentoMuerte ) == 1 )
+				{
+					imagen_segm_muerte_presente = true;
+					#ifdef DEBUG_INFO
+					printf("Linea %d, imagen_segm_muerte=%s\n", linea, mapa_a_cargar.RutaImagenSegmentoMuerte );
+					#endif
+				}
+				else
+				{	
+					printf("Linea %d, imagen_segm_muerte --> No se ha podido leer el valor.\n", linea);
+					exit(-1);
+				}
+			}
+
+			////////////////////////////////////////////////////////////////////////////////
+			// Seguir añadiendo nuevas opciones aqui --- New options must be added here
+			////////////////////////////////////////////////////////////////////////////////
 			else
 			{
 				#ifdef DEBUG_INFO
@@ -610,7 +666,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	fclose(archivo);
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	// Gestion del tiempo de cuenta atras
+	// Gestion del tiempo de cuenta atras --- Countdown time management
 	if ( cuenta_atras_presente == false )
 	{
 		mapa_a_cargar.CuentaAtras = false;
@@ -625,7 +681,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	// Buscar si hay flippers
+	// Buscar si hay flippers --- Check if map contains flippers
 	mapa_a_cargar.mapa_contiene_flippers = false;
 	for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
 	{
@@ -637,6 +693,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// Verificamos que lo tengamos todo (que al archivo no le faltasen datos)
+	// Check if we have all the required data (and the file lacks no essential data)
 	if (nombre_ok == false)
 	{
 		printf("Falta el nombre del mapa.\n");
@@ -714,7 +771,8 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 
 	for (i=0; i<mapa_a_cargar.NumeroSegmentos; i++)
 	{
-		if (segmento_ok[i]==false)
+		//if (segmento_ok[i]==false) (TODO) BORRAR
+		if ( mapa_a_cargar.Mapa[i].definido_OK == false)	// (TODO) Pruebas 17/5/2020
 		{
 			printf("Segmento %d no definido\n",i);
 			exit(-1);
@@ -725,7 +783,8 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	{
 		for (i=0; i<mapa_a_cargar.NumeroPinballBumpers; i++)
 		{
-			if (bumper_ok[i]==false)
+			//if (bumper_ok[i]==false) (TODO) BORRAR
+			if (mapa_a_cargar.Bumpers[i].definido_OK == false)
 			{
 				printf("Bumper %d no definido\n", i);
 				exit(-1);
@@ -741,7 +800,8 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	{
 		for (i=0; i<mapa_a_cargar.NumeroZonasAceleracionCircular; i++)
 		{
-			if (zona_acel_circ_ok[i]==false)
+			// if (zona_acel_circ_ok[i]==false)  (TODO) BORRAR
+			if (mapa_a_cargar.ZonasAceleracionCircular[i].definido_OK == false)
 			{
 				printf("Zona circular de aceleración %d no definido\n", i);
 				exit(-1);
@@ -759,13 +819,39 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 		exit(-1);
 	}
 
+	// Si las rutas de las imagenes de los segmentos no están definidas, tomamos los valores por defecto
+	// If image paths for line segments are not defined, then the default paths will be used
+	// (TODO) Pruebas 17/5/2020
+	if (imagen_segm_pared_presente == false)
+	{
+		#ifdef DEBUG_INFO
+		printf("imagen_segm_pared no definida, se toma la imagen por defecto %s\n", IMAGEN_SEGMENTO_POR_DEFECTO );
+		#endif
+		strcpy( mapa_a_cargar.RutaImagenSegmentoPared, IMAGEN_SEGMENTO_POR_DEFECTO );
+	}
+	if (imagen_segm_meta_presente == false )
+	{
+		#ifdef DEBUG_INFO
+		printf("imagen_segm_meta no definida, se toma la imagen por defecto %s\n", IMAGEN_SEGMENTO_POR_DEFECTO );
+		#endif
+		strcpy( mapa_a_cargar.RutaImagenSegmentoMeta, IMAGEN_SEGMENTO_POR_DEFECTO );
+	}
+	if (imagen_segm_muerte_presente == false )
+	{
+		#ifdef DEBUG_INFO
+		printf("imagen_segm_muerte no definida, se toma la imagen por defecto %s\n", IMAGEN_SEGMENTO_POR_DEFECTO );
+		#endif
+		strcpy( mapa_a_cargar.RutaImagenSegmentoMuerte, IMAGEN_SEGMENTO_POR_DEFECTO );
+	}
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// Para simplificar los calculos futuros, vamos a hacer que el punto de inicio (start) siempre esté a la izquierda.
+	// In order to make future calculations more simple, let's make that start point is always on the left.
 	for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
 	{
 		if ( mapa_a_cargar.Mapa[segmento_actual].start.x > mapa_a_cargar.Mapa[segmento_actual].end.x )
 		{
-			// Intercambiamos start y end
+			// Intercambiamos start y end --- Swap start and end
 			punto_auxiliar = mapa_a_cargar.Mapa[segmento_actual].end;
 			mapa_a_cargar.Mapa[segmento_actual].end = mapa_a_cargar.Mapa[segmento_actual].start;
 			mapa_a_cargar.Mapa[segmento_actual].start = punto_auxiliar;
@@ -776,7 +862,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//  Detectamos adyacencias
+	//  Detectamos adyacencias --- Check for adjacencies
 	for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
 	{
 		mapa_a_cargar.Mapa[segmento_actual].start_adyacente_a_otro = false;
@@ -790,6 +876,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 			if (  ( AnguloRadEntreDosSegmentos( mapa_a_cargar.Mapa[segmento_actual] , mapa_a_cargar.Mapa[otro_segmento_actual] )*180/PI ) < 45  ) // Pruebas nuevo 18/4/2020
 			{
 				// No tenemos en cuenta la adyacencia si los dos segmentos forman mas de cierto angulo.
+				// The adjacency is not taken into account if the angle between both segments is grater than a threshold
 				if ( ( mapa_a_cargar.Mapa[segmento_actual].start.x == mapa_a_cargar.Mapa[otro_segmento_actual].start.x ) && ( mapa_a_cargar.Mapa[segmento_actual].start.y == mapa_a_cargar.Mapa[otro_segmento_actual].start.y ) || 
 					( mapa_a_cargar.Mapa[segmento_actual].start.x == mapa_a_cargar.Mapa[otro_segmento_actual].end.x ) && ( mapa_a_cargar.Mapa[segmento_actual].start.y == mapa_a_cargar.Mapa[otro_segmento_actual].end.y ) )
 				{
@@ -817,10 +904,10 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	// Aplicación de escala al mapa
+	// Aplicación de escala al mapa --- Map scale
 	if ( escala_presente )
 	{
-		// Segmentos
+		// Segmentos --- Segments
 		for (segmento_actual=0; segmento_actual<mapa_a_cargar.NumeroSegmentos; segmento_actual++)
 		{
 			mapa_a_cargar.Mapa[segmento_actual].start.x = mapa_a_cargar.Mapa[segmento_actual].start.x * escala;
@@ -828,13 +915,13 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 			mapa_a_cargar.Mapa[segmento_actual].end.x = mapa_a_cargar.Mapa[segmento_actual].end.x * escala;
 			mapa_a_cargar.Mapa[segmento_actual].end.y = mapa_a_cargar.Mapa[segmento_actual].end.y * escala;
 		}
-		// Posicion inicial moneda
+		// Posicion inicial moneda --- Coin starting position
 		mapa_a_cargar.PuntoInicialMoneda.x = mapa_a_cargar.PuntoInicialMoneda.x * escala;
 		mapa_a_cargar.PuntoInicialMoneda.y = mapa_a_cargar.PuntoInicialMoneda.y * escala;
-		// Centro de giro
+		// Centro de giro --- Rotation center
 		mapa_a_cargar.PuntoGiroFijo.x = mapa_a_cargar.PuntoGiroFijo.x * escala;
 		mapa_a_cargar.PuntoGiroFijo.y = mapa_a_cargar.PuntoGiroFijo.y * escala;
-		// Fondo giratorio
+		// Fondo giratorio --- Rotating background
 		mapa_a_cargar.CentroGiroFondoGiratorio.x = mapa_a_cargar.CentroGiroFondoGiratorio.x * escala;
 		mapa_a_cargar.CentroGiroFondoGiratorio.y = mapa_a_cargar.CentroGiroFondoGiratorio.y * escala;
 		mapa_a_cargar.Pos_x_izquierda_fondo_giratorio = mapa_a_cargar.Pos_x_izquierda_fondo_giratorio * escala;
@@ -852,7 +939,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 				mapa_a_cargar.Bumpers[bumper_actual].velocidad_salida *= escala;
 			}
 		}
-		// Zonas de aceleracion circular
+		// Zonas de aceleracion circular --- Round acceleration zones
 		if ( mapa_a_cargar.NumeroZonasAceleracionCircular != 0 )
 		{
 			for ( zona_acel_circ_actual=0; zona_acel_circ_actual<mapa_a_cargar.NumeroZonasAceleracionCircular; zona_acel_circ_actual++)
@@ -865,7 +952,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 		}
 	}
 	/////////////////////////////////////////////////////////////////////////////////////////////////
-	// Ver si la moneda rota o no
+	// Ver si la moneda rota o no --- Check if the coin must spin
 	mapa_a_cargar.no_rot_moneda =  no_rot_moneda_presente;
 
 	#ifdef DEBUG_INFO
@@ -879,10 +966,12 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-struct mapa LeerInfoArchivo( char *nombre_archivo )
+struct mapa LeerInfoArchivo( char *nombre_archivo )	// Read File Info
 {
 	// Esta funcion es una version resumida de la anterior, no carga toda la información, 
 	// sino sólamente aquella que es necesaria para el menu de seleccion
+	// This function is a simplified version of the previous one. It does not load all information,
+	// only those information needed for the level selection menu.
 	struct mapa mapa_a_leer;
 	//struct punto punto_auxiliar;
 	char linea_leida[200];
@@ -908,7 +997,7 @@ struct mapa LeerInfoArchivo( char *nombre_archivo )
 		#endif
 		if ( (linea_leida[0] == '#') || (linea_leida[0] == '\n') || (strlen(linea_leida)==0) )	//lo de ver si está vacia no funciona
 		{
-			//Es un comentario, no hacer nada
+			//Es un comentario, no hacer nada --- This is a remark, nothing has to be done
 			#ifdef DEBUG_INFO
 			printf("Leer info archivo: Linea %d es un comentario\n", linea );
 			#endif
@@ -1004,9 +1093,9 @@ struct mapa LeerInfoArchivo( char *nombre_archivo )
 					exit(-1);
 				}
 			}
-			///////////////////////////////////////////////////////////
-			// Seguir añadiendo nuevas opciones aqui
-			//////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////////
+			// Seguir añadiendo nuevas opciones aqui --- New options must be added here
+			//////////////////////////////////////////////////////////////////////////////
 			else
 			{
 				#ifdef DEBUG_INFO
@@ -1025,11 +1114,15 @@ struct mapa LeerInfoArchivo( char *nombre_archivo )
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_mapas )
+struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_mapas )			// Read Game Level Sets
 {
 	// Esta funcion lee e interpreta el fichero "/maps/levelsets_list", que incluye la lista de todos los conjuntos de mapas del juego
 	// Modifica el numero de conjunto de mapas, reserva memoria dinamica para la lista de conjuntos de mapas
 	// Modifica el numero del conjunto de mapas segun lo leido en el fichero
+
+	// This function reads the file "/maps/levelsets_list", that includes the list of all game level sets.
+	// Modifies the level set total number and allocates dynamic memory for all level sets
+	// Modifies the number of map levels accordint to the information read on the file.
 	struct ConjuntoMapas* array_conjunto_mapas = NULL;
 	char linea_leida[200];
 	int linea = 0;
@@ -1054,7 +1147,7 @@ struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_m
 		#endif
 		if ( (linea_leida[0] == '#') || (linea_leida[0] == '\n') || (strlen(linea_leida)==0) )	//lo de ver si está vacia no funciona
 		{
-			//Es un comentario, no hacer nada
+			//Es un comentario, no hacer nada --- This is a remark, nothing has to be done
 			#ifdef DEBUG_INFO
 			printf("Leer conjunto mapas juego: Linea %d es un comentario\n", linea );
 			#endif
@@ -1067,7 +1160,7 @@ struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_m
 				#ifdef DEBUG_INFO
 				printf("Leer conjunto mapas juego: Linea %d, Numero conjuntos mapas = %d\n", linea, numero_conjunto_mapas);
 				#endif
-				// Reserva el vector de conjuntos de mapas
+				// Reserva el vector de conjuntos de mapas --- Allocate memory for array of level sets
 				if ( vector_conjuntos_mapas_inicializado ==  true )
 				{
 					printf( "Leer conjunto mapas juego: Error: ¿Dos declaraciones de numero de conjuntos de mapas?\n");
@@ -1080,7 +1173,7 @@ struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_m
 					#ifdef DEBUG_INFO
 					printf("Leer conjunto mapas juego: Memoria reservada para %d conjuntos de mapas\n", numero_conjunto_mapas);
 					#endif
-					// Inicializamos todos los "OK" a false
+					// Inicializamos todos los "OK" a false --- Initialize all "OK" flags to false
 					for (i=0; i<numero_conjunto_mapas; i++)
 					{
 						array_conjunto_mapas[i].dir_definido_OK = false;
@@ -1099,7 +1192,7 @@ struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_m
 				else
 				{
 					char cadena_aux[255]; char* token;
-					sscanf(linea_leida, "directorio[%d]",&conjunto_mapa_actual); // Leemos primero el conjunto actual, para poder hacer el direccionamiento en las siguientes instrucciones
+					sscanf(linea_leida, "directorio[%d]",&conjunto_mapa_actual); // Leemos primero el conjunto actual, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current segment first, in order to make the correct addressing on the following lines.
 					if ( conjunto_mapa_actual >= numero_conjunto_mapas)
 					{
 						printf("Leer conjunto mapas juego: Se ha declarado un conjunto de mapas %d, que no cabe en el numero de conjuntos de mapas declarado %d.\n", conjunto_mapa_actual, numero_conjunto_mapas );
@@ -1127,7 +1220,7 @@ struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_m
 				else
 				{
 					char cadena_aux[255]; char* token;
-					sscanf(linea_leida, "descripcion[%d]",&conjunto_mapa_actual); // Leemos primero el conjunto actual, para poder hacer el direccionamiento en las siguientes instrucciones
+					sscanf(linea_leida, "descripcion[%d]",&conjunto_mapa_actual); // Leemos primero el conjunto actual, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current segment first, in order to make the correct addressing on the following lines.
 					if ( conjunto_mapa_actual >= numero_conjunto_mapas)
 					{
 						printf("Leer conjunto mapas juego: Se ha declarado un conjunto de mapas %d, que no cabe en el numero de conjuntos de mapas declarado %d.\n", conjunto_mapa_actual, numero_conjunto_mapas );
@@ -1155,7 +1248,7 @@ struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_m
 				else
 				{
 					char cadena_aux[255]; char* token;
-					sscanf(linea_leida, "ruta_imagen[%d]",&conjunto_mapa_actual); // Leemos primero el conjunto actual, para poder hacer el direccionamiento en las siguientes instrucciones
+					sscanf(linea_leida, "ruta_imagen[%d]",&conjunto_mapa_actual); // Leemos primero el conjunto actual, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current segment first, in order to make the correct addressing on the following lines.
 					if ( conjunto_mapa_actual >= numero_conjunto_mapas)
 					{
 						printf("Leer conjunto mapas juego: Se ha declarado un conjunto de mapas %d, que no cabe en el numero de conjuntos de mapas declarado %d.\n", conjunto_mapa_actual, numero_conjunto_mapas );
@@ -1179,7 +1272,7 @@ struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_m
 			}
 		}
 	}
-	// Verificamos que estan todos los datos que deben estar
+	// Verificamos que estan todos los datos que deben estar --- Check if all required data is present
 	for (i=0; i<numero_conjunto_mapas; i++)
 	{
 		if (array_conjunto_mapas[i].dir_definido_OK==false)
@@ -1199,19 +1292,22 @@ struct ConjuntoMapas* LeerConjuntosMapasJuego ( int* argumento_numero_conjunto_m
 		}
 	}
 
-	// Devolvemos los argumentos
+	// Devolvemos los argumentos --- Return argments
 	*argumento_numero_conjunto_mapas = numero_conjunto_mapas;
 	return array_conjunto_mapas;	
 }
 
 
 
-struct InfoMapas* LeerInfoMapasDeConjunto( char* nombre_directorio, int* argumento_num_mapas_en_conjunto )
+struct InfoMapas* LeerInfoMapasDeConjunto( char* nombre_directorio, int* argumento_num_mapas_en_conjunto )	// Read level info from a level set
 {
 	// Esta funcion lee e interpreta el fichero "/maps/nombre_directorio/level_list", que incluye la lista de niveles del conjunto
 	// Modifica el numero de niveles, reserva memoria dinamica para la lista de niveles
 	// Además, lee la información de cada mapa
 
+	// This function reads the file "/maps/directory name/level_list", that includes the level list from the level set
+	// Modifies the level number, allocates dynamic memory for the level set
+	// Also, it reads information for each level on the level set
 
 	// char* rutas_mapas_leidas[255];
 	struct InfoMapas* info_mapas_en_conjunto = NULL;
@@ -1240,7 +1336,7 @@ struct InfoMapas* LeerInfoMapasDeConjunto( char* nombre_directorio, int* argumen
 		#endif
 		if ( (linea_leida[0] == '#') || (linea_leida[0] == '\n') || (strlen(linea_leida)==0) )	//lo de ver si está vacia no funciona
 		{
-			//Es un comentario, no hacer nada
+			//Es un comentario, no hacer nada --- This is a remark, nothing has to be done
 			#ifdef DEBUG_INFO
 			printf("Leer conjunto mapas %s: Linea %d es un comentario\n", nombre_directorio, linea );
 			#endif
@@ -1253,7 +1349,7 @@ struct InfoMapas* LeerInfoMapasDeConjunto( char* nombre_directorio, int* argumen
 				#ifdef DEBUG_INFO
 				printf("Leer conjunto mapas %s: Linea %d, Numero mapas = %d\n", nombre_directorio, linea, numero_mapas);
 				#endif
-				// Reserva el vector de información de mapas
+				// Reserva el vector de información de mapas --- Allocates mnemory for map information array
 				if ( vector_mapas_dentro_de_conjunto_inicializado ==  true )
 				{
 					printf( "Leer conjunto mapas %s: Error: ¿Dos declaraciones de numero de conjuntos de mapas?\n", nombre_directorio);
@@ -1266,7 +1362,7 @@ struct InfoMapas* LeerInfoMapasDeConjunto( char* nombre_directorio, int* argumen
 					#ifdef DEBUG_INFO
 					printf("Leer conjunto mapas %s: Memoria reservada para %d conjuntos de mapas\n", nombre_directorio, numero_mapas);
 					#endif
-					// Inicializamos todos los "OK" a false
+					// Inicializamos todos los "OK" a false --- Initialize all "OK" flag to false
 					for (i=0; i<numero_mapas; i++)
 					{
 						info_mapas_en_conjunto[i].mapa_definido_OK = false;
@@ -1283,7 +1379,7 @@ struct InfoMapas* LeerInfoMapasDeConjunto( char* nombre_directorio, int* argumen
 				else
 				{
 					char cadena_aux[255]; char* token;
-					sscanf(linea_leida, "ruta_mapa[%d]",&mapa_actual); // Leemos primero el conjunto actual, para poder hacer el direccionamiento en las siguientes instrucciones
+					sscanf(linea_leida, "ruta_mapa[%d]",&mapa_actual); // Leemos primero el conjunto actual, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current segment first, in order to make the correct addressing on the following lines.
 					if ( mapa_actual >= numero_mapas)
 					{
 						printf("Leer conjunto mapas %s: Se ha declarado un mapa %d, que no cabe en el numero de mapas declarado %d.\n", mapa_actual, numero_mapas );
@@ -1308,7 +1404,7 @@ struct InfoMapas* LeerInfoMapasDeConjunto( char* nombre_directorio, int* argumen
 		}
 	}
 
-	// Verificamos que estan todos los datos que deben estar
+	// Verificamos que estan todos los datos que deben estar --- Check if all required data is present
 	for (i=0; i<numero_mapas; i++)
 	{
 		if (info_mapas_en_conjunto[i].mapa_definido_OK == false)
@@ -1318,20 +1414,20 @@ struct InfoMapas* LeerInfoMapasDeConjunto( char* nombre_directorio, int* argumen
 		}
 	}
 
-	// Leemos la informacion de cada mapa
+	// Leemos la informacion de cada mapa --- Read each level information
 	for (i=0; i<numero_mapas; i++)
 	{
 		info_mapas_en_conjunto[i].DatosMapa = LeerInfoArchivo( info_mapas_en_conjunto[i].RutaMapa );
 	}
 
-	// Devolvemos los argumentos
+	// Devolvemos los argumentos --- Return arguments
 	*argumento_num_mapas_en_conjunto = numero_mapas;
 	return info_mapas_en_conjunto;
 }
 
 
 
-void Eliminar_NewLine_En_FinalCadena (char* cadena_original)
+void Eliminar_NewLine_En_FinalCadena (char* cadena_original)		// Remove "NewLine" from string's end
 {
 	char *pos;
 

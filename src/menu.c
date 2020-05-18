@@ -8,11 +8,8 @@
 #include <math.h>
 
 
-#include "game.h"
-//#include "physics.h"
-//#include "camera.h"
 #include "maps.h"
-//#include "geometry.h"
+#include "game.h"
 #include "options.h"
 #include "graphics.h"
 #include "menu.h"
@@ -20,6 +17,7 @@
 
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
+// If DEBUG_INFO is defined, info texts will be shown on terminal (but the program will be slower)
 // #define DEBUG_INFO
 
 
@@ -41,12 +39,12 @@
 
 
 /////////////////////////////////////////////////////////////////////////
-// Variables globales
+// Variables globales --- Global variables
 //The window renderer total_digitos
 extern SDL_Renderer* gRenderer;				// Definido en "game.c"
-// Variables globales opciones
+// Variables globales opciones --- Options global variables
 extern struct opciones opciones_juego;			// Definido en "game.c"
-// Variables globales del menu
+// Variables globales del menu --- Menu global variables
 extern struct pantalla_menu* pantallas_menu_principal;	// Definido en "game.c"
 extern int numero_pantallas;
 
@@ -60,10 +58,10 @@ SDL_Color gColorTextoSeleccionado = { 255 , 255 , 0 }; 	// Amarillo --- Yellow
 SDL_Texture* gWhiteCheckBoxChecked = NULL;
 SDL_Texture* gWhiteCheckBoxUnchecked = NULL;
 
-SDL_Texture* gWhiteArrowMinus = NULL;	// Pruebas 6/4/2020
+SDL_Texture* gWhiteArrowMinus = NULL;
 SDL_Texture* gWhiteArrowPlus = NULL;
 
-SDL_Texture* gWhiteLeftArrow = NULL;	// Pruebas 8/4/2020
+SDL_Texture* gWhiteLeftArrow = NULL;
 SDL_Texture* gWhiteRightArrow = NULL;
 SDL_Texture* gYellowLeftArrow = NULL;
 SDL_Texture* gYellowRightArrow = NULL;
@@ -91,7 +89,7 @@ int gNumeroConjuntosMapas = 0;
 
 
 
-bool raton_sobre_boton (struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )
+bool raton_sobre_boton (struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )		// Mouse over button
 {
 	// Esta función indica si el ratón está posicionado sobre un botón
 	// This function tells whether or not the mouse is over a button
@@ -108,7 +106,7 @@ bool raton_sobre_boton (struct boton_menu boton_consultado, int pos_raton_x, int
 	}
 }
 
-bool raton_sobre_boton_mas_valor_numerico ( struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )
+bool raton_sobre_boton_mas_valor_numerico ( struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )		// Mouse over (+) button on numeric value button
 {
 	// Esta función indica si el ratón está posicionado sobre el pulsador (+) de un botón tipo "valor numerico"
 	// This function tells whether or not the mouse is over the (+) pushbutton inside a "numeric value" type button
@@ -133,10 +131,10 @@ bool raton_sobre_boton_mas_valor_numerico ( struct boton_menu boton_consultado, 
 	}
 } 
 
-bool raton_sobre_boton_menos_valor_numerico ( struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )
+bool raton_sobre_boton_menos_valor_numerico ( struct boton_menu boton_consultado, int pos_raton_x, int pos_raton_y )		// Mouse over (-) button on numeric value button
 {
-	// Esta función indica si el ratón está posicionado sobre el pulsador (+) de un botón tipo "valor numerico"
-	// This function tells whether or not the mouse is over the (+) pushbutton inside a "numeric value" type button
+	// Esta función indica si el ratón está posicionado sobre el pulsador (-) de un botón tipo "valor numerico"
+	// This function tells whether or not the mouse is over the (-) pushbutton inside a "numeric value" type button
 	if ( boton_consultado.clase_boton == boton_valor_numerico )
 	{
 		if ( 	(pos_raton_x >= boton_consultado.borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM + PORCNT_ANCHO_VALOR_BOT_VAL_NUM )/100) ) && 
@@ -158,7 +156,7 @@ bool raton_sobre_boton_menos_valor_numerico ( struct boton_menu boton_consultado
 	}
 } 
 
-bool inicializa_datos_boton( struct boton_menu* boton, int indice_boton, enum listado_botones ident_boton, enum tipo_boton tipo, char* texto_boton, int boton_anterior, int boton_siguiente, enum ModoRepresentacionTextura ModoRepresent  )
+bool inicializa_datos_boton( struct boton_menu* boton, int indice_boton, enum listado_botones ident_boton, enum tipo_boton tipo, char* texto_boton, int boton_anterior, int boton_siguiente, enum ModoRepresentacionTextura ModoRepresent  )		// Initialize button data
 {
 	// La funcion "inicializar_menu_principal" es muy extensa, con código muy parecido. Se crea esta función para intentar reducir la extension del código.
 	// Function "inicializar_menu_principal" (initialize main menu) is too long. This function is created in an attempt to reduce code lenght.
@@ -200,7 +198,7 @@ bool inicializa_datos_boton( struct boton_menu* boton, int indice_boton, enum li
 	return exito;
 }
 
-bool inicializa_datos_pantalla_menu( struct pantalla_menu* pantalla, enum pantalla_menu_principal numero_pantalla, char* titulo_pantalla, char* ruta_textura_fondo, int numero_botones, enum ModoRepresentacionTextura ModoRepresent )
+bool inicializa_datos_pantalla_menu( struct pantalla_menu* pantalla, enum pantalla_menu_principal numero_pantalla, char* titulo_pantalla, char* ruta_textura_fondo, int numero_botones, enum ModoRepresentacionTextura ModoRepresent )		// Initialize menu screen data
 {
 	// La funcion "inicializar_menu_principal" es muy extensa, con código muy parecido. Se crea esta función para intentar reducir la extension del código.
 	// Function "inicializar_menu_principal" (initialize main menu) is too long. This function is created in an attempt to reduce code lenght.
@@ -257,11 +255,14 @@ bool inicializa_datos_pantalla_menu( struct pantalla_menu* pantalla, enum pantal
 
 
 
-bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principal, */int numero_pantallas )
+bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principal, */int numero_pantallas )		// Main menu init
 {
 	// Esta funcion inicializa los valores de las estructuras de las imagenes del menu.
 	// Reserva la memoria para el menu, inicializa variables, e inicializa graficos
-	// (TODO)
+
+	// This function initializes main menu data structures
+	// Allocates memory for the menu, initializes variables and initializes graphics
+
 	bool success = true;
 	int i, conjunto_actual, mapa_actual;
 	bool lista_mapas_ok = true;
@@ -277,18 +278,18 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		success = false; 
 	}
 
-	gWhiteArrowMinus = CargaTextura( "images/white_arrow_minus.png", &gDimWhiteArrowMinusX, &gDimWhiteArrowMinusY, true );		// Pruebas 6/4/2020
-	gWhiteArrowPlus = CargaTextura( "images/white_arrow_plus.png" , NULL, NULL, true );		// Pruebas 6/4/2020
+	gWhiteArrowMinus = CargaTextura( "images/white_arrow_minus.png", &gDimWhiteArrowMinusX, &gDimWhiteArrowMinusY, true );
+	gWhiteArrowPlus = CargaTextura( "images/white_arrow_plus.png" , NULL, NULL, true );
 	if( gWhiteArrowMinus == NULL || gWhiteArrowPlus == NULL ) 
 	{ 
 		printf( "Error al cargar texturas flechas mas y menos.\n" ); 
 		success = false; 
 	}
-	// Pruebas 8/4/2020
-	gWhiteLeftArrow	= CargaTextura( "images/white_left_arrow.png", &gDimWhiteLeftArrowX, &gDimWhiteLeftArrowY, true );	// Pruebas 8/4/2020
-	gWhiteRightArrow = CargaTextura( "images/white_right_arrow.png", &gDimWhiteRightArrowX, &gDimWhiteRightArrowY, true );	// Pruebas 8/4/2020
-	gYellowLeftArrow = CargaTextura( "images/yellow_left_arrow.png", NULL, NULL, true );	// Pruebas 8/4/2020
-	gYellowRightArrow = CargaTextura( "images/yellow_right_arrow.png", NULL, NULL, true );	// Pruebas 8/4/2020
+
+	gWhiteLeftArrow	= CargaTextura( "images/white_left_arrow.png", &gDimWhiteLeftArrowX, &gDimWhiteLeftArrowY, true );
+	gWhiteRightArrow = CargaTextura( "images/white_right_arrow.png", &gDimWhiteRightArrowX, &gDimWhiteRightArrowY, true );
+	gYellowLeftArrow = CargaTextura( "images/yellow_left_arrow.png", NULL, NULL, true );
+	gYellowRightArrow = CargaTextura( "images/yellow_right_arrow.png", NULL, NULL, true );
 	if ( gWhiteLeftArrow == NULL || gWhiteRightArrow == NULL || gYellowLeftArrow == NULL || gYellowRightArrow == NULL )
 	{
 		printf( "Error al cargar texturas flechas izquierda y derecha.\n" ); 
@@ -296,7 +297,6 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	}
 
 
-	// Pruebas 6/4/2020
 	gTexturaNumeroMenu[0] = CargaTextura( "images/chars/lunasol/0.png" , NULL, NULL, true );
 	gTexturaNumeroMenu[1] = CargaTextura( "images/chars/lunasol/1.png" , NULL, NULL, true );
 	gTexturaNumeroMenu[2] = CargaTextura( "images/chars/lunasol/2.png" , NULL, NULL, true );
@@ -325,7 +325,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		success = false; 
 	}
 
-	// Cargar la fuente del menu
+	// Cargar la fuente del menu --- Load menu fonts
 	#ifdef DEBUG_INFO
 	printf("Inicializando la fuente del menu...\n");
 	#endif
@@ -347,7 +347,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	pantallas_menu_principal = calloc( numero_pantallas, sizeof( struct pantalla_menu ) );
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla bienvenida
+	// Pantalla bienvenida --- Welcome screen
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos de pantalla bienvenida...\n");
 	#endif
@@ -384,7 +384,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla menu_principal
+	// Pantalla menu_principal --- Main menu screen
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos de pantalla menu principal...\n");
 	#endif
@@ -487,7 +487,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla opciones
+	// Pantalla opciones --- Options screen
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos de pantalla opciones...\n");
 	#endif
@@ -562,7 +562,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla opciones de video
+	// Pantalla opciones de video --- Video options screen
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla opciones
 	#ifdef DEBUG_INFO
@@ -614,7 +614,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla opciones de sonido
+	// Pantalla opciones de sonido --- Sound options screen
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla opciones
 	#ifdef DEBUG_INFO
@@ -656,7 +656,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla opciones de controles ( Nuevo 6/4/2020, PRUEBAS )
+	// Pantalla opciones de controles --- Controls options screen
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla opciones
 	#ifdef DEBUG_INFO
@@ -694,7 +694,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla opciones de juego
+	// Pantalla opciones de juego --- Game options screen
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla opciones
 	#ifdef DEBUG_INFO
@@ -739,7 +739,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla menu provisional de seleccion de niveles
+	// Pantalla menu provisional de seleccion de niveles --- Temporary level select screen
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla seleccion provisional de seleccion de niveles
 	#ifdef DEBUG_INFO
@@ -808,10 +808,11 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla selección de conjunto de niveles --- Level set selection screen (Nuevo 8/4/2020)
+	// Pantalla selección de conjunto de niveles --- Level set selection screen
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla selección de conjunto de niveles
 	// Esta pantalla no se parece a ninguna de las anteriores, por lo que la configuro a mano
+	// This screen is different to all other screens, we configure it manually
 
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos de pantalla seleccion de conjunto de niveles...\n");
@@ -837,6 +838,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		#endif
 
 		// Cargamos las imágenes y creamos las texturas de los textos
+		// Load images and create texts textures
 		for ( i = 0 ; i < gNumeroConjuntosMapas ; i++ )
 		{
 			char cadena_numeracion[10];
@@ -859,7 +861,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 			gListaConjuntosMapasJuego[i].TexturaNumeracion = RenderizaTextoEnTextura( cadena_numeracion, gFuenteTexto, gColorTextoReposo, &(gListaConjuntosMapasJuego[i].TexturaNumeracion_DimX), &(gListaConjuntosMapasJuego[i].TexturaNumeracion_DimY)   );
 		}
 
-		// Boton 0 - Flecha izquierda
+		// Boton 0 - Flecha izquierda --- Left arrow
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].identificador_boton = boton_conj_mapas_flechaizq;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].clase_boton = boton_pulsar;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].borde_izquierdo = 0.1*(opciones_juego.screen_x_resolution);
@@ -874,7 +876,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].textura_dim_x = gDimWhiteLeftArrowX;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[0].textura_dim_y = gDimWhiteLeftArrowY;
 
-		// Boton 1 - Flecha derecha
+		// Boton 1 - Flecha derecha --- Right arrow
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].identificador_boton = boton_conj_mapas_flechader;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].clase_boton = boton_pulsar;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].borde_izquierdo = 0.8*(opciones_juego.screen_x_resolution);
@@ -889,7 +891,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].textura_dim_x = gDimWhiteRightArrowX;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[1].textura_dim_y = gDimWhiteRightArrowY;
 
-		// Boton 2 - Seleccionar conjunto de mapas
+		// Boton 2 - Seleccionar conjunto de mapas --- Select level set
 
 		if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[2]) , 5 /*pos 5, no 2*/, boton_conj_mapas_seleccionar, boton_pulsar, "   Seleccionar   \0" , 4, 4  , con_relac_aspecto_no_rellenar) )
 		{
@@ -897,7 +899,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 			success = false;
 		}
 
-		// Boton 3 - Imagen conjunto de mapas
+		// Boton 3 - Imagen conjunto de mapas --- Level set image
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].identificador_boton = boton_conj_mapas_imagen;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].clase_boton = boton_pulsar;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].borde_izquierdo = 0.55*(opciones_juego.screen_x_resolution);
@@ -913,14 +915,14 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[3].textura_dim_y = gListaConjuntosMapasJuego[0].TexturaImagen_DimY;
 
 
-		// Boton 4 - Atras
+		// Boton 4 - Atras --- Go back
 		if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[4]) , 6 /*pos 6, no 4*/, boton_conj_mapas_atras, boton_pulsar, "      Atras      \0" , 2, 2  , con_relac_aspecto_no_rellenar) )
 		{
 			printf( "Error al inicializar boton 4 en seleccion de conjunto de niveles.\n" ); 
 			success = false;
 		}
 
-		// Boton 5 - Nombre conjunto de mapas
+		// Boton 5 - Nombre conjunto de mapas --- Level set name
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].identificador_boton = boton_conj_mapas_directorio;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].clase_boton = boton_pulsar;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
@@ -935,7 +937,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].textura_dim_x = gListaConjuntosMapasJuego[0].TexturaNombreDir_DimX;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[5].textura_dim_y = gListaConjuntosMapasJuego[0].TexturaNombreDir_DimY;
 
-		// Boton 6 - Descripcion conjunto de mapas
+		// Boton 6 - Descripcion conjunto de mapas --- Level set description
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].identificador_boton = boton_conj_mapas_descripcion;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].clase_boton = boton_pulsar;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].borde_izquierdo = 0.25*(opciones_juego.screen_x_resolution);
@@ -950,7 +952,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].textura_dim_x = gListaConjuntosMapasJuego[0].TexturaDescripcion_DimX;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[6].textura_dim_y = gListaConjuntosMapasJuego[0].TexturaDescripcion_DimY;
 
-		// Boton 7 - Numeracion conjunto de mapas
+		// Boton 7 - Numeracion conjunto de mapas --- Level set numbering
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].identificador_boton = boton_conj_mapas_numeracion;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].clase_boton = boton_pulsar;
 		pantallas_menu_principal[menu_elige_conjunto_niveles].botones_pantalla[7].borde_izquierdo = 0.35*(opciones_juego.screen_x_resolution);
@@ -968,11 +970,12 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 
 
 
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Pantalla selección de nivel (dentro de un conjunto de niveles) --- Level selection screen (inside a level set) (Nuevo 8/4/2020)
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla selección de nivel (dentro de un conjunto de niveles) --- Level selection screen (inside a level set)
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Pantalla selección de nivel
 	// Esta pantalla no se parece a ninguna de las anteriores, por lo que la configuro a mano
+	// This screen is different to all other screens, we configure it manually
 	#ifdef DEBUG_INFO
 	printf("Inicializando datos de pantalla seleccion de nivel...\n");
 	#endif
@@ -984,6 +987,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 
 	lista_mapas_ok = true;
 	// Leemos todos los ficheros level list (uno por cada conjunto)
+	// We read all level list files (one file per level set)
 	for ( i = 0 ; i < gNumeroConjuntosMapas ; i++ )
 	{
 		gListaConjuntosMapasJuego[i].mapas_individuales = LeerInfoMapasDeConjunto( gListaConjuntosMapasJuego[i].Directorio , &(gListaConjuntosMapasJuego[i].Numero_Mapas) );
@@ -1000,6 +1004,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	if (lista_mapas_ok == true)
 	{
 		// Cargamos las imágenes y texturas de textos asociadas a cada mapa
+		// Load all images and textures of texts for each map
 		#ifdef DEBUG_INFO
 		printf("Cargamos las imágenes y texturas de textos asociadas a cada mapa...\n" );
 		#endif
@@ -1013,7 +1018,8 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 				char cadena_tiempo[30];
 				if ( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.RutaImagenDescMenu_Presente )
 				{
-					// Lo siguiente, pendiente de implementar las imagenes de descripcion del mapa -- Nuevo 12/4/2020
+					// Carga las imagenes de descripcion del mapa
+					// Load all description images for each map
 					#ifdef DEBUG_INFO
 					printf("Cargando textura %s, conjunto %d, mapa %d ...\n", gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.RutaImagenDescMenu, conjunto_actual, mapa_actual );
 					#endif
@@ -1023,14 +1029,29 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 						printf("Error al cargar la textura %s \n", gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.RutaImagenDescMenu );
 						success = false;
 					}
-					// TODO, añadir tamaños para mantener la relacion de aspecto
 				}
+				else  /*Imagen de descripción no presente --- Level description image not present */
+				{
+					// Cargamos la imagen genérica --- Load generic image
+					#ifdef DEBUG_INFO
+					printf("Cargando textura %s, conjunto %d, mapa %d ...\n", "images/level_desc/GenericMap.png", conjunto_actual, mapa_actual );
+					#endif
+					gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaImagenMapa = CargaTextura( "images/level_desc/GenericMap.png", &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaImagenMapa_DimX), &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaImagenMapa_DimY), true );
+					if ( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaImagenMapa == NULL )
+					{
+						printf("Error al cargar la textura %s \n", gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.RutaImagenDescMenu );
+						success = false;
+					}
+				}
+
 				// Generamos las texturas asociadas a los textos de los mapas
+				// Create all textures related to map texts
 				gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNombreMapa = RenderizaTextoEnTextura( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.NombreMapa, gFuenteTexto, gColorTextoReposo, &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNombreMapa_DimX), &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNombreMapa_DimY)   );
 				gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaDescripcionMapa = RenderizaTextoEnTextura( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.DescripcionMapa, gFuenteTexto, gColorTextoReposo, &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaDescripcionMapa_DimX), &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaDescripcionMapa_DimY)   );
 				sprintf(cadena_numeracion, "%d/%d\0", mapa_actual+1, gListaConjuntosMapasJuego[conjunto_actual].Numero_Mapas );
 				gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNumeracion = RenderizaTextoEnTextura( cadena_numeracion, gFuenteTexto, gColorTextoReposo, &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNumeracion_DimX), &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaNumeracion_DimY)   );	
 				// Textura asociada al modo de giro
+				// Texture for rotation mode text
 				switch ( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.TipoGiro )
 				{
 					case camara:
@@ -1062,9 +1083,11 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 					gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaAnguloMaximo = RenderizaTextoEnTextura( cadena_ang_max, gFuenteTexto, gColorTextoReposo, &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaAnguloMaximo_DimX), &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaAnguloMaximo_DimY)   );
 				}
 				// Textura gravedad
+				// Gravity text texture
 				sprintf( cadena_gravedad, "Gravedad: %f\0", gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.Gravedad );
 				gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaGravedad = RenderizaTextoEnTextura( cadena_gravedad, gFuenteTexto, gColorTextoReposo, &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaGravedad_DimX), &(gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].TexturaGravedad_DimY)   );
 				// Textura tiempo
+				// Time (countdown) text texture
 				if ( gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.CuentaAtras )
 				{
 					sprintf( cadena_tiempo, "Tiempo: %d segundos\0", gListaConjuntosMapasJuego[conjunto_actual].mapas_individuales[mapa_actual].DatosMapa.SegundosCuentaAtras );
@@ -1282,7 +1305,7 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 
 
 	//-----------------------------------------------------------------------------------------
-	// Carga sonidos menu
+	// Carga sonidos menu --- Load menu sounds
 	gMusicaMenu = Mix_LoadMUS( "music/TengoUnaVacaLechera(Instrumental).mp3" );
 	if( gMusicaMenu == NULL )
 	{
@@ -1311,13 +1334,13 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 // |_|  |_|  \___|\___| |_| |_| |_|\___|_| |_| |_|\___/|_|   \__, |
 //                                                           |___/
 
-bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_principal, */ int numero_pantallas ) 
+bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_principal, */ int numero_pantallas ) 		// Free main menu memory
 {
 	#ifdef DEBUG_INFO
 	printf("Comenzando a liberar memoria del menu...\n");
 	#endif 
 
-	// Recorrer con un bucle for liberando la memoria de los botones
+	// Recorrer con un bucle for liberando la memoria de los botones --- Loop to free memory buttons
 	#ifdef DEBUG_INFO
 	printf("Comenzando a liberar memoria de los botones...\n");
 	#endif
@@ -1369,7 +1392,7 @@ bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_prin
 		SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].TexturaDescripcion ); gListaConjuntosMapasJuego[conjunto_actual].TexturaDescripcion = NULL;
 		SDL_DestroyTexture(  gListaConjuntosMapasJuego[conjunto_actual].TexturaNumeracion );  gListaConjuntosMapasJuego[conjunto_actual].TexturaNumeracion = NULL;
 
-		// Liberamos información de los mapas
+		// Liberamos información de los mapas --- Free level info
 		for (mapa_actual = 0 ; mapa_actual < gListaConjuntosMapasJuego[conjunto_actual].Numero_Mapas ; mapa_actual++ )
 		{
 				#ifdef DEBUG_INFO
@@ -1429,7 +1452,7 @@ bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_prin
 
 }
 
-void bucle_principal_menu_principal( void )
+void bucle_principal_menu_principal( void )		// Main menu, main loop
 {
 
 
@@ -1437,7 +1460,7 @@ void bucle_principal_menu_principal( void )
 	int contador_frames = 0;
 	SDL_Event e;		 //Event handler 
 	Uint32 currentTime = 0, lastTime, deltaTime, tiempo_imagen_sobrante; //Current time start time (milisegundos)
-	float tiempo_imagen;	//Tiempo de cada imagen, en segundos
+	float tiempo_imagen;	//Tiempo de cada imagen, en segundos --- Time duration for each frame, in seconds
 	float framerate_deseado = 30;
 
 
@@ -1453,13 +1476,10 @@ void bucle_principal_menu_principal( void )
 
 	int pos_raton_x, pos_raton_y;
 
-	SDL_Rect renderQuad;		// Variable "rectangulo SDL" para indicar donde renderizar los objetos
+	SDL_Rect renderQuad;		// Variable "rectangulo SDL" para indicar donde renderizar los objetos --- SDL Rectangle variable, tells where to render objects
 
 
-
-
-
-	//Activar variables ratón
+	//Activar variables ratón --- Set mouse variables
 	SDL_ShowCursor(SDL_ENABLE);
 	SDL_SetRelativeMouseMode(SDL_FALSE);
 
@@ -1469,7 +1489,7 @@ void bucle_principal_menu_principal( void )
 	//While application is running 
 	while( !quit ) 
 	{
-		// Calcular tiempo para el movimiento
+		// Calcular tiempo para el movimiento --- Calculate time for movements
 		contador_frames++;
 		lastTime = currentTime;
 		currentTime = SDL_GetTicks();
@@ -1510,29 +1530,29 @@ void bucle_principal_menu_principal( void )
 						quit = true; 
 						break; 
 					case SDLK_LEFT:
-						// (TODO) Techa izquierda
-						if ( menu_activo == menu_elige_conjunto_niveles )
+						// Techa izquierda --- Left key
+						if ( (menu_activo == menu_elige_conjunto_niveles) || (menu_activo == menu_elige_nivel) )
 						{
 							boton_seleccionado = 0;
 						}
 						break;
 					case SDLK_RIGHT:
-						// (TODO) Tecla derecha
-						if ( menu_activo == menu_elige_conjunto_niveles )
+						// Tecla derecha --- Right key
+						if ( (menu_activo == menu_elige_conjunto_niveles) || (menu_activo == menu_elige_nivel) )
 						{
 							boton_seleccionado = 1;
 						}
 						break;
 					case SDLK_UP:
-						// Techa arriba
-						if ( pantallas_menu_principal[menu_activo].numero_botones != 0)		// Para evitar violacion de segmento si el numero de botones es cero
+						// Techa arriba --- Up key
+						if ( pantallas_menu_principal[menu_activo].numero_botones != 0)		// Para evitar violacion de segmento si el numero de botones es cero --- Avoid segmentation fault if number of buttons is zero
 						{
 							boton_seleccionado = pantallas_menu_principal[menu_activo].botones_pantalla[boton_seleccionado].boton_anterior;
 						}
 						break;
 					case SDLK_DOWN:
-						// Tecla abajo
-						if ( pantallas_menu_principal[menu_activo].numero_botones != 0)		// Para evitar violacion de segmento si el numero de botones es cero
+						// Tecla abajo -- Down key
+						if ( pantallas_menu_principal[menu_activo].numero_botones != 0)		// Para evitar violacion de segmento si el numero de botones es cero --- Avoid segmentation fault if number of buttons is zero
 						{
 							boton_seleccionado = pantallas_menu_principal[menu_activo].botones_pantalla[boton_seleccionado].boton_siguiente;
 						}
@@ -1540,7 +1560,7 @@ void bucle_principal_menu_principal( void )
 					case SDLK_RETURN:
 					case SDLK_KP_ENTER:
 					case SDLK_SPACE:
-						// Tecla enter o espacio
+						// Tecla enter o espacio --- Enter or space
 						boton_pulsado = true;
 						break;
 					case SDLK_f:
@@ -1555,8 +1575,9 @@ void bucle_principal_menu_principal( void )
 				if ( menu_activo == menu_bienvenida )
 				{
 					// Se ha pulsado cualquier tecla en el menu bienvenida
+					// Any key was pressed on the welcome menu
 					menu_activo = menu_principal;
-					boton_pulsado = false;	// Para que no entremos en un submenu
+					boton_pulsado = false;	// Para que no entremos en un submenu --- To prevent entering into a submenu
 				}
 			}
 			else if ( e.type  == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP )
@@ -1583,8 +1604,9 @@ void bucle_principal_menu_principal( void )
 				if ( e.type == SDL_MOUSEBUTTONDOWN && menu_activo == menu_bienvenida )
 				{
 					// Se ha pulsado el raton en el menu bienvenida
+					// Any key was pressed on the welcome menu
 					menu_activo = menu_principal;
-					boton_pulsado = false;	// Para que no entremos en un submenu
+					boton_pulsado = false;	// Para que no entremos en un submenu --- To prevent entering into a submenu
 				}
 			}
 		}
@@ -1594,6 +1616,7 @@ void bucle_principal_menu_principal( void )
 		if (( boton_pulsado == true) && (boton_seleccionado != -1) && (boton_seleccionado >= 0) && (boton_seleccionado <= pantallas_menu_principal[menu_activo].numero_botones) )
 		{
 			// Se ha pulsado algo, hay que hacer lo que corresponda
+			// Some button has been pressed, the corresponding action has to be done
 			switch ( pantallas_menu_principal[menu_activo].botones_pantalla[boton_seleccionado].identificador_boton )
 			{
 
@@ -1608,7 +1631,7 @@ void bucle_principal_menu_principal( void )
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
 					bucle_principal_juego( "maps/monza_1" );
-					//Activar variables ratón una vez el juego ha terminado
+					//Activar variables ratón una vez el juego ha terminado --- Set mouse variables once the game has ended
 					SDL_ShowCursor(SDL_ENABLE);
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
@@ -1617,7 +1640,7 @@ void bucle_principal_menu_principal( void )
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
 					bucle_principal_juego( "maps/laberinto01" );
-					//Activar variables ratón una vez el juego ha terminado
+					//Activar variables ratón una vez el juego ha terminado --- Set mouse variables once the game has ended
 					SDL_ShowCursor(SDL_ENABLE);
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
@@ -1626,7 +1649,7 @@ void bucle_principal_menu_principal( void )
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
 					bucle_principal_juego( "maps/pyramid");
-					//Activar variables ratón una vez el juego ha terminado
+					//Activar variables ratón una vez el juego ha terminado --- Set mouse variables once the game has ended
 					SDL_ShowCursor(SDL_ENABLE);
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
@@ -1635,7 +1658,7 @@ void bucle_principal_menu_principal( void )
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
 					bucle_principal_juego( "maps/round_labyrinth");
-					//Activar variables ratón una vez el juego ha terminado
+					//Activar variables ratón una vez el juego ha terminado --- Set mouse variables once the game has ended
 					SDL_ShowCursor(SDL_ENABLE);
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
@@ -1644,7 +1667,7 @@ void bucle_principal_menu_principal( void )
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
 					bucle_principal_juego("maps/super_pinball");
-					//Activar variables ratón una vez el juego ha terminado
+					//Activar variables ratón una vez el juego ha terminado --- Set mouse variables once the game has ended
 					SDL_ShowCursor(SDL_ENABLE);
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
@@ -1714,11 +1737,11 @@ void bucle_principal_menu_principal( void )
 				case boton_sensibilidad_raton:
 					if ( raton_sobre_boton_menos_valor_numerico( pantallas_menu_principal[menu_opc_control].botones_pantalla[0], pos_raton_x, pos_raton_y) )
 					{
-						// Se ha pulsado menos
+						// Se ha pulsado menos --- Minus has been pressed
 						pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico -= pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_incremento;
 						if ( pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico < pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_minimo )
 						{
-							// Estamos por debajo del minimo, volvemos al minimo
+							// Estamos por debajo del minimo, volvemos al minimo --- Below the minimum value, we return to the minimum
 							pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico = pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_minimo;
 						}
 						opciones_juego.mouse_sensitivity = pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico;
@@ -1729,7 +1752,7 @@ void bucle_principal_menu_principal( void )
 						pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico += pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_incremento;
 						if ( pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico > pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_maximo )
 						{
-							// Estamos por encima del maximo, volvemos al maximo
+							// Estamos por encima del maximo, volvemos al maximo --- Beneath the maximum, we return to the maximum
 							pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico = pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico_rango_maximo;
 						}
 						opciones_juego.mouse_sensitivity = pantallas_menu_principal[menu_opc_control].botones_pantalla[0].valor_numerico;
@@ -1739,23 +1762,23 @@ void bucle_principal_menu_principal( void )
 					conjunto_niveles_seleccionado_actualmente++;
 					if ( conjunto_niveles_seleccionado_actualmente >= gNumeroConjuntosMapas )
 					{
-						conjunto_niveles_seleccionado_actualmente = 0;		// Se salimos por la derecha volvemos al principio
+						conjunto_niveles_seleccionado_actualmente = 0;		// Se salimos por la derecha volvemos al principio --- We return to the first level set
 					}
-					// Actualizamos imagenes y texturas textos
+					// Actualizamos imagenes y texturas textos --- Update images and texts
 					ActualizaPunteros_Menu_EligeConjuntoNiveles ( pantallas_menu_principal, conjunto_niveles_seleccionado_actualmente );
 					break;
 				case boton_conj_mapas_flechader:
 					conjunto_niveles_seleccionado_actualmente--;
 					if ( conjunto_niveles_seleccionado_actualmente < 0 )
 					{
-						conjunto_niveles_seleccionado_actualmente = (gNumeroConjuntosMapas-1);		// Si salimos por la izquierda vamos al máximo
+						conjunto_niveles_seleccionado_actualmente = (gNumeroConjuntosMapas-1);		// Si salimos por la izquierda vamos al máximo --- We go to the last level set
 					}
-					// Actualizamos imagenes y texturas textos
+					// Actualizamos imagenes y texturas textos --- Update images and texts
 					ActualizaPunteros_Menu_EligeConjuntoNiveles ( pantallas_menu_principal, conjunto_niveles_seleccionado_actualmente );
 					break;
 				case boton_conj_mapas_seleccionar:
 					menu_activo = menu_elige_nivel;
-					// Actualizamos la informacion con el primer mapa del conjunto de niveles seleccionado
+					// Actualizamos la informacion con el primer mapa del conjunto de niveles seleccionado --- Update information with the first level of the selected level-set
 					nivel_seleccionado_actualmente = 0;
 					boton_seleccionado = 0;
 					ActualizaPunteros_Menu_EligeNivel (pantallas_menu_principal, conjunto_niveles_seleccionado_actualmente, nivel_seleccionado_actualmente );
@@ -1764,7 +1787,7 @@ void bucle_principal_menu_principal( void )
 					nivel_seleccionado_actualmente--;
 					if ( nivel_seleccionado_actualmente < 0 )
 					{
-						nivel_seleccionado_actualmente = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].Numero_Mapas -1 ;	// Si salimos por la izquierda vamos al máximo
+						nivel_seleccionado_actualmente = gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].Numero_Mapas -1 ;	// Si salimos por la izquierda vamos al máximo --- We go the the last level
 					}
 					ActualizaPunteros_Menu_EligeNivel (pantallas_menu_principal, conjunto_niveles_seleccionado_actualmente, nivel_seleccionado_actualmente );
 					break;
@@ -1772,7 +1795,7 @@ void bucle_principal_menu_principal( void )
 					nivel_seleccionado_actualmente++;
 					if ( nivel_seleccionado_actualmente >= gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].Numero_Mapas )
 					{
-						nivel_seleccionado_actualmente = 0;	// Si salimos por la derecha volvemos al principio
+						nivel_seleccionado_actualmente = 0;	// Si salimos por la derecha volvemos al principio --- We go to the first level
 					}
 					ActualizaPunteros_Menu_EligeNivel (pantallas_menu_principal, conjunto_niveles_seleccionado_actualmente, nivel_seleccionado_actualmente );
 					break;
@@ -1781,7 +1804,7 @@ void bucle_principal_menu_principal( void )
 					printf("Comenzando bucle principal del juego...\n");
 					#endif
 					bucle_principal_juego( gListaConjuntosMapasJuego[conjunto_niveles_seleccionado_actualmente].mapas_individuales[nivel_seleccionado_actualmente].RutaMapa );
-					//Activar variables ratón una vez el juego ha terminado
+					//Activar variables ratón una vez el juego ha terminado --- Set mouse variables once the game has ended
 					SDL_ShowCursor(SDL_ENABLE);
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
@@ -1875,7 +1898,7 @@ void bucle_principal_menu_principal( void )
 						}
 						break;
 					case boton_valor_numerico:		// Pruebas 6/4/2020
-						// Dibujar texto
+						// Dibujar texto --- Draw text
 						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo; 									/* Coord X esquina superior izquierda */
 						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 										/* Coord Y esquina superior izqeuirda */
 						renderQuad.w = ( pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_derecho - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo ) * PORCNT_ANCHO_TITULO_BOT_VAL_NUM/100; 	/* Ancho */
@@ -1888,57 +1911,59 @@ void bucle_principal_menu_principal( void )
 						{
 							SDL_RenderCopy( gRenderer, pantallas_menu_principal[menu_activo].botones_pantalla[i].textura_boton_reposo, NULL, &renderQuad );
 						}
-						// Dibujar valor numérico
+						// Dibujar valor numérico --- Draw numaric value
 						// (TODO)
 						{
 							// Creamos un entero desplazando hacia la izquierda todo (sin coma)
+							// Create an integer, moving the decimal point to the right (no decimal point)
 							long entero_auxiliar_para_valor_numerico = pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico * pow(10, pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma) ;
 							int total_digitos; /*Incluida la coma*/
 							int digito_actual, posicion_actual;
 
 							total_digitos = pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_izq_coma + pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma + 1;
 							posicion_actual = 0;
-							// Representacion_digitos a la izquierda de la coma
+							// Representacion_digitos a la izquierda de la coma -- Display digits on the left of the decimal point
 							for ( digito_actual = ( pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_izq_coma + pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma) - 1; digito_actual >= pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma ; digito_actual-- )
 							{
-								// Posicionamos el digito
+								// Posicionamos el digito --- Position the digit
 								renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM)/100 ) + posicion_actual*(opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;		// Coord X de esquina superior izquierda
 								renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;		// Coord Y de esquina superior izquierda
 								renderQuad.w = (opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;				// Ancho
 								renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;				// Alto
-								// Calculamos y a la vez dibujamos el dígito
+								// Calculamos y a la vez dibujamos el dígito --- Calculate and display the digit
 								SDL_RenderCopy( gRenderer, gTexturaNumeroMenu[ Digito_N_esimo(digito_actual ,entero_auxiliar_para_valor_numerico) ], NULL, &renderQuad );
 								posicion_actual++;
 							}
 
-							// Representación de la coma
+							// Representación de la coma --- Decimal point representation
 							if ( pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma > 0 )
 							{
-								// Posicionamos la coma
+								// Posicionamos la coma --- We position the digit
 								renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM)/100 ) + posicion_actual*(opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;		// Coord X de esquina superior izquierda
 								renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;		// Coord Y de esquina superior izquierda
 								renderQuad.w = (opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;				// Ancho
 								renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;				// Alto
-								// Dibujamos la coma
+								// Dibujamos la coma --- We display the decimal point
 								SDL_RenderCopy( gRenderer, gTexturaComaMenu, NULL, &renderQuad );
 								posicion_actual++;
 							}
 
 							// Representación dígitos a la derecha de la coma
-
+							// Display digits on the right of the decimal point
 							for ( digito_actual =  pantallas_menu_principal[menu_activo].botones_pantalla[i].valor_numerico_digitos_dcha_coma - 1; digito_actual >= 0 ; digito_actual-- )
 							{
-								// Posicionamos el digito
+								// Posicionamos el digito --- Position the digit
 								renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM)/100 ) + posicion_actual*(opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;		// Coord X de esquina superior izquierda
 								renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;		// Coord Y de esquina superior izquierda
 								renderQuad.w = (opciones_juego.screen_x_resolution) * (PORCENTAJE_ANCHO_BOTONES/100) * (PORCNT_ANCHO_VALOR_BOT_VAL_NUM/100) /total_digitos;				// Ancho
 								renderQuad.h = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_abajo - pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba;				// Alto
 								// Calculamos y a la vez dibujamos el dígito
+								// Calculate and display the digit
 								SDL_RenderCopy( gRenderer, gTexturaNumeroMenu[ Digito_N_esimo(digito_actual ,entero_auxiliar_para_valor_numerico) ], NULL, &renderQuad );
 								posicion_actual++;
 							}
 						}
-						// Dibujar botones <-/+> (TODO)
+						// Dibujar botones <-/+> --- Draw <-/+> buttons
 						// Boton -
 						renderQuad.x = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_izquierdo + (opciones_juego.screen_x_resolution * (PORCENTAJE_ANCHO_BOTONES/100)*(PORCNT_ANCHO_TITULO_BOT_VAL_NUM + PORCNT_ANCHO_VALOR_BOT_VAL_NUM)/100 ); 			/* Coord X esquina superior izquierda */
 						renderQuad.y = pantallas_menu_principal[menu_activo].botones_pantalla[i].borde_arriba; 							/* Coord Y esquina superior izqeuirda */
@@ -1966,6 +1991,7 @@ void bucle_principal_menu_principal( void )
 		/////////////////////////////////////////////////////////////////////////////////////	
 
 		// Limitar el framerate aproximadamente al framerate deseado
+		// Capping framerate to the desired framerate (apprxomately)
 		if ((1000/framerate_deseado) > (SDL_GetTicks() - currentTime ) ) 
 		{
 			tiempo_imagen_sobrante = (1000/framerate_deseado) - (SDL_GetTicks() - currentTime );	//En milisegundos
@@ -1979,7 +2005,7 @@ void bucle_principal_menu_principal( void )
 
 		#ifdef DEBUG_INFO
 		printf("Pos raton = %d, %d\n", pos_raton_x, pos_raton_y );
-		//system("clear");		// Borra la terminal para leer el estado actual (MUY LENTO)
+		//system("clear");		// Borra la terminal para leer el estado actual (MUY LENTO) --- Clears terminal to read current status (SLOW)
 		#endif
 
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -1999,13 +2025,13 @@ void bucle_principal_menu_principal( void )
 				Mix_HaltMusic( );
 			}
 		}
-	// Liberamos memoria dinamica
+
 	}
 
 }
 
 
-void ActualizaPunteros_Menu_EligeConjuntoNiveles ( struct pantalla_menu* pantallas_menu_principal, int conjunto_niveles_seleccionado_actualmente )
+void ActualizaPunteros_Menu_EligeConjuntoNiveles ( struct pantalla_menu* pantallas_menu_principal, int conjunto_niveles_seleccionado_actualmente )		// Update pointers in menu select level set
 {
 	// Esta funcion agrupa codigo repetido a la hora de cambiar de conjunto de niveles en la pantalla de seleccion de conjunto de niveles
 	// This function groups repeated code, used when switching between level-sets in the level-set selection screen
@@ -2028,7 +2054,7 @@ void ActualizaPunteros_Menu_EligeConjuntoNiveles ( struct pantalla_menu* pantall
 
 }
 
-void ActualizaPunteros_Menu_EligeNivel (struct pantalla_menu* pantallas_menu_principal, int conjunto_niveles_seleccionado_actualmente, int nivel_seleccionado_actualmente )
+void ActualizaPunteros_Menu_EligeNivel (struct pantalla_menu* pantallas_menu_principal, int conjunto_niveles_seleccionado_actualmente, int nivel_seleccionado_actualmente )	// Update pointers in menu select level
 {
 	// Esta funcion agrupa codigo repetido a la hora de cambiar de nivel en la pantalla de seleccion de nivel
 	// This function groups repeated code, used when switching between levels in the level selection screen

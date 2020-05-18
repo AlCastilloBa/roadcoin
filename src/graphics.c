@@ -7,11 +7,12 @@
 
 #include "graphics.h"
 
-// Variables globales
+// Variables globales --- Global variables
 //The window renderer 
 extern SDL_Renderer* gRenderer;
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
+// If DEBUG_INFO is defined, info texts will be shown on terminal (but the program will be slower)
 // #define DEBUG_INFO
 
 // Función "carga textura". Carga una textura en memoria lista para utilizar con un "renderer"
@@ -20,7 +21,15 @@ extern SDL_Renderer* gRenderer;
 //    - dim_x: puntero a variable "int" donde se guardará el tamaño en dirección X.
 //    - dim_y: puntero a variable "int" donde se guardará el tamaño en dirección Y.
 //    - transparente: Indica si el color cyan será transparente
-SDL_Texture* CargaTextura( char* ruta_textura, int* dim_x, int* dim_y, bool transparente) 
+
+// Function "load texture". Loads a texture on memory, ready to be used with a "renderer"
+// Arguments:
+//    - ruta_textura / texturepath: string with the path to the image.
+//    - dim_x: pointer to int, where the X size will be stored.
+//    - dim_y: pointer to int, where the Y size will be stored.
+//    - transparent: If true, cyan color will be transparent
+
+SDL_Texture* CargaTextura( char* ruta_textura, int* dim_x, int* dim_y, bool transparente) 	// Load texture
 { 
 	SDL_Texture* newTexture = NULL; 		//The final texture
 	SDL_Surface* loadedSurface = NULL;
@@ -57,9 +66,9 @@ SDL_Texture* CargaTextura( char* ruta_textura, int* dim_x, int* dim_y, bool tran
 
 
 
-SDL_Texture* RenderizaTextoEnTextura( char* textureText, TTF_Font* gFont, SDL_Color textColor, int* dim_x_textura, int* dim_y_textura )
+SDL_Texture* RenderizaTextoEnTextura( char* textureText, TTF_Font* gFont, SDL_Color textColor, int* dim_x_textura, int* dim_y_textura )		// Render Text into Texture
 {
-	// Textura a devolver
+	// Textura a devolver --- Texture that will be returned
 	SDL_Texture* newTexture = NULL;
 	//Render text surface
 	SDL_Surface* textSurface = NULL;
@@ -94,7 +103,7 @@ SDL_Texture* RenderizaTextoEnTextura( char* textureText, TTF_Font* gFont, SDL_Co
 }
 
 
-void CambiarModoPantallaCompleta( bool PantallaCompleta, SDL_Window* window )
+void CambiarModoPantallaCompleta( bool PantallaCompleta, SDL_Window* window )		// Toggle fullscreen mode
 {
 	int resultado;
 	//SDL_DisplayMode displaymode;
@@ -114,13 +123,18 @@ void CambiarModoPantallaCompleta( bool PantallaCompleta, SDL_Window* window )
 }
 
 
-// Pruebas 19/3/2020 (TODO)
-int Digito_N_esimo (int n, int entero)
+int Digito_N_esimo (int n, int entero)		// N-th digit
 {
 	// Esta función devuelve el digito "n" del numero "entero"
 	// n=0 --> devuelve digito de unidades
 	// n=1 --> devuelve digito de las decenas
 	// n=2 --> devuelve digito de las centenas
+	// ...etc
+
+	// This function returns the "n"-th digit of the integer number
+	// n=0 --> return unit digit
+	// n=1 --> return tenths digit
+	// n=2 --> return hundreds digit
 	// ...etc
 	while(n--)
 	{

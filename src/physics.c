@@ -7,6 +7,7 @@
 #include "geometry.h"
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
+// If DEBUG_INFO is defined, info texts will be shown on terminal (but the program will run slowly)
 //#define DEBUG_INFO
 
 #ifdef DEBUG_INFO
@@ -14,7 +15,7 @@
 #endif
 
 
-struct vector_velocidad SumaVelocidad (struct vector_velocidad vel1, struct vector_velocidad vel2)
+struct vector_velocidad SumaVelocidad (struct vector_velocidad vel1, struct vector_velocidad vel2)		// Add Speed
 {
 	// Suma componente a componente
 	struct vector_velocidad resultado;
@@ -23,7 +24,7 @@ struct vector_velocidad SumaVelocidad (struct vector_velocidad vel1, struct vect
 	return resultado;
 }
 
-struct punto Velocidad2Posicion(struct punto pos_inicial, struct vector_velocidad vel, float delta_tiempo)
+struct punto Velocidad2Posicion(struct punto pos_inicial, struct vector_velocidad vel, float delta_tiempo)	// Speed to Position
 {
 	// pos_final = pos_inicial + vel * tiempo
 	struct punto pos_final;
@@ -34,7 +35,7 @@ struct punto Velocidad2Posicion(struct punto pos_inicial, struct vector_velocida
 }
 
 
-struct vector_velocidad Aceleracion2Velocidad( struct vector_velocidad vinicial, struct vector_aceleracion acel, float delta_tiempo) 
+struct vector_velocidad Aceleracion2Velocidad( struct vector_velocidad vinicial, struct vector_aceleracion acel, float delta_tiempo) 	// Acceleration to Speed
 {
 	// vfinal = vinicial + acel * tiempo
 	struct vector_velocidad vfinal;
@@ -45,7 +46,7 @@ struct vector_velocidad Aceleracion2Velocidad( struct vector_velocidad vinicial,
 }
 
 
-struct vector_fuerza SumaFuerzas( struct vector_fuerza gravedad , struct vector_fuerza* normales_segmentos, int numero_segmentos, struct vector_fuerza* zonas_aceleracion_circular, int numero_zonas_acel_circ )
+struct vector_fuerza SumaFuerzas( struct vector_fuerza gravedad , struct vector_fuerza* normales_segmentos, int numero_segmentos, struct vector_fuerza* zonas_aceleracion_circular, int numero_zonas_acel_circ )		// Sum forces
 {
 	// Nota: (TODO) Añadir más tipos de fuerzas
 	int i;
@@ -57,7 +58,7 @@ struct vector_fuerza SumaFuerzas( struct vector_fuerza gravedad , struct vector_
 		resultante.fx += normales_segmentos[i].fx;
 		resultante.fy += normales_segmentos[i].fy;
 	}
-	for (i=0 ; i< numero_zonas_acel_circ ; i++ )		// TODO NUEVO PRUEBAS 22/3/2020
+	for (i=0 ; i< numero_zonas_acel_circ ; i++ )
 	{
 		resultante.fx += zonas_aceleracion_circular[i].fx;
 		resultante.fy += zonas_aceleracion_circular[i].fy;
@@ -66,7 +67,7 @@ struct vector_fuerza SumaFuerzas( struct vector_fuerza gravedad , struct vector_
 	return resultante;
 }
 
-struct vector_aceleracion Fuerza2Aceleracion( struct vector_fuerza fuerza, double masa )
+struct vector_aceleracion Fuerza2Aceleracion( struct vector_fuerza fuerza, double masa )		// Force to acceleration
 {
 	struct vector_aceleracion aceleracion;
 	aceleracion.ax = fuerza.fx / masa;
@@ -74,7 +75,7 @@ struct vector_aceleracion Fuerza2Aceleracion( struct vector_fuerza fuerza, doubl
 	return aceleracion;
 }
 
-struct vector_fuerza CalculaReaccionNormalCentroSegmento ( double angulo_segmento, double gravedad, double masa )
+struct vector_fuerza CalculaReaccionNormalCentroSegmento ( double angulo_segmento, double gravedad, double masa )	// Calculate normal force to segment center
 {
 	// Esta función devuelve un vector de la fuerza normal de apoyo sobre el centro de un segmento.
 	// Nota: no es válida cuando el contacto es con los extremos del semgento
@@ -90,7 +91,7 @@ struct vector_fuerza CalculaReaccionNormalCentroSegmento ( double angulo_segment
 	return normal;
 }
 
-struct vector_fuerza CalculaReaccionNormalExtremoSegmento ( struct punto centro_circulo, struct punto extremo_segmento, /*double angulo_segmento, */ double gravedad, double masa )
+struct vector_fuerza CalculaReaccionNormalExtremoSegmento ( struct punto centro_circulo, struct punto extremo_segmento, /*double angulo_segmento, */ double gravedad, double masa )		// Calculate normal force to segment end
 {
 	double angulo_radio, modulo_normal;
 	struct vector_fuerza normal;
@@ -122,13 +123,14 @@ struct vector_fuerza CalculaReaccionNormalExtremoSegmento ( struct punto centro_
 }
 
 
-struct vector_velocidad AnulaVelocidadNormalASegmento( struct vector_velocidad velocidad_inicial, double angulo_segmento)
+struct vector_velocidad AnulaVelocidadNormalASegmento( struct vector_velocidad velocidad_inicial, double angulo_segmento)		// Cancel speed normal to segment
 {
 	struct punto vector_unitario_normal, vector_velocidad_inicial;
 	struct vector_velocidad velocidad_tangencial;
 	double prod_escalar_v_n;
 
-	//Convertimos velocidad desde struct vector_velocidad a struct punto
+	// Convertimos velocidad desde struct vector_velocidad a struct punto
+	// Convert speed from struct vector_velocidad to struct punto
 	vector_velocidad_inicial.x = velocidad_inicial.vx;
 	vector_velocidad_inicial.y = velocidad_inicial.vy;
 
@@ -205,7 +207,7 @@ struct vector_velocidad AnulaVelocidadNormalASegmento( struct vector_velocidad v
 }*/
 
 
-struct vector_velocidad VelAngular2VelLineal ( struct punto centro_giro, struct punto pos_real, double angulo_girado, double delta_tiempo )
+struct vector_velocidad VelAngular2VelLineal ( struct punto centro_giro, struct punto pos_real, double angulo_girado, double delta_tiempo )		// Rotation speed to Linear speed
 {
 	// Nota: angulo en grados, delta_tiempo en segundos
 
@@ -229,7 +231,7 @@ struct vector_velocidad VelAngular2VelLineal ( struct punto centro_giro, struct 
 }
 
 
-double VelAng2Angulo ( double angulo_inicial, double omega, double delta_tiempo )
+double VelAng2Angulo ( double angulo_inicial, double omega, double delta_tiempo )		// Rotating speed to angle
 {
 	// phi_final = phi_inicial + omega * delta_tiempo
 	//     phi en rad
@@ -239,7 +241,7 @@ double VelAng2Angulo ( double angulo_inicial, double omega, double delta_tiempo 
 
 }
 
-double CalculaVelGiroSobreSegmento ( struct vector_velocidad velocidad_inicial, double angulo_segmento, double radio_moneda )
+double CalculaVelGiroSobreSegmento ( struct vector_velocidad velocidad_inicial, double angulo_segmento, double radio_moneda )		// Calculate rotating speed on segment
 {
 	// omega = Velocidad tangencial / radio moneda
 	// (TODO) Optimizacion, esto se calcula en VelAngular2VelLineal, se pueden reducir calculos
@@ -248,7 +250,8 @@ double CalculaVelGiroSobreSegmento ( struct vector_velocidad velocidad_inicial, 
 	struct vector_velocidad velocidad_tangencial;
 	double prod_escalar_v_n;
 
-	//Convertimos velocidad desde struct vector_velocidad a struct punto
+	// Convertimos velocidad desde struct vector_velocidad a struct punto
+	// Convert speed from struct vector_velocidad to struct punto
 	vector_velocidad_inicial.x = velocidad_inicial.vx;
 	vector_velocidad_inicial.y = velocidad_inicial.vy;
 
@@ -275,11 +278,15 @@ double CalculaVelGiroSobreSegmento ( struct vector_velocidad velocidad_inicial, 
 //////////////////////////////////////////////////////////////////////////////////////////
 //  5/2/2020
 ///////////////////////////////////////////////////////////////////////////////////////////
-struct vector_velocidad AnulaVelocidadTangencialARecta( struct vector_velocidad velocidad_inicial, struct punto punto_1_recta, struct punto punto_2_recta)
+struct vector_velocidad AnulaVelocidadTangencialARecta( struct vector_velocidad velocidad_inicial, struct punto punto_1_recta, struct punto punto_2_recta) // Cancel speed tangential to line
 {
 	// Esta funcion anula la velocidad tangencial a una recta (definida por dos puntos (1 y 2) )
 	// Esto es util para los BUMPERS de PINBALL, o para hacer que la moneda ruede sobre una circunferencia cualquiera.
 	// En esos casos, los puntos 1 y 2 serían los centros de las dos circunferencias
+
+	// This function cancels the speed tangential to a line (defined by two points (1 and 2) )
+	// This can be useful por pinball bumpers, or to make the coin roll on a circunference.
+	// On these cases, points 1 and 2 would be the centers of the two circunferences.
 
 	struct punto vector_unitario_recta, vector_velocidad_inicial;
 	struct vector_velocidad velocidad_normal;
@@ -290,7 +297,7 @@ struct vector_velocidad AnulaVelocidadTangencialARecta( struct vector_velocidad 
 	vector_velocidad_inicial.x = velocidad_inicial.vx;
 	vector_velocidad_inicial.y = velocidad_inicial.vy;
 
-	// Calculamos angulo
+	// Calculamos angulo --- Calculate angle
 	angulo_recta = AnguloRecta(punto_1_recta , punto_2_recta);
 
 	vector_unitario_recta.x = cos(angulo_recta);
@@ -309,11 +316,16 @@ struct vector_velocidad AnulaVelocidadTangencialARecta( struct vector_velocidad 
 }
 
 
-struct vector_velocidad VelocidadSobreRecta ( double modulo_velocidad_resultado, struct punto punto_1_recta, struct punto punto_2_recta )
+struct vector_velocidad VelocidadSobreRecta ( double modulo_velocidad_resultado, struct punto punto_1_recta, struct punto punto_2_recta )	// speed over line
 {
 	// Esta función crea un vector velocidad en la recta definida por los dos puntos, con módulo dado.
 	// El vector se creará desde el punto 2 hacia el punto 1
 	// Nota: Esto es util para los PINBALL BUMPERS, para crear un impulso de velocidad
+
+	// This function imposes a speed vector on a line defined by two points, with a given magnitude.
+	// The vector will be created from point 2 to point 1.
+	// Note: This can be usefull for pinball bumpers, to create a speed impulse.
+
 	struct vector_velocidad velocidad_resultado;
 	struct punto vector_unitario_recta;
 	double angulo_recta;
@@ -332,12 +344,12 @@ struct vector_velocidad VelocidadSobreRecta ( double modulo_velocidad_resultado,
 
 }
 
-double modulo_vector_velocidad(struct vector_velocidad vel)
+double modulo_vector_velocidad(struct vector_velocidad vel)		// Speed Vector magnitude
 {
 	return sqrt( (vel.vx*vel.vx) + (vel.vy*vel.vy) );
 }
 
-double modulo_vector_velocidad_cuadrado(struct vector_velocidad vel)
+double modulo_vector_velocidad_cuadrado(struct vector_velocidad vel)		// Speed Vector Magnitude Squared
 {
 	return (vel.vx*vel.vx) + (vel.vy*vel.vy) ;
 }

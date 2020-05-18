@@ -1,10 +1,12 @@
 #include <stdbool.h>
 #include <SDL.h>		// Pruebas 8/4/2020
 
-#define LIMITE_SEGMENTOS 1500
-#define LIMITE_BUMPERS 100
-#define LIMITE_ZONAS_ACEL_CIRC 100
+// #define LIMITE_SEGMENTOS 1500
+// #define LIMITE_BUMPERS 100
+// #define LIMITE_ZONAS_ACEL_CIRC 100
 // #define LIMITE_CONJUNTOS_MAPAS 200		--> Ya no es necesario, BORRAR
+
+#define IMAGEN_SEGMENTO_POR_DEFECTO "images/metal_1x5.png"	// Default line segment image, if none specified
 
 // Tipos de segmentos --- Line segments types
 enum tipo_segmento 
@@ -18,11 +20,11 @@ enum tipo_segmento
 
 enum tipo_giro
 {
-	camara = 0,		// (0) El mapa gira alrededor de la cámara
-	punto_fijo = 1,		// (1) El mapa gira alrededor de un punto fijo
-	moneda = 2,		// (2) El mapa gira alrededor de la moneda
-	origen = 3,		// (3) El mapa gira alrededor del origen, y arrastra a la moneda en su giro
-	no_rot = 4		// (4) El mapa no va a girar
+	camara = 0,		// (0) El mapa gira alrededor de la cámara --- Map rotates around the camera position
+	punto_fijo = 1,		// (1) El mapa gira alrededor de un punto fijo --- Map rotates around a fixed point
+	moneda = 2,		// (2) El mapa gira alrededor de la moneda --- Map rotates around the coin center
+	origen = 3,		// (3) El mapa gira alrededor del origen, y arrastra a la moneda en su giro --- Map rotates around the origin, and drags the coin with it
+	no_rot = 4		// (4) El mapa no va a girar --- The map will not rotate
 };
 
 // Punto en 2D
@@ -44,7 +46,7 @@ struct segmento
 	bool definido_OK;		// Is this line segment correctly defined and read?
 };
 
-struct pinball_bumper	// Nuevo 5/2/2020 (PENDIENTE PROBAR)
+struct pinball_bumper
 {
 	struct punto centro;		// Bumper center point
 	float radio;			// Bumper radius
@@ -89,6 +91,10 @@ struct mapa
 	int Pos_y_abajo_fondo_giratorio;		// Rotating background lower coordinate
 	struct punto CentroGiroFondoGiratorio;		// Rotating background, center of rotation
 
+	char RutaImagenSegmentoPared[255];		// Path to "wall" line segment image (TODO Pruebas 17/5/2020)
+	char RutaImagenSegmentoMeta[255];		// Path to "goal" line segment image (TODO Pruebas 17/5/2020)
+	char RutaImagenSegmentoMuerte[255];		// Path to "death" line segment image (TODO Pruebas 17/5/2020)
+
 	char RutaMusica[255];				// Path to music file for the level
 	
 	int NumeroPinballBumpers;			
@@ -100,12 +106,11 @@ struct mapa
 	int NumeroZonasAceleracionCircular;		// Number of round acceleration zones
 	struct zona_aceleracion_circular *ZonasAceleracionCircular;	// Pointer to round acceleration zone memory area
 
-	char RutaImagenDescMenu[255];			// Nuevo 12/4/2020 - Path to image describing the map for the menu
-	bool RutaImagenDescMenu_Presente;		// Nuevo 12/4/2020
+	char RutaImagenDescMenu[255];			// Path to image describing the map for the menu
+	bool RutaImagenDescMenu_Presente;		// Path to image describing the map for the menu is present
 };
 
 
-// Pruebas 8/4/2020 (TODO)
 struct ConjuntoMapas		// Level set
 {
 	char Directorio[255];			// Level set directory name
@@ -134,29 +139,29 @@ struct InfoMapas		// Level info
 {
 	char RutaMapa[255];			// Array of paths to maps inside level set (defined in level list inside directory)
 	struct mapa DatosMapa;			// Map information array for levels inside level set
-	bool mapa_definido_OK;
-	SDL_Texture* TexturaNombreMapa;
-	int TexturaNombreMapa_DimX;
-	int TexturaNombreMapa_DimY;
+	bool mapa_definido_OK;			// Map correctly defined
+	SDL_Texture* TexturaNombreMapa;		// Texture with map name
+	int TexturaNombreMapa_DimX;		// Texture with map name, X size
+	int TexturaNombreMapa_DimY;		// Texture with map name, Y size
 	SDL_Texture* TexturaDescripcionMapa;	// Map description texture
-	int TexturaDescripcionMapa_DimX;
-	int TexturaDescripcionMapa_DimY;
+	int TexturaDescripcionMapa_DimX;	// Map description texture, X size
+	int TexturaDescripcionMapa_DimY;	// Map description texture, Y size
 	SDL_Texture* TexturaImagenMapa;		// Map image SDL2 texture pointer
 	int TexturaImagenMapa_DimX;		// Map image SDL2 texture, X image size
 	int TexturaImagenMapa_DimY;		// Map image SDL2 texture, Y image size
-	SDL_Texture* TexturaModoGiro;
+	SDL_Texture* TexturaModoGiro;		// Rotation mode texture
 	int TexturaModoGiro_DimX;
 	int TexturaModoGiro_DimY;
-	SDL_Texture* TexturaAnguloMaximo;
+	SDL_Texture* TexturaAnguloMaximo;	// Maximum angle texture
 	int TexturaAnguloMaximo_DimX;
 	int TexturaAnguloMaximo_DimY;
-	SDL_Texture* TexturaGravedad;
+	SDL_Texture* TexturaGravedad;		// Gravity texture
 	int TexturaGravedad_DimX;
 	int TexturaGravedad_DimY;
-	SDL_Texture* TexturaTiempo;
+	SDL_Texture* TexturaTiempo;		// Time texture
 	int TexturaTiempo_DimX;
 	int TexturaTiempo_DimY;
-	SDL_Texture* TexturaNumeracion;
+	SDL_Texture* TexturaNumeracion;		// Numbering texture (ex: 1/8)
 	int TexturaNumeracion_DimX;
 	int TexturaNumeracion_DimY;
 };

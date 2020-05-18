@@ -1,13 +1,14 @@
 #define PI 3.1416
 
 // Tipos de interseccion circulo - segmento
+// Types of circle-segment intersection
 enum tipo_interseccion_circulo_segmento 
 { 	
-	sin_interseccion=0,			// 0 - El circulo no toca el segmento en ningun sitio.
-	interseccion_extremo_start=1,		// 1 - El circulo toca el segmento en el extremo A.
-	interseccion_central=2,			// 2 - El cirtulo toca el segmento en un punto central cualquiera (entre los extremos).
-	interseccion_extremo_end=3,		// 3 - El circulo toca el segmento en el extremo B.
-	interseccion_atravesado=4		// 4 - El circulo ha atravesado el segmento sin tocarlo
+	sin_interseccion=0,			// 0 - El circulo no toca el segmento en ningun sitio. --- No intersection
+	interseccion_extremo_start=1,		// 1 - El circulo toca el segmento en el extremo A. --- Circle touches segment on "A" end
+	interseccion_central=2,			// 2 - El cirtulo toca el segmento en un punto central cualquiera (entre los extremos). --- Circle touches on any point that is not an end
+	interseccion_extremo_end=3,		// 3 - El circulo toca el segmento en el extremo B. --- Circle touches segment on "B" end
+	interseccion_atravesado=4		// 4 - El circulo ha atravesado el segmento sin tocarlo --- Circle has gone through the segment without touching
 };
 
 

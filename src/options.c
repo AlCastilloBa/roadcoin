@@ -8,7 +8,7 @@
 
 //#define DEBUG_INFO
 
-struct opciones CargarArchivoOpciones()
+struct opciones CargarArchivoOpciones()		// Load options file
 {
 	struct opciones opciones_cargadas;
 
@@ -36,7 +36,7 @@ struct opciones CargarArchivoOpciones()
 		#endif
 		if ( (linea_leida[0] == '#') || (linea_leida[0] == '\n') || (strlen(linea_leida)==0) )	//lo de ver si está vacia no funciona
 		{
-			//Es un comentario, no hacer nada
+			//Es un comentario, no hacer nada -- This is a remark, nothing has to be done
 			#ifdef DEBUG_INFO
 			printf("Linea %d es un comentario\n", linea );
 			#endif
@@ -66,7 +66,7 @@ struct opciones CargarArchivoOpciones()
 							#endif
 							break;
 						default:
-							// Valor no válido, se toma el valor por defecto
+							// Valor no válido, se toma el valor por defecto --- Invalid value, using default value
 							fullscreen_ok = false;
 							#ifdef DEBUG_INFO
 							printf("Opciones: Linea %d, fullscreen tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
@@ -135,7 +135,7 @@ struct opciones CargarArchivoOpciones()
 							#endif
 							break;
 						default:
-							// Valor no válido, se toma el valor por defecto
+							// Valor no válido, se toma el valor por defecto --- Invalid value, using default value
 							wireframe_ok = false;
 							#ifdef DEBUG_INFO
 							printf("Opciones: Linea %d, wireframe tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
@@ -172,7 +172,7 @@ struct opciones CargarArchivoOpciones()
 							#endif
 							break;
 						default:
-							// Valor no válido, se toma el valor por defecto
+							// Valor no válido, se toma el valor por defecto --- Invalid value, using default value
 							textured_objects_ok = false;
 							#ifdef DEBUG_INFO
 							printf("Opciones: Linea %d, textured_objects tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
@@ -225,7 +225,7 @@ struct opciones CargarArchivoOpciones()
 							#endif
 							break;
 						default:
-							// Valor no válido, se toma el valor por defecto
+							// Valor no válido, se toma el valor por defecto --- Invalid value, using default value
 							music_enabled_ok = false;
 							#ifdef DEBUG_INFO
 							printf("Opciones: Linea %d, music_enabled tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
@@ -262,7 +262,7 @@ struct opciones CargarArchivoOpciones()
 							#endif
 							break;
 						default:
-							// Valor no válido, se toma el valor por defecto
+							// Valor no válido, se toma el valor por defecto --- Invalid value, using default value
 							sound_enabled_ok = false;
 							#ifdef DEBUG_INFO
 							printf("Opciones: Linea %d, sound_enabled tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
@@ -299,7 +299,7 @@ struct opciones CargarArchivoOpciones()
 							#endif
 							break;
 						default:
-							// Valor no válido, se toma el valor por defecto
+							// Valor no válido, se toma el valor por defecto --- Invalid value, using default value
 							map_rot_makes_coin_fly_ok = false;
 							#ifdef DEBUG_INFO
 							printf("Opciones: Linea %d, map_rot_makes_coin_fly tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
@@ -336,7 +336,7 @@ struct opciones CargarArchivoOpciones()
 							#endif
 							break;
 						default:
-							// Valor no válido, se toma el valor por defecto
+							// Valor no válido, se toma el valor por defecto --- Invalid value, using default value
 							limit_coin_speed_ok = false;
 							#ifdef DEBUG_INFO
 							printf("Opciones: Linea %d, limit_coin_speed tiene un valor no permitido, se tomará el valor por defecto. \n", linea);
@@ -352,7 +352,7 @@ struct opciones CargarArchivoOpciones()
 				}
 			}
 			/////////////////////////////////////////////////////////////////////
-			// Seguir añadiendo opciones aqui
+			// Seguir añadiendo opciones aqui --- Add new options here
 			/////////////////////////////////////////////////////////////////////
 			else
 			{
@@ -367,6 +367,7 @@ struct opciones CargarArchivoOpciones()
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// En caso de que falte algo, se toman los valores por defecto.
+	// If anything fails, default values will be used
 	if (fullscreen_ok == false)
 	{
 		printf("Opciones: Falta fullscreen. Se toma el valor por defecto.\n");
@@ -429,10 +430,11 @@ struct opciones CargarArchivoOpciones()
 
 
 
-void GuardarArchivoOpciones ( struct opciones opciones_a_guardar )
+void GuardarArchivoOpciones ( struct opciones opciones_a_guardar )		// Save options in file
 {
 	FILE *archivo;
 	// Abrir archivo como escritura, sobreescribir todo el contenido
+	// Open file as "write", overwrite all existing contents.
 	archivo = fopen( "settings", "w" );
 	if (archivo == NULL)
 	{
@@ -440,7 +442,7 @@ void GuardarArchivoOpciones ( struct opciones opciones_a_guardar )
 		exit(-1);
 	}
 
-	// Escribir las lineas una a una
+	// Escribir las lineas una a una --- Write lines, line per line
 	if ( opciones_a_guardar.fullscreen )
 		fprintf( archivo, "fullscreen=1\n" );
 	else

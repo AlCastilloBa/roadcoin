@@ -1,7 +1,7 @@
 #include <SDL_mixer.h>
 
 
-void Volumen_Chunk_Escala( Mix_Chunk* sonido, double valor, double maximo, double minimo)
+void Volumen_Chunk_Escala( Mix_Chunk* sonido, double valor, double maximo, double minimo)		// Set Sound "Chunk" Volume according to a scale
 {
 	// Esta función ajusta el volumen de un sonido particular, escalando una magnitud entre dos valores.
 	// 	Valor: magnitud de la que dependerá el volumen del sonido

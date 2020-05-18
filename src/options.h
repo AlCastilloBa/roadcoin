@@ -20,7 +20,7 @@ struct opciones
 	bool sound_enabled;
 
 	// Opciones de juego --- Game options
-	bool map_rot_makes_coin_fly;	// Giro del mapa hace que la moneda vuele (DIFICIL)
+	bool map_rot_makes_coin_fly;	// Giro del mapa hace que la moneda vuele (DIFICIL) --- Copin rotatio makes the coin fly (HARD)
 	bool limit_coin_speed;
 
 };

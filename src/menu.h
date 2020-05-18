@@ -1,21 +1,22 @@
 
 // Listado de las pantallas del menu principal
+// Main menu scren list
 enum pantalla_menu_principal
 {
 	menu_bienvenida,			// Welcome screen.
-	menu_principal,				// Incluye botones: jugar, opciones, creditos, salir
-	menu_jugar,				// Incluye botones: Campañas, Practicar
+	menu_principal,				// Main menu
+	menu_jugar,				// Play menu
 	menu_niveles_provisional,		// Temporary level select page (for debugging purposes only )
 	menu_elige_conjunto_niveles,		// Select level set.
 	menu_elige_nivel,			// Select level (from one level set).
 	menu_practicar,
-	menu_opciones,				// Incluye botones: Video, Sonido, Controles, Juego, Idioma, Atras
-	menu_creditos,
-	menu_opc_video,
-	menu_opc_sonido,			// Incluye botones: Sonido, Musica
-	menu_opc_control,
-	menu_opc_juego,
-	meno_opc_idioma,
+	menu_opciones,				// Options
+	menu_creditos,				// Credits
+	menu_opc_video,				// Video options
+	menu_opc_sonido,			// Sound options
+	menu_opc_control,			// Control options
+	menu_opc_juego,				// Game options
+	meno_opc_idioma,			// Language options
 	NUM_TOTAL_PANTALLAS_MENU
 };
 
@@ -24,17 +25,17 @@ enum pantalla_menu_principal
 // Menu buttons list
 enum listado_botones
 {
-	// Pantalla bienvenida
+	// Pantalla bienvenida --- Welcome screen
 	boton_bienv_logo,	// Welcome screen, game logo
 	boton_bienv_pulse,	// Welcome screen, press any key
 	
-	// Menu principal
+	// Menu principal --- Main menu
 	boton_jugar,		// Play button
 	boton_opciones,		// Option button
 	boton_creditos,		// Credits button
 	boton_salir,		// Quit button
 
-	// Menu opciones
+	// Menu opciones -- Options menu
 	boton_video,		// Video options button
 	boton_sonido,		// Sound options button
 	boton_controles,	// Controls options button
@@ -42,31 +43,31 @@ enum listado_botones
 	boton_idioma,		// Language options button
 	boton_opc_atras,	// Go back
 
-	// Menu opciones video
+	// Menu opciones video --- Video options menu
 	boton_fullscreen,	// Fullscreen toggle button
 	boton_wireframe,	// Wireframe toggle button
 	boton_textured_objects,	// Textured lines button
 	boton_opcvid_atras,	// Go back
 
-	// Menu opciones sonido
+	// Menu opciones sonido --- Sound options menu
 	boton_activar_sonido,		// Enable sound button
 	boton_activar_musica,		// Enable music button
 	boton_opcsnd_atras,		// Go back
 
-	// Menu opciones juego
+	// Menu opciones juego --- Game options menu
 	boton_moneda_puede_volar,	// Map rotation makes coin fly
 	boton_limitar_vel_moneda,	// Limit coin speed button
 	boton_opcjgo_atras,		// Go back
 
-	// Menu opciones control
+	// Menu opciones control --- Control options menu
 	boton_sensibilidad_raton,	// Mouse sensitivity button
 	boton_opcctl_atras,		// Go back
 
-	// Menu seleccion niveles provisional
+	// Menu seleccion niveles provisional --- Temporary level select menu
 	boton_provisional_nivel_01, boton_provisional_nivel_02, boton_provisional_nivel_03, boton_provisional_nivel_04, boton_provisional_nivel_05,
 	boton_nivel_prov_atras,
 
-	// Menu seleccion conjunto de niveles
+	// Menu seleccion conjunto de niveles --- Level set selection menu
 	boton_conj_mapas_flechaizq,		// Left arrow
 	boton_conj_mapas_flechader,		// Right arrow
 	boton_conj_mapas_seleccionar,		// Select
@@ -75,7 +76,8 @@ enum listado_botones
 	boton_conj_mapas_directorio,		// Directory name
 	boton_conj_mapas_descripcion,		// Description
 	boton_conj_mapas_numeracion,		// Numbering (ex. 7/9)
-	// Menu seleccion de mapa (de un conjunto de mapas)
+
+	// Menu seleccion de mapa (de un conjunto de mapas) --- Level selection menu (inside a level set)
 	boton_mapa_flechaizq,			// Left arrow
 	boton_mapa_flechader,			// Right arrow
 	boton_mapa_jugar,			// Play selected level
@@ -90,15 +92,15 @@ enum listado_botones
 	boton_mapa_numeracion			// Numbering (ex. 7/9)
 };
 
-enum tipo_boton
+enum tipo_boton		// Button type
 {
 	boton_pulsar,				// Push button (OK)
 	boton_conmutar,				// Toggle button (OK)
-	boton_valor_numerico,			// Numeric value input button (TODO)
-	boton_seleccionar_lista			// Select from list button (TODO)
+	boton_valor_numerico,			// Numeric value input button
+	boton_seleccionar_lista			// Select from list button
 };
 
-struct boton_menu
+struct boton_menu	// Menu button
 {
 	// Generales
 	int identificador_boton;					// Button identifier number

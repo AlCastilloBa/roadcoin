@@ -7,7 +7,7 @@ bool inicializar_ventana_juego(void);
 
 bool loadMedia(void);
 
-bool loadMainGameLoopMedia(char*, char*, char*, char*, bool, char*, char*);
+bool loadMainGameLoopMedia(struct mapa);
 
 bool cerrar_intro(void);
 

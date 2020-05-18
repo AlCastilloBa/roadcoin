@@ -5,20 +5,18 @@
 #include "geometry.h"
 
 
-//#define PI 3.1416
-
 #define MIN(a,b) (((a)<(b))?(a):(b))		// Nota: no validas con operadores ++, -- , etc
-#define MAX(a,b) (((a)>(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))		// Note: not valid with operators ++, --, etc
 
 
-struct punto GiraPunto ( struct punto centro_giro, struct punto punto_inicial, double angulo)
+struct punto GiraPunto ( struct punto centro_giro, struct punto punto_inicial, double angulo)	// Rotate point
 {
-	// Matriz de giro 2D
-	// Si el giro fuese respecto al origen:
+	// Matriz de giro 2D --- 2D rotation matrix
+	// Si el giro fuese respecto al origen: --- If we rotated around the origin
 	//	[ x' ]   [ cos a   - sin a ] [ x ]
 	//	[ y' ] = [ sin a     cos a ] [ y ]
-	// Como no es respecto al origen:
-	//	[ x' - xo ]   [ cos a   - sin a ] [ x - xo ]	((Revisar))
+	// Como no es respecto al origen: --- But since we do not rotate around the origin
+	//	[ x' - xo ]   [ cos a   - sin a ] [ x - xo ]
 	//	[ y' - yo ] = [ sin a     cos a ] [ y - yo ]
 	struct punto punto_final;
 	double coseno, seno;
@@ -32,10 +30,11 @@ struct punto GiraPunto ( struct punto centro_giro, struct punto punto_inicial, d
 	return punto_final;
 }
 
-void GiraMapaCompleto( struct segmento* inicial, struct segmento* girado, struct punto centro_giro, int num_segmentos, double angulo )
+void GiraMapaCompleto( struct segmento* inicial, struct segmento* girado, struct punto centro_giro, int num_segmentos, double angulo )	// Rotate complete map
 {
 	int segm;
 	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
+	// SLOW VERSION TO TEST, THIS CAN BE OPTIMIZED (reducing the number of times sin and cos are calculated)
 	for ( segm = 0 ; segm < num_segmentos ; segm++ )
 	{
 		girado[segm].start = GiraPunto( centro_giro , inicial[segm].start, angulo );
@@ -44,9 +43,10 @@ void GiraMapaCompleto( struct segmento* inicial, struct segmento* girado, struct
 
 }
 
-void CopiaSegmentosSinGiro( struct segmento* origen, struct segmento* destino, int num_segmentos )
+void CopiaSegmentosSinGiro( struct segmento* origen, struct segmento* destino, int num_segmentos )	// Copy segments without rotating
 {
 	// Para el caso sin rotación, simplemente copia los puntos sin aplicar un giro
+	// For cases without rotation, copies points without rotating
 	int segm;
 	for ( segm = 0 ; segm < num_segmentos ; segm++ )
 	{
@@ -55,10 +55,11 @@ void CopiaSegmentosSinGiro( struct segmento* origen, struct segmento* destino, i
 	}
 }
 
-void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct punto centro_giro, int num_bumpers, double angulo )
+void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct punto centro_giro, int num_bumpers, double angulo )	// Rotate bumpers
 {
 	int bumper;
 	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
+	// SLOW VERSION TO TEST, THIS CAN BE OPTIMIZED (reducing the number of times sin and cos are calculated)
 	if ( num_bumpers != 0 )
 	{
 		for ( bumper = 0 ; bumper < num_bumpers ; bumper++ )
@@ -68,10 +69,11 @@ void GiraBumpers( struct pinball_bumper* inicial, struct punto* girado, struct p
 	}
 }
 
-void GiraZonasAcelCirc( struct zona_aceleracion_circular* inicial, struct punto* girado, struct punto centro_giro, int num_zonas_acel, double angulo )	// Nuevo 22/3/2020
+void GiraZonasAcelCirc( struct zona_aceleracion_circular* inicial, struct punto* girado, struct punto centro_giro, int num_zonas_acel, double angulo )	// Rotate round acceleration areas
 {
 	int zona_acel;
 	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
+	// SLOW VERSION TO TEST, THIS CAN BE OPTIMIZED (reducing the number of times sin and cos are calculated)
 	if ( num_zonas_acel != 0 )
 	{
 		for ( zona_acel = 0 ; zona_acel < num_zonas_acel ; zona_acel++ )
@@ -81,9 +83,10 @@ void GiraZonasAcelCirc( struct zona_aceleracion_circular* inicial, struct punto*
 	}
 }
 
-void CopiaBumpersSinGiro( struct pinball_bumper* origen, struct punto* destino, int num_bumpers )
+void CopiaBumpersSinGiro( struct pinball_bumper* origen, struct punto* destino, int num_bumpers )	// Copy bumpers without rotating
 {
 	// Para el caso sin rotación, simplemente copia los puntos sin aplicar un giro
+	// For cases without rotation, copies points without rotating
 	int bumper;
 	if ( num_bumpers != 0 )
 	{
@@ -94,9 +97,10 @@ void CopiaBumpersSinGiro( struct pinball_bumper* origen, struct punto* destino, 
 	}
 }
 
-void CopiaZonasAcelCircSinGiro( struct zona_aceleracion_circular* origen, struct punto* destino, int num_zonas_acel )
+void CopiaZonasAcelCircSinGiro( struct zona_aceleracion_circular* origen, struct punto* destino, int num_zonas_acel )	// Copy round acceleration zones without rotating
 {
 	// Para el caso sin rotación, simplemente copia los puntos sin aplicar un giro
+	// For cases without rotation, copies points without rotating
 	int zona_acel;
 	if ( num_zonas_acel != 0 )
 	{
@@ -108,9 +112,10 @@ void CopiaZonasAcelCircSinGiro( struct zona_aceleracion_circular* origen, struct
 }
 
 
-float AnguloSegmento (struct segmento segm )
+float AnguloSegmento (struct segmento segm )	// Calculate segment angle
 {
 	// Nota: Criterio de signos. Angulo positivo si va de X+ a Y+
+	// Note: Angle sign criteria. Angle positive if it goes from +X to Y+.
 	return atan2( segm.end.y - segm.start.y , segm.end.x - segm.start.x );
 }
 
@@ -119,10 +124,10 @@ float AnguloSegmento (struct segmento segm )
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-double ProductoEscalar2D (struct punto A, struct punto B)
+double ProductoEscalar2D (struct punto A, struct punto B)	// 2D dot product
 {
-	// Nota función puede sufrir "cancelaciones catastróficas"
-	// En caso de problemas, usar "Kahan summation algorithm"
+	// Nota función puede sufrir "cancelaciones catastróficas" --- Note: this function implementation can suffer "catastrophic cancellations"
+	// En caso de problemas, usar "Kahan summation algorithm" --- In case problems appear, use "Kahan summation algorithm" instead
 	// A*B = |A| |B| cos(a)
 	double resultado;
 	resultado = A.x * B.x + A.y * B.y;
@@ -130,19 +135,21 @@ double ProductoEscalar2D (struct punto A, struct punto B)
 } 
 
 
-double ProductoEscalarPerpendicular2D (struct punto A, struct punto B)
+double ProductoEscalarPerpendicular2D (struct punto A, struct punto B)	// 2D perpendicular dot product
 {
-	// Nota: no confundir con el producto escalar
+	// Nota: no confundir con el producto escalar --- Note: do not mistake with dot product
 	// A*B = |A| |B| sin(a)
 	double resultado;
 	resultado = A.x * B.y - A.y * B.x;
 	return resultado;
 }
 
-bool ProyeccionEstaEnSegmento( struct punto P, struct punto A, struct punto B)
+bool ProyeccionEstaEnSegmento( struct punto P, struct punto A, struct punto B)		// Proyection Is In Segment?
 {
 	// Esta función indica si la proyección de P en la recta definida por AB (que es P'), está dentro
 	// del segmento entre A y B.
+	// This function tests if the projection of P on the line defined by A and B (this is P'), is inside
+	// the segment between A and B.
 
 	/*Consider the vectors e1 = (v2, v1) and e2 = (pv1).
 	    If p' matches with v1 (this means both have the same location), then
@@ -167,9 +174,10 @@ bool ProyeccionEstaEnSegmento( struct punto P, struct punto A, struct punto B)
 	return (ProductoEscalar > 0 && ProductoEscalar < AreaRectangulo);
 }
 
-bool PuntoEstaEnSegmento (struct punto P, struct punto A, struct punto B)
+bool PuntoEstaEnSegmento (struct punto P, struct punto A, struct punto B)	// Point is in segment?
 {
 	// Esta función indica si un punto P está en el segmento definido por AB.
+	// This function checks if a point P is in a segment defined by AB.
 
 	int dx1, dy1;
 	double epsilon;
@@ -189,10 +197,11 @@ bool PuntoEstaEnSegmento (struct punto P, struct punto A, struct punto B)
 	
 }
 
-struct punto PuntoProyectadoSobreRecta( struct punto P, struct punto A, struct punto B)
+struct punto PuntoProyectadoSobreRecta( struct punto P, struct punto A, struct punto B)		// Point projected on line
 {
 	// Esta función calcula las coordenadas de un punto p_prima que es la proyección de P sobre la recta
 	// definida por A y B.
+	// This function calculates the coordinates of a point p', that is the projection of P on the line defined by A and B.
 
 	struct punto e1, e2, p_prima;
 	double valorProdEscalar, long_e1_cuad;
@@ -210,23 +219,27 @@ struct punto PuntoProyectadoSobreRecta( struct punto P, struct punto A, struct p
 	return p_prima;
 }
 
-double LongitudVector_Cuadrado( struct punto v, struct punto w)
+double LongitudVector_Cuadrado( struct punto v, struct punto w)		// Vector magnitude squared
 {
 	// Calcula el cuadrado del modulo de un vector
+	// Calculates the sqare of the magnitude of a vector
 	return (w.x-v.x)*(w.x-v.x) + (w.y-v.y)*(w.y-v.y);
 }
 
-double LongitudVector( struct punto v, struct punto w)
+double LongitudVector( struct punto v, struct punto w)		// Vector magnitude
 {
 	// Calcula el modulo de un vector
 	// Es lenta, por tener una raiz cuadrada. Intentar evitar y usar LongitudVector_Cuadrado en su lugar cuando sea posible.
+	// Calculates the vector magnitude
+	// This is slow (doe to the square root). Try to avoid using it and use the prevoius function instead, when possible.
 	return sqrt(  (w.x-v.x)*(w.x-v.x) + (w.y-v.y)*(w.y-v.y)  );
 }
 
 
-double DistanciaPuntoRecta_Cuadrado( struct punto P, struct punto A, struct punto B)
+double DistanciaPuntoRecta_Cuadrado( struct punto P, struct punto A, struct punto B)	// Distante point from line, squared
 {
 	// Esta función calcula la distancia entre un punto P y una recta definida por A B.
+	// This function calculates the distance between a point P and a line defined by A and B.
 	struct punto P_proyectado;
 
 	P_proyectado = PuntoProyectadoSobreRecta( P, A, B);
@@ -235,22 +248,28 @@ double DistanciaPuntoRecta_Cuadrado( struct punto P, struct punto A, struct punt
 
 //--------------------------------------------------------------------------------------------------
 
-enum tipo_interseccion_circulo_segmento  CirculoTocaSegmento( struct punto centro_circulo, double radio_circulo, struct punto A, struct punto B)
+enum tipo_interseccion_circulo_segmento  CirculoTocaSegmento( struct punto centro_circulo, double radio_circulo, struct punto A, struct punto B)	// Interference type between circle and line segment
 {
 	//Resultado:
 	// 0 - El circulo no toca el segmento en ningun sitio.
 	// 1 - El circulo toca el segmento en el extremo A.
 	// 2 - El cirtulo toca el segmento en un punto central cualquiera (entre los extremos).
 	// 3 - El circulo toca el segmento en el extremo B.
+
+	// Result:
+	// 0 - Circle does not touche the line segment.
+	// 1 - Circle touches the line segment in A point.
+	// 2 - Circle touches the segment in a central point.
+	// 3 - Circle touches the segment in B point.
 	if ( ProyeccionEstaEnSegmento( centro_circulo, A, B) == true )
 	{
 		if (DistanciaPuntoRecta_Cuadrado( centro_circulo, A, B) < (radio_circulo*radio_circulo) )
 		{
-			return interseccion_central;	// En este caso, toca en punto central
+			return interseccion_central;	// En este caso, toca en punto central --- In this case, it touches in a central point
 		}
 		else
 		{
-			return sin_interseccion;	// No toca
+			return sin_interseccion;	// No toca --- It does not touch
 		}
 	}
 	if (LongitudVector_Cuadrado(A, centro_circulo)  <= (radio_circulo*radio_circulo) )
@@ -264,9 +283,10 @@ enum tipo_interseccion_circulo_segmento  CirculoTocaSegmento( struct punto centr
 	return sin_interseccion;
 }
 
-bool CirculoTocaSegmentoExcluyendoExtremos( struct punto centro_circulo, double radio_circulo, struct punto A, struct punto B)
+bool CirculoTocaSegmentoExcluyendoExtremos( struct punto centro_circulo, double radio_circulo, struct punto A, struct punto B)	// Circle touches Segment Excluding Ends
 {
-	//Verificamos si el circulo toca el segmento, solo considerando si la proyeccion del centro esta en el segmento
+	// Verificamos si el circulo toca el segmento, solo considerando si la proyeccion del centro esta en el segmento
+	// Check if the circle touches the line segment, but only if the projection of the circle center is on the line segment
 	if ( ProyeccionEstaEnSegmento( centro_circulo, A, B) == false )
 	{
 		return false;
@@ -284,6 +304,7 @@ bool CirculoTocaSegmentoExcluyendoExtremos( struct punto centro_circulo, double 
 //------------------------------------------------------------------------------------------------
 
 // Las siguientes funciones están sacadas (y adaptadas) de la siguiente página:
+// The following functions are taken (and adapted) from this website:
 // https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 
 // Given three colinear points p, q, r, the function checks if
@@ -348,9 +369,10 @@ bool doIntersect(struct punto p1, struct punto q1, struct punto p2, struct punto
 
 //-----------------------------------------------------------------------------------------------------
 
-struct punto CalculaPosTangenteACentroSegmento ( struct punto A, struct punto B, struct punto centro_circulo, double radio)
+struct punto CalculaPosTangenteACentroSegmento ( struct punto A, struct punto B, struct punto centro_circulo, double radio)	// Calculate Position Tangent To Segment Center
 { 
 	// Calcula la posición tangente al centro del segmento
+	// Calculates position tangent to line segment center
 
 	struct punto nuevo_centro_tangente, proyeccion_centro_sobre_recta;
 	double distancia_centro_recta;
@@ -365,9 +387,10 @@ struct punto CalculaPosTangenteACentroSegmento ( struct punto A, struct punto B,
 }
 
 
-struct punto CalculaPosTangenteAExtremoSegmento ( struct punto extremo, struct punto centro_circulo, double radio)
+struct punto CalculaPosTangenteAExtremoSegmento ( struct punto extremo, struct punto centro_circulo, double radio)	// Calculate Posiiton Tangent To Segment End
 { 
 	// Calcula la posición tangente al extremo del segmento
+	// Calculate tangent position to segment end
 
 	struct punto nuevo_centro_tangente;
 	double distancia_centrocirculo_extremosegmento;
@@ -386,6 +409,7 @@ struct punto CalculaPosTangenteAExtremoSegmento ( struct punto extremo, struct p
 double WrapAngle_0_2pi (double angulo)
 {
 	// Entrada en radianes, salida en radianes entre 0 y 2*pi
+	// Input in radians, output in radians betewwn 0 and 2*pi
 	angulo = fmod(angulo,2*PI);
 	if (angulo < 0)
         	angulo += 2*PI;
@@ -395,6 +419,7 @@ double WrapAngle_0_2pi (double angulo)
 double WrapAngle_0_360 (double angulo)
 {
 	// Entrada en grados, salida en grados entre 0 y 360
+	// Input in degrees, output in degrees between 0 and 360.
 	angulo = fmod(angulo,360);
 	if (angulo < 0)
         	angulo += 360;
@@ -420,20 +445,25 @@ double WrapAngle_m180_180 (double angulo)
 
 ///////////////////////////////////////////////
 // Nuevo 5/2/2020
-float AnguloRecta (struct punto p, struct punto q )
+float AnguloRecta (struct punto p, struct punto q )		// Line angle
 {
 	// Similar a "AnguloSegmento", pero la recta está definida por dos puntos
 	// Nota: Criterio de signos. Angulo positivo si va de X+ a Y+
 	// Nota: (TODO) Pendiente de probar.
+
+	// Similar to "AnguloSegmento" function, but the line is defined with two points.
+	// Note: Sign criteria. Angle is positive if goes from X+ to Y+
 	return atan2( q.y - p.y , q.x - p.x );
 }
 
 // Nuevo 9/2/2020
-struct punto CalculaPosTangenteCirculoCirculo ( struct punto centro_circulo_A, struct punto centro_circulo_B, double radio_A, double radio_B)
+struct punto CalculaPosTangenteCirculoCirculo ( struct punto centro_circulo_A, struct punto centro_circulo_B, double radio_A, double radio_B)	// Calculate Position Tangent Circle to Circle
 { 
 	// Esta función calcula la posición del centro del circulo A para que sea tangente al circulo B (siguiendo la linea recta que marcan actualmente).
 	// Se considera que el circulo B es fijo, y estamos buscando la posición tangente al circulo B.
 
+	// This function calculates the circle A center's position that makes circles A and B be tangent (following the line that currently joins their centers).
+	// We suppose circle B is fixed, and we are looking for the position tangent to circle B.
 
 	struct punto nuevo_centro_circulo_B;
 	double distancia_centros;
@@ -449,17 +479,20 @@ struct punto CalculaPosTangenteCirculoCirculo ( struct punto centro_circulo_A, s
 //////////////////////////////////////////////////////////////////////
 // Nuevo 23/2/2020
 // Los siguientes algoritmos están extraídos de la página:
+// The following algorithms have been taken from this website:
 // https://blackpawn.com/texts/pointinpoly/default.html
 
 double ProductoVectorial2D_ComponenteZ( struct punto A, struct punto B )	// Z component of the cross product of two 2D vectors
 {
 	// Esta funcion realiza el producto vectorial de dos vectores 2D, y solo devuelve la componente Z
+	// This function computes the cross product of two 2D vectors, and return its Z component
 	return (A.x*B.y - A.y*B.x);
 }
 
-bool MismoLado(struct punto P1, struct punto P2, struct punto A, struct punto B)
+bool MismoLado(struct punto P1, struct punto P2, struct punto A, struct punto B)	// Same Side
 {
 	// Esta funcion indica si los puntos P1 y P2 están al mismo lado (o no) de la linea definida por los puntos A y B
+	// This function checks if points P1 and P2 are on the same side (or not) of the line defined between points A and B.
 	float prod_vect_1, prod_vect_2;
 	struct punto B_A =  { B.x - A.x  , B.y - A.y  };
 	struct punto P1_A = { P1.x - A.x , P1.y - A.y };
@@ -468,19 +501,20 @@ bool MismoLado(struct punto P1, struct punto P2, struct punto A, struct punto B)
 	prod_vect_1 = ProductoVectorial2D_ComponenteZ(B_A, P1_A);
 	prod_vect_2 = ProductoVectorial2D_ComponenteZ(B_A, P2_A);
 
-	if ( prod_vect_1 * prod_vect_2 >= 0 )	// Si prod_vect_1 y prod_vect_2 tienen el mismo signo....
+	if ( prod_vect_1 * prod_vect_2 >= 0 )	// Si prod_vect_1 y prod_vect_2 tienen el mismo signo.... --- If prod_vect_1 and prod_vect_2 have the same sign...
 	{
 		return true;
 	}
-	else // Si tienen signos distintos...
+	else // Si tienen signos distintos... --- If they have different signs
 	{
 		return false;
 	}
 }
 
-bool PuntoDentroDeTriangulo(struct punto P, struct punto A, struct punto B,struct punto C)
+bool PuntoDentroDeTriangulo(struct punto P, struct punto A, struct punto B,struct punto C)	// Point inside triangle
 {
 	// Verificar si un punto P está dentro de un triangulo definido por los vértices A,B,C
+	// Check if a point P is inside a triangle defined through its vertices A,B,C
 	if ( MismoLado(P,A, B,C) && MismoLado(P,B, A,C) && MismoLado(P,C, A,B) )
 	{ 
 		return true;
@@ -491,7 +525,7 @@ bool PuntoDentroDeTriangulo(struct punto P, struct punto A, struct punto B,struc
 	}
 }
 
-double AnguloRadEntreDosSegmentos ( struct segmento segm_A, struct segmento segm_B )
+double AnguloRadEntreDosSegmentos ( struct segmento segm_A, struct segmento segm_B )	// Angle (in radians) between two segments
 {
 	// Esta función devuelve el angulo (en radianes) que forman dos segmentos
 	// Nuevo 18/4/2020
