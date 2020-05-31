@@ -1343,7 +1343,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 								// Note: this makes the gameplay harder, therefore it is coded as a game option
 								if (opciones_juego.map_rot_makes_coin_fly)
 								{
-									if ( abs( angulo-angulo_anterior) >= 2 /*grados*/)
+									if ( fabs( angulo-angulo_anterior) >= 2 /*grados*/)
 									{
 										// La siguiente formula suma una velocidad:
 										// -  con sentido normal al segmento en contacto, y 
@@ -1486,7 +1486,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			if ( opciones_juego.sound_enabled )
 			{
 				float diferencia_modulos_velocidades;
-				diferencia_modulos_velocidades = abs (modulo_vector_velocidad_cuadrado(velocidad_real_moneda_anterior) - modulo_vector_velocidad_cuadrado(velocidad_real_moneda) );
+				diferencia_modulos_velocidades = fabs (modulo_vector_velocidad_cuadrado(velocidad_real_moneda_anterior) - modulo_vector_velocidad_cuadrado(velocidad_real_moneda) );
 
 				if ( contacto_con_algun_segmento && ( diferencia_modulos_velocidades > 0.1*mapa_original.Gravedad*mapa_original.Gravedad ) )
 				{
