@@ -48,6 +48,7 @@ Relacionados con el motor/fisicas:
 		 se queda enganchada en lugar de caer en precipicios en angulo recto. (Depende del anterior)
 [      ] Ver por que la moneda se queda pegada al techo (¿Se cancela correctamente la velocidad?) (Bug)
 [      ] En ciertas ocasiones, la moneda rebota en el final de un segmento, cuando debería caer. Investigar auq lo provoca. (Bug)
+	[      ] Verificar funcion CalculaReaccionNormalExtremoSegmento.
 [  NO  ] Hacer que los flippers puedan enviar la bola hacia abajo cuando bajan.
 		Nota: Programado y probado, pero desactivado porque los mapas no estan pensados para ello.
 [      ] Joystick.
@@ -69,7 +70,7 @@ Relacionados con el motor/fisicas:
 	[      ] Uso de llaves para abrir puertas.
 	[      ] Pulsar botones para hacer desaparecer segmentos. --> 
 	[      ] Ojo con las adyacencias, habría que recalcularlas durante el juego. Se puede hacer una funcion que las recalcule.
-
+[      ] Tests de las funciones
 
 Estetica:
 [      ] Textos: gestionar tamaño de texto en textura para que los caracteres tengan el mismo tamaño siempre. Actualmente el menu queda feo.
@@ -88,7 +89,7 @@ Motivacion para jugar:
 [      ] Premios que den puntos y que sean dificiles de coger
      (como las guindas del comecocos).
 [      ] El bucle del juego devuelve una struct con resultado (puntos, tiempo, etc). El juego guarda las estadisticas de los niveles de alguna forma (completado, tiempo record, puntos record, etc).
-[      ] Editor de niveles.
+[      ] Editor de niveles (en otro programa aparte, roadocoin-level-editor).
 
 Ideas de nuevos niveles:
 [      ] Laberinto madera con agujeros.

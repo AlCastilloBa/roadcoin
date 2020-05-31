@@ -82,4 +82,10 @@ v0.2-beta.3
 - If the level icon image is not available, a new generic image is shown instead.
 - Translate all comments into English.
 ---------------------
+- Bugfix: coin hit sound. Worked under linux but not windows (abs<>fabs).
+- Bugfix: level rotation makes coin fly. Different behavoiur between linux and windows (abs<>fabs).
+- Bugfix: Calculate normal force to segment end (abs<>fabs)
+---------------------
+
+
 
