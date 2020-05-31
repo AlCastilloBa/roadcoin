@@ -97,27 +97,27 @@ struct vector_fuerza CalculaReaccionNormalExtremoSegmento ( struct punto centro_
 	struct vector_fuerza normal;
 	angulo_radio = atan2( centro_circulo.y - extremo_segmento.y , centro_circulo.x - extremo_segmento.x );	
 
-	modulo_normal = abs( masa*gravedad*cos( PI/2 - angulo_radio ) );
+	modulo_normal = fabs( masa*gravedad*cos( PI/2 - angulo_radio ) );
 
 	if ( (centro_circulo.x >= extremo_segmento.x ) && (centro_circulo.y >= extremo_segmento.y) )	//Mayor, Mayor
 	{
-		normal.fx = abs(modulo_normal*sin(angulo_radio));	// Positivo
-		normal.fy = abs(modulo_normal*cos(angulo_radio));	// Positivo
+		normal.fx = fabs(modulo_normal*sin(angulo_radio));	// Positivo
+		normal.fy = fabs(modulo_normal*cos(angulo_radio));	// Positivo
 	}
 	else if ( (centro_circulo.x >= extremo_segmento.x ) && (centro_circulo.y < extremo_segmento.y) )	// Mayor, Menor
 	{
-		normal.fx = abs(modulo_normal*sin(angulo_radio));		// Positivo
-		normal.fy = -(abs(modulo_normal*cos(angulo_radio)));		// Negativo
+		normal.fx = fabs(modulo_normal*sin(angulo_radio));		// Positivo
+		normal.fy = -(fabs(modulo_normal*cos(angulo_radio)));		// Negativo
 	}
 	else if ( (centro_circulo.x < extremo_segmento.x ) && (centro_circulo.y < extremo_segmento.y) )		// Menor, Menor 
 	{
-		normal.fx = -(abs(modulo_normal*sin(angulo_radio)));	// Negativo
-		normal.fy = -(abs(modulo_normal*cos(angulo_radio)));	// Negativo
+		normal.fx = -(fabs(modulo_normal*sin(angulo_radio)));	// Negativo
+		normal.fy = -(fabs(modulo_normal*cos(angulo_radio)));	// Negativo
 	}
 	else if ( (centro_circulo.x < extremo_segmento.x ) && (centro_circulo.y >= extremo_segmento.y) )	// Menor, Mayor 
 	{
-		normal.fx = -(abs(modulo_normal*sin(angulo_radio)));	// Negativo
-		normal.fy = abs(modulo_normal*cos(angulo_radio));	// Positivo
+		normal.fx = -(fabs(modulo_normal*sin(angulo_radio)));	// Negativo
+		normal.fy = fabs(modulo_normal*cos(angulo_radio));	// Positivo
 	}
 	return normal;
 }
