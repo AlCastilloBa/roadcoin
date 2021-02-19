@@ -1,7 +1,10 @@
-num_levelsets=2
+num_levelsets=3
 directorio[0]=TestMaps
 descripcion[0]=Niveles de prueba
 ruta_imagen[0]=images/level_desc/test.jpg
 directorio[1]=FirstMaps
 descripcion[1]=Primer conjunto de niveles
 ruta_imagen[1]=images/level_desc/FirstMaps.png
+directorio[2]=Labyrinths
+descripcion[2]=Laberintos
+ruta_imagen[2]=images/level_desc/test.jpg
