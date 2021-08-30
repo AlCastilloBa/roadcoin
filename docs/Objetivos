@@ -89,13 +89,13 @@ Motivacion para jugar:
 [      ] Premios que den puntos y que sean dificiles de coger
      (como las guindas del comecocos).
 [      ] El bucle del juego devuelve una struct con resultado (puntos, tiempo, etc). El juego guarda las estadisticas de los niveles de alguna forma (completado, tiempo record, puntos record, etc).
-[      ] Editor de niveles (en otro programa aparte, roadocoin-level-editor).
+[ BOOM ] Editor de niveles (en otro programa aparte, roadocoin-level-editor).
 
 Ideas de nuevos niveles:
-[      ] Laberinto madera con agujeros.
+[ BOOM ] Laberinto madera con agujeros.
 [      ] Mapa estilo DonKey Kong con plataformas moviles.
 [      ] Montaña rusa.
-[      ] Cerdo hucha con un laberinto dentro.
+[ BOOM ] Cerdo hucha con un laberinto dentro.
 [      ] Bitcoin en un grafico de evolucion.
 [      ] Moneda que se va por el desague atravesando tuberias...
 [      ] Mapa basado en pacman, con comecocos que se intentan comer la moneda...
