@@ -21,6 +21,9 @@
 // #define DEBUG_INFO
 
 
+#define VERSION_JUEGO "Roadcoin, v0.1-beta3\0"
+
+
 #define PORCENTAJE_ANCHO_TITULOS 70.0
 #define PORCENTAJE_ALTO_TITULOS 16.0
 #define PORCENTAJE_ANCHO_BOTONES 70.0
@@ -67,6 +70,7 @@ SDL_Texture* gYellowLeftArrow = NULL;
 SDL_Texture* gYellowRightArrow = NULL;
 
 SDL_Texture* gGameLogo = NULL;
+SDL_Texture* gGameLogoCredits = NULL;		// (30/8/2021)
 
 Mix_Music *gMusicaMenu = NULL;
 Mix_Chunk *gSonidoClickBoton = NULL;
@@ -81,6 +85,7 @@ int gDimWhiteArrowPlusX; int gDimWhiteArrowPlusY;
 int gDimWhiteLeftArrowX; int gDimWhiteLeftArrowY;
 int gDimWhiteRightArrowX; int gDimWhiteRightArrowY;
 int gDimGameLogoX; int gDimGameLogoY;
+int gDimGameLogoCreditsX; int gDimGameLogoCreditsY;	// (30/8/2021)
 
 // Prueba 8/4/2020
 struct ConjuntoMapas* gListaConjuntosMapasJuego = NULL;	// Pointer to game level-sets list
@@ -322,6 +327,14 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	if ( gGameLogo == NULL )
 	{
 		printf( "Error al cargar el logotipo del juego.\n" ); 
+		success = false; 
+	}
+
+	// Cargar el logotipo del juego para los creditos --- Load game logo for credits screen (30/8/2021)
+	gGameLogoCredits = CargaTextura( "images/Logo_color_2.png" , &gDimGameLogoCreditsX, &gDimGameLogoCreditsY, true );
+	if ( gGameLogoCredits == NULL )
+	{
+		printf( "Error al cargar el logotipo del juego para los creditos.\n" ); 
 		success = false; 
 	}
 
@@ -732,6 +745,67 @@ bool inicializar_menu_principal(/* struct pantalla_menu* pantallas_menu_principa
 	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_opc_juego].botones_pantalla[2]) , 2, boton_opcjgo_atras, boton_pulsar, "      Atras      \0" , 1, 0 , con_relac_aspecto_no_rellenar ) )
 	{
 		printf( "Error al inicializar boton 2 en menu opciones de juego.\n" ); 
+		success = false;
+	}
+
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla creditos --- Credits screen (30/8/2021)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Pantalla creditos
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos de pantalla de creditos...\n");
+	#endif
+	if( !inicializa_datos_pantalla_menu( &(pantallas_menu_principal[menu_creditos]), menu_creditos, "Creditos\0", "images/NightMountain.png", 4, con_relac_aspecto_no_rellenar ) )
+	{
+		printf( "Error al inicializar pantalla opciones de juego.\n" ); 
+		success = false;
+	}
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 0 de pantalla de creditos...\n");
+	#endif
+	// Boton 0 - Logotipo del juego --- Game logo
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].identificador_boton = boton_creditos_logo;
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].clase_boton = boton_pulsar;
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].borde_izquierdo = 0.2*(opciones_juego.screen_x_resolution);
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].borde_derecho = 0.8*(opciones_juego.screen_x_resolution);
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].borde_arriba = 0.3*(opciones_juego.screen_y_resolution);
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].borde_abajo = 0.5*(opciones_juego.screen_y_resolution);
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].textura_boton_reposo = gGameLogoCredits;
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].textura_boton_seleccionado = gGameLogoCredits;
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].boton_anterior = 3;
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].boton_siguiente = 3;
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].ModoRepresentacion = con_relac_aspecto_no_rellenar;
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].textura_dim_x = gDimGameLogoCreditsX;
+	pantallas_menu_principal[menu_creditos].botones_pantalla[0].textura_dim_y = gDimGameLogoCreditsY;
+
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 1 de pantalla de creditos...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_creditos].botones_pantalla[1]) , 3, boton_creditos_version, boton_pulsar, VERSION_JUEGO, 3, 3 , con_relac_aspecto_no_rellenar ) )
+	{
+		printf( "Error al inicializar boton 1 en pantalla de creditos.\n" ); 
+		success = false;
+	}
+	//-----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 2 de pantalla de creditos...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_creditos].botones_pantalla[2]) , 4, boton_creditos_autor, boton_pulsar, "Alberto Castillo Baquero, 2019-2021\0" , 3, 3 , con_relac_aspecto_no_rellenar ) )
+	{
+		printf( "Error al inicializar boton 2 en pantalla de creditos.\n" ); 
+		success = false;
+	}
+	//----------------------------------------------
+	#ifdef DEBUG_INFO
+	printf("Inicializando datos boton 3 de pantalla de creditos...\n");
+	#endif
+	if (!inicializa_datos_boton ( &(pantallas_menu_principal[menu_creditos].botones_pantalla[3]) , 5, boton_creditos_atras, boton_pulsar, "      Atras      \0" , 3, 3 , con_relac_aspecto_no_rellenar ) )
+	{
+		printf( "Error al inicializar boton 3 en pantalla de creditos.\n" ); 
 		success = false;
 	}
 
@@ -1442,6 +1516,7 @@ bool liberar_memoria_menu_principal( /*struct pantalla_menu* pantallas_menu_prin
 	SDL_DestroyTexture( gTexturaPuntoMenu ); gTexturaPuntoMenu = NULL;
 	SDL_DestroyTexture( gTexturaComaMenu ); gTexturaComaMenu = NULL;
 	if ( gGameLogo != NULL ) {SDL_DestroyTexture( gGameLogo ); gGameLogo = NULL; }
+	if ( gGameLogoCredits != NULL ) {SDL_DestroyTexture( gGameLogoCredits ); gGameLogoCredits = NULL; }	// (30/8/2021)
 
 	// Liberar musica y sonidos --- Free music and sounds
 	#ifdef DEBUG_INFO
@@ -1685,9 +1760,14 @@ void bucle_principal_menu_principal( void )		// Main menu, main loop
 				case boton_opc_atras:
 				case boton_nivel_prov_atras:
 				case boton_conj_mapas_atras:
+				case boton_creditos_atras:	// (30/8/2021)
 					menu_activo = menu_principal;
 					boton_seleccionado = 0;
 					break;
+				case boton_creditos:	// (30/8/2021)
+					menu_activo = menu_creditos;
+					boton_seleccionado = 0;
+					break;	
 				case boton_video:
 					menu_activo = menu_opc_video;
 					boton_seleccionado = 0;

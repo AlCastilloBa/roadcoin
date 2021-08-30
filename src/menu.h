@@ -89,7 +89,14 @@ enum listado_botones
 	boton_mapa_angmax,			// maximum angle
 	boton_mapa_gravedad,			// Gravity
 	boton_mapa_tiempo,			// Count down time
-	boton_mapa_numeracion			// Numbering (ex. 7/9)
+	boton_mapa_numeracion,			// Numbering (ex. 7/9)
+
+	// Pantalla creditos --- Credits screen (30/8/2021)
+	boton_creditos_logo,			// Logo
+	boton_creditos_version,			// Version
+	boton_creditos_autor,			// Author
+	boton_creditos_atras			// Go back
+
 };
 
 enum tipo_boton		// Button type
