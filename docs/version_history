@@ -86,6 +86,8 @@ v0.2-beta.3
 - Bugfix: level rotation makes coin fly. Different behavoiur between linux and windows (abs<>fabs).
 - Bugfix: Calculate normal force to segment end (abs<>fabs)
 ---------------------
-
+- Created new level editor.
+- Added new maps in labyrinths section: hexmaze01, hexmaze02, piggybank, wood_holes_01.
+- Added credits screen.
 
 
