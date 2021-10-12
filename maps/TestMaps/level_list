@@ -1,5 +1,7 @@
-num_levels=3
+num_levels=4
 ruta_mapa[0]=maps/TestMaps/test_map_1
 ruta_mapa[1]=maps/TestMaps/test_map_2
 ruta_mapa[2]=maps/TestMaps/test_pinball_1
+ruta_mapa[3]=maps/TestMaps/test_enemies_1
+
 
