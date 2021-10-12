@@ -26,6 +26,14 @@ void CopiaBumpersSinGiro( struct pinball_bumper*, struct punto*, int );
 
 void CopiaZonasAcelCircSinGiro( struct zona_aceleracion_circular*, struct punto*, int );
 
+void GiraEnemigosRuta( struct punto*, struct punto*, struct punto, int , double );	// (17/9/2021)
+
+void CopiaEnemigosRutaSinGiro( struct punto*, struct punto*, int ); // (17/9/2021)
+
+void GiraWormholes( struct wormhole*, struct wormhole*, struct punto, int, double ); // (27/9/2021);
+
+void CopiaWormholesSinGiro( struct wormhole*, struct wormhole*, int );		// (27/9/2021)
+
 float AnguloSegmento (struct segmento );
 
 double ProductoEscalar2D (struct punto, struct punto);

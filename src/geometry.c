@@ -112,6 +112,70 @@ void CopiaZonasAcelCircSinGiro( struct zona_aceleracion_circular* origen, struct
 }
 
 
+void GiraEnemigosRuta( struct punto* inicial, struct punto* girado, struct punto centro_giro, int num_enemigos_ruta, double angulo )	// (17/9/2021) 
+{
+	int enemigo_ruta;
+	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
+	// SLOW VERSION TO TEST, THIS CAN BE OPTIMIZED (reducing the number of times sin and cos are calculated)
+	if ( num_enemigos_ruta != 0 )
+	{
+		for ( enemigo_ruta = 0 ; enemigo_ruta < num_enemigos_ruta ; enemigo_ruta++ )
+		{
+			girado[enemigo_ruta] = GiraPunto( centro_giro , inicial[enemigo_ruta], angulo );
+		}
+	}
+
+}
+
+void CopiaEnemigosRutaSinGiro( struct punto* origen, struct punto* destino, int num_enemigos_ruta )	// (17/9/2021) 
+{
+	// Para el caso sin rotación, simplemente copia los puntos sin aplicar un giro
+	// For cases without rotation, copies points without rotating
+	int enemigo_ruta;
+	if ( num_enemigos_ruta != 0 )
+	{
+		for ( enemigo_ruta = 0 ; enemigo_ruta < num_enemigos_ruta ; enemigo_ruta++ )
+		{
+			destino[enemigo_ruta] = origen[enemigo_ruta];
+		}
+	}
+}
+
+
+void GiraWormholes( struct wormhole* inicial, struct wormhole* girado, struct punto centro_giro, int num_wormholes, double angulo ) // (27/9/2021)
+{
+	int wormhole;
+	// (TODO)VERSION LENTA PARA PROBAR, SE PUEDE OPIMIZAR (reduciendo numero de veces que se calcula sin y cos)
+	// SLOW VERSION TO TEST, THIS CAN BE OPTIMIZED (reducing the number of times sin and cos are calculated)
+	if ( num_wormholes != 0 )
+	{
+		for ( wormhole = 0 ; wormhole < num_wormholes ; wormhole++ )
+		{
+			girado[wormhole].p1 = GiraPunto( centro_giro , inicial[wormhole].p1, angulo );
+			girado[wormhole].p2 = GiraPunto( centro_giro , inicial[wormhole].p2, angulo );
+		}
+	}
+}
+
+
+
+void CopiaWormholesSinGiro( struct wormhole* origen, struct wormhole* destino, int num_wormholes )		// (27/9/2021)
+{
+	// Para el caso sin rotación, simplemente copia los puntos sin aplicar un giro
+	// For cases without rotation, copies points without rotating
+	int wormhole;
+	if ( num_wormholes != 0 )
+	{
+		for ( wormhole = 0 ; wormhole < num_wormholes ; wormhole++ )
+		{
+			destino[wormhole].p1 = origen[wormhole].p1;
+			destino[wormhole].p2 = origen[wormhole].p2;
+		}
+	}
+}
+
+
+
 float AnguloSegmento (struct segmento segm )	// Calculate segment angle
 {
 	// Nota: Criterio de signos. Angulo positivo si va de X+ a Y+

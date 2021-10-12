@@ -1,4 +1,7 @@
 
+#define VERSION_JUEGO "Roadcoin v0.1-beta3\0"
+
+
 // Listado de las pantallas del menu principal
 // Main menu scren list
 enum pantalla_menu_principal

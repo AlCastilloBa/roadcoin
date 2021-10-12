@@ -54,7 +54,7 @@ struct pinball_bumper
 	bool definido_OK;		// Is this pinball pop bumper correctly defined and read?
 };
 
-struct zona_aceleracion_circular		// Nuevo 21/3/2020 (TODO) PRUEBAS
+struct zona_aceleracion_circular		//  (21/3/2020)
 {
 	struct punto centro;		// Acceleration zone center
 	float radio;			// Acceleration zone radius
@@ -63,6 +63,15 @@ struct zona_aceleracion_circular		// Nuevo 21/3/2020 (TODO) PRUEBAS
 	bool definido_OK;		// Is this round acceleration zone correctly defined and read?
 	bool invisible;			// Invisible
 };
+
+struct wormhole		//( 26/9/2021)
+{
+	struct punto p1;
+	struct punto p2;
+	float radio;
+	bool definido_OK;
+};
+
 
 struct mapa
 {
@@ -91,9 +100,9 @@ struct mapa
 	int Pos_y_abajo_fondo_giratorio;		// Rotating background lower coordinate
 	struct punto CentroGiroFondoGiratorio;		// Rotating background, center of rotation
 
-	char RutaImagenSegmentoPared[255];		// Path to "wall" line segment image (TODO Pruebas 17/5/2020)
-	char RutaImagenSegmentoMeta[255];		// Path to "goal" line segment image (TODO Pruebas 17/5/2020)
-	char RutaImagenSegmentoMuerte[255];		// Path to "death" line segment image (TODO Pruebas 17/5/2020)
+	char RutaImagenSegmentoPared[255];		// Path to "wall" line segment image (17/5/2020)
+	char RutaImagenSegmentoMeta[255];		// Path to "goal" line segment image (17/5/2020)
+	char RutaImagenSegmentoMuerte[255];		// Path to "death" line segment image (17/5/2020)
 
 	char RutaMusica[255];				// Path to music file for the level
 	
@@ -108,6 +117,14 @@ struct mapa
 
 	char RutaImagenDescMenu[255];			// Path to image describing the map for the menu
 	bool RutaImagenDescMenu_Presente;		// Path to image describing the map for the menu is present
+
+	// Nuevos datos para enemigos (10/9/2021) --- New data for enemies
+	int NumeroEnemigosRuta;				// Number of path enemies
+	struct enemigo_ruta *EnemigosRuta;		// Pointer to path enemies memory area
+
+	// Nuevos datos para wormholes (26/9/2021) --- New data for wormholes
+	int NumeroWormholes;				// Number of wormholes
+	struct wormhole* Wormholes;			// Pointer to wormholes memory area
 };
 
 

@@ -21,7 +21,7 @@
 // #define DEBUG_INFO
 
 
-#define VERSION_JUEGO "Roadcoin, v0.1-beta3\0"
+//#define VERSION_JUEGO "Roadcoin, v0.1-beta3\0"
 
 
 #define PORCENTAJE_ANCHO_TITULOS 70.0

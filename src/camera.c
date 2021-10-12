@@ -17,7 +17,11 @@ struct punto CalculaCamara( 		enum modo_camara modo, int resolucion_x_pantalla, 
 					int num_pinball_bumpers,
 					struct punto* pinball_bumpers_pos_real, struct punto* pinball_bumpers_pos_pantalla,
 					int num_zonas_aceleracion_circular,
-					struct punto* zonas_acel_circ_pos_real, struct punto* zonas_acel_circ_pos_pantalla  ) 
+					struct punto* zonas_acel_circ_pos_real, struct punto* zonas_acel_circ_pos_pantalla,
+					int num_enemigos_ruta,
+					struct punto* enemigos_ruta_pos_real, struct punto* enemigos_ruta_pos_pantalla,
+					int num_wormholes,
+					struct wormhole* wormholes_pos_real, struct wormhole* wormholes_pos_pantalla  ) 
 {
 	// Nota: 	posición real --> posición en coordenadas del juego, antes de calcular la posición en la pantala
 	// 		posición en pantalla --> coordenadas de la pantalla, tras calcular la posición
@@ -29,6 +33,8 @@ struct punto CalculaCamara( 		enum modo_camara modo, int resolucion_x_pantalla, 
 	int segm;
 	int bumper;
 	int zona_acel_circ;
+	int enemigo_ruta;
+	int wormhole;
 
 	// Calculamos el desplazamiento --- Calculate offset
 	switch ( modo )
@@ -80,7 +86,20 @@ struct punto CalculaCamara( 		enum modo_camara modo, int resolucion_x_pantalla, 
 		zonas_acel_circ_pos_pantalla[zona_acel_circ].x = zonas_acel_circ_pos_real[zona_acel_circ].x - desplazamiento_x;
 		zonas_acel_circ_pos_pantalla[zona_acel_circ].y = zonas_acel_circ_pos_real[zona_acel_circ].y - desplazamiento_y;
 	}
-
+	// Calculamos la posicion de los enemigos tipo ruta (17/9/2021) --- Calculating path enemies position on screen
+	for ( enemigo_ruta = 0 ; enemigo_ruta < num_enemigos_ruta ; enemigo_ruta ++ )
+	{
+		enemigos_ruta_pos_pantalla[enemigo_ruta].x = enemigos_ruta_pos_real[enemigo_ruta].x - desplazamiento_x;
+		enemigos_ruta_pos_pantalla[enemigo_ruta].y = enemigos_ruta_pos_real[enemigo_ruta].y - desplazamiento_y;
+	}
+	// Calculamos la posicion de los wormholes (27/9/2021) --- Calculating wormholes position on screen
+	for ( wormhole = 0 ; wormhole < num_wormholes ; wormhole ++ ) 
+	{
+		wormholes_pos_pantalla[wormhole].p1.x = wormholes_pos_real[wormhole].p1.x - desplazamiento_x;
+		wormholes_pos_pantalla[wormhole].p1.y = wormholes_pos_real[wormhole].p1.y - desplazamiento_y;
+		wormholes_pos_pantalla[wormhole].p2.x = wormholes_pos_real[wormhole].p2.x - desplazamiento_x;
+		wormholes_pos_pantalla[wormhole].p2.y = wormholes_pos_real[wormhole].p2.y - desplazamiento_y;	
+	}
 
 	return posicion_moneda_en_pantalla;
 }

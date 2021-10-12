@@ -15,6 +15,8 @@
 #include "menu.h"
 #include "camera.h"
 #include "sound.h"
+#include "enemies.h"
+
 
 
 // Si definido DEBUG_INFO, mostrar textos de informacion por la terminal (hace el programa más lento)
@@ -26,6 +28,8 @@ const int INTRO_SCREEN_WIDTH = 500;
 const int INTRO_SCREEN_HEIGHT = 851;
 
 #define DESPLAZAMIENTO_CAMARA_USUARIO 10
+
+#define NUM_ANIMS_WORMHOLE 8
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //GLOBAL VARIABLES
@@ -53,9 +57,9 @@ SDL_Texture* gIconoVictoria = NULL;		// Victory icon texture
 SDL_Texture* gIconoPierde = NULL;		// Lose icon texture
 SDL_Texture* gTextoVictoria = NULL;		// Victory text texture
 SDL_Texture* gTextoPierde = NULL;		// Lose text texture
-SDL_Texture* gTexturaSegmentoPared = NULL;	// Wall Line segment texture (TODO Pruebas 17/5/2020)
-SDL_Texture* gTexturaSegmentoMeta = NULL;	// Goal Line segment texture (TODO Pruebas 17/5/2020)
-SDL_Texture* gTexturaSegmentoMuerte = NULL;	// Death Line segment texture (TODO Pruebas 17/5/2020)
+SDL_Texture* gTexturaSegmentoPared = NULL;	// Wall Line segment texture (17/5/2020)
+SDL_Texture* gTexturaSegmentoMeta = NULL;	// Goal Line segment texture (17/5/2020)
+SDL_Texture* gTexturaSegmentoMuerte = NULL;	// Death Line segment texture (17/5/2020)
 SDL_Texture* gTexturaFondoGiratorio = NULL;	// Rotating background texture
 SDL_Texture* gTexturaPinballBumper = NULL;	// Pinball bumper texture
 SDL_Texture* gTexturaPinballFlipperL = NULL;	// Left pinball flipper texture
@@ -64,7 +68,11 @@ SDL_Texture* gTexturaCronometro = NULL;		// Stopwatch icon texture
 SDL_Texture* gTexturaNumero[10] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};		// Numbers (0 to 9) texture
 SDL_Texture* gTexturaZonaAcelCirc = NULL;	// Round Acceleration Zone Texture
 SDL_Texture* gTexturaFondoSemiTranspTexto = NULL;	// Semi-transparent background for texts
-SDL_Texture* gTextureLoadingMenu = NULL;	// Pantalla espera carga menu --- Menu loading screen (Pruebas 13/5/2020)
+SDL_Texture* gTextureLoadingMenu = NULL;	// Pantalla espera carga menu --- Menu loading screen (13/5/2020)
+SDL_Texture* gTextureWormholeSpritesheet = NULL;	// Textura de animacion wormhole (27/9/2021) --- Wormhole animation texture
+
+SDL_Rect gCuadroSpriteWormhole[NUM_ANIMS_WORMHOLE];		// Cuadros para animacion wormhole (27/9/2021) --- Squares for defining wormhole animation sprites
+
 
 TTF_Font *gFuenteTextoJuego = NULL;
 SDL_Color gColorBlanco = { 255 , 255 , 255 }; 	// Blanco --- White
@@ -76,9 +84,9 @@ int gRadioMoneda;
 //Dimensiones texturas --- Texture dimensions
 int gDimIconoVictoriaX; int gDimIconoVictoriaY;
 int gDimIconoPierdeX; int gDimIconoPierdeY;
-int gDimTexturaSegmentoParedX; int gDimTexturaSegmentoParedY;		// (TODO) Pruebas 17/5/2020
-int gDimTexturaSegmentoMetaX; int gDimTexturaSegmentoMetaY;		// (TODO) Pruebas 17/5/2020
-int gDimTexturaSegmentoMuerteX; int gDimTexturaSegmentoMuerteY;		// (TODO) Pruebas 17/5/2020
+int gDimTexturaSegmentoParedX; int gDimTexturaSegmentoParedY;		// 17/5/2020
+int gDimTexturaSegmentoMetaX; int gDimTexturaSegmentoMetaY;		// 17/5/2020
+int gDimTexturaSegmentoMuerteX; int gDimTexturaSegmentoMuerteY;		// 17/5/2020
 int gDimTexturaPinballFlipper_L_X; int gDimTexturaPinballFlipper_L_Y;
 int gDimTexturaPinballFlipper_R_X; int gDimTexturaPinballFlipper_R_Y;
 int gDimTexturaCronometroX; int gDimTexturaCronometroY;	
@@ -90,6 +98,7 @@ int gDimDescripcionMapaX; int gDimDescripcionMapaY;
 int gDimTextoPierdeX; int gDimTextoPierdeY;
 int gDimTextoVictoriaX; int gDimTextoVictoriaY;
 int gDimTextureLoadingMenuX; int gDimTextureLoadingMenuY;
+int gDimWormholeSprSheetX; int gDimWormholeSprSheetY;		// 27/9/2021
 
 //Variables globales control --- Control global variables
 float inc_angulo_teclado = 1.0f;
@@ -106,6 +115,11 @@ Mix_Music *gMusicaJuego = NULL;
 Mix_Chunk *gSonidoGolpeMoneda = NULL;
 Mix_Chunk *gSonidoPinballBumper = NULL;
 Mix_Chunk *gSonidoPinballFlipper = NULL;
+Mix_Chunk *gSonidoTeletransporte = NULL;
+
+// Variables globales, tipo de enemigos (17/9/2021)
+struct tipos_enemigos_usados_en_mapa gTiposEnemigosMapaActual[MAX_TIPOS_ENEMIGOS_POR_MAPA];
+
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -218,7 +232,7 @@ bool inicializar_intro()
 bool inicializar_ventana_juego() 
 {
 	bool success = true;
-	gGameWindow = SDL_CreateWindow( 	"Juego", 
+	gGameWindow = SDL_CreateWindow( /*Titulo ventana*/ VERSION_JUEGO , 
 					SDL_WINDOWPOS_UNDEFINED, 
 					SDL_WINDOWPOS_UNDEFINED, 
 					opciones_juego.screen_x_resolution, 
@@ -404,7 +418,7 @@ bool loadMainGameLoopMedia( struct mapa mapa_cargado )
 	SDL_SetTextureBlendMode( gTexturaFondoSemiTranspTexto, SDL_BLENDMODE_BLEND /*alpha blending*/ );
 	SDL_SetTextureAlphaMod( gTexturaFondoSemiTranspTexto, 0.6*255 /*alpha=opacity*/);
 
-	// (TODO) Pruebas 17/5/2020
+	// 17/5/2020
 	gTexturaSegmentoPared = CargaTextura( /*"images/metal_1x5.png" (TODO) */mapa_cargado.RutaImagenSegmentoPared , &gDimTexturaSegmentoParedX, &gDimTexturaSegmentoParedY, false );
 	if( gTexturaSegmentoPared == NULL ) 
 	{ 
@@ -464,6 +478,57 @@ bool loadMainGameLoopMedia( struct mapa mapa_cargado )
 	    success = false;
 	}
 
+	gSonidoTeletransporte = Mix_LoadWAV( "sound/teleport_1.wav" );	/* 27/9/2021 */
+	if( gSonidoTeletransporte == NULL )
+	{
+	    printf( "Error: Error al cargar sonido de teletransporte. SDL_mixer Error: %s\n", Mix_GetError() );
+	    success = false;
+	}
+
+	// Cargar texturas de enemigos tipo ruta (17/9/2021) --- Load textures for path type enemies
+	if ( mapa_cargado.NumeroEnemigosRuta != 0 )
+	{
+		if ( !Inicializar_Texturas_Tipos_Enemigos( gTiposEnemigosMapaActual ) )
+		{
+			printf( "Error: Error al inicializar texturas de enemigos tipo ruta\n" );
+			success = false;
+		}
+	}
+
+	// Cargar e inicializar sprite sheet de la animacion de wormhole (27/9/2021) --- Load and initialize wormhole animation sprite sheet
+	if ( mapa_cargado.NumeroWormholes != 0 )
+	{
+		int contador_sprites_animacion;
+
+		gTextureWormholeSpritesheet = CargaTextura( "images/wormhole_01.png" , &gDimWormholeSprSheetX, &gDimWormholeSprSheetY, true );
+		if( gTextureWormholeSpritesheet == NULL ) 
+		{ 
+			printf( "Error: no se ha podido cargar el sprite sheet de la animacion de wormhole.\n" ); 
+			success = false; 
+		}
+		// Verificar dimensiones del sprite sheet --- Check sprite sheet dimensions
+		if ( gDimWormholeSprSheetX != (gDimWormholeSprSheetY * NUM_ANIMS_WORMHOLE ) )
+		{
+			printf( "Error: El sprite sheet del wormhole no tiene las dimensiones adecuadas.\n" );
+			printf( "Nota: Mide %d x %d. La dimX deberia ser %d veces la dimY.\n", gDimWormholeSprSheetX, gDimWormholeSprSheetY, NUM_ANIMS_WORMHOLE );
+			success = false;			
+		}
+
+		// Calcular cuadros, el sprite sheet contiene la animacion de izquierda a derecha. --- Calculate squares, the sprite sheet contais the animation from left to right
+		// Cada sprite es cuadrado --- Every sprite is square
+		for ( contador_sprites_animacion = 0 ; contador_sprites_animacion < NUM_ANIMS_WORMHOLE ;  contador_sprites_animacion++ )
+		{
+			gCuadroSpriteWormhole[contador_sprites_animacion].x = gDimWormholeSprSheetY * contador_sprites_animacion;
+			gCuadroSpriteWormhole[contador_sprites_animacion].y = 0;
+			gCuadroSpriteWormhole[contador_sprites_animacion].w = gDimWormholeSprSheetY;
+			gCuadroSpriteWormhole[contador_sprites_animacion].h = gDimWormholeSprSheetY;
+		}
+
+		// Ajusta transparencia --- Set up transparency
+		SDL_SetTextureBlendMode( gTextureWormholeSpritesheet, SDL_BLENDMODE_BLEND /*alpha blending*/ );
+		SDL_SetTextureAlphaMod( gTextureWormholeSpritesheet, 0.6*255 /*alpha=opacity*/);
+	}
+
 	return success;
 }
 
@@ -510,6 +575,11 @@ bool freeMainGameLoopMedia()
 	Mix_FreeChunk( gSonidoPinballBumper); gSonidoPinballBumper = NULL;
 	Mix_FreeChunk( gSonidoPinballFlipper); gSonidoPinballFlipper = NULL;
 	Mix_FreeChunk( gSonidoGolpeMoneda ); gSonidoGolpeMoneda = NULL;
+	Mix_FreeChunk( gSonidoTeletransporte ); gSonidoTeletransporte = NULL;
+	// Liberar texturas de enemigos --- Free enemy textures
+	Liberar_Memoria_Tipos_Enemigos( gTiposEnemigosMapaActual );
+	// Liberar texturas de wormhole (27/9/2021) --- Free wormholes textures
+	SDL_DestroyTexture( gTextureWormholeSpritesheet); gTextureWormholeSpritesheet = NULL;
 }
 
 
@@ -697,6 +767,8 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	float tiempo_imagen;	//Tiempo de cada imagen, en segundos --- Time for each frame, in seconds
 	float framerate_deseado = 30;
 	int segmento_actual, bumper_actual, zona_acel_circ_actual;
+	int enemigo_ruta_actual;	// (17/9/2021)
+	int wormhole_actual;		// (27/9/2021)
 	float angulo, angulo_anterior;
 	bool existe_limite_angulo;
 
@@ -718,7 +790,18 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	struct punto* centros_bumpers_girados;			// Vector de posiciones de los bumpers despues de giro --- Array of pinball bumper positions after map rotation
 	struct punto* centros_zonaacelcirc_girados;		// Vector de posiciones de los centros de las zonas circulares de aceleración despues de giro --- Array of center positions of round aceleration zones after map rotation
 	struct punto* pos_pant_centros_bumpers_girados;		// Vector de posiciones de los bumpers en la pantalla despues de giro --- Array of pinball bumper positions on screen after map rotation
-	struct punto* pos_pant_centros_zonaacelcirc_girados;	// Vector de posiciones de los centros de las zonas circulares de aceleración en la pantalla despues de gido --- Array of center positions on screen of round aceleration zones after map rotation
+	struct punto* pos_pant_centros_zonaacelcirc_girados;	// Vector de posiciones de los centros de las zonas circulares de aceleración en la pantalla despues de giro --- Array of center positions on screen of round aceleration zones after map rotation
+
+	struct punto* pos_actual_enemigos_ruta;			// (17/9/2021) Vector de posiciones de los centros de los enemigos tipo ruta --- Array of center position of path type enemies
+	struct punto* centros_enemigos_ruta_girados;		// (17/9/2021) Vector de posiciones de los centros de los enemigos tipo ruta despues de giro --- Array of center position of path type enemies after map rotation
+	struct punto* pos_pant_centros_enemigos_ruta_girados; 	// (17/9/2021) Vector de posiciones de los centros de los enemigos tipo ruta en la pantalla despues de giro --- Array of center position on screen of path type enemies
+	int *num_waypoint_destino;				// (17/9/2021) Vector de waypoints destino de los enemigos tipo ruta --- Array of waypoints of path type enemies
+	float *angulos_actual_enemigos_ruta;			// (17/9/2021) Vector de angulos actuales de los enemigos tipo ruta --- Array of current angles of path type enemies
+
+	struct wormhole* centros_wormholes_girados;		// (27/9/2021) Vector de posiciones de los "wormholes" despues de giro --- Array of wormholes position after map rotation
+	struct wormhole* pos_pant_centros_wormholes_girados;	// (27/9/2021) Vector de posiciones de los "wormholes" en la pantalla despues de giro --- Array of wormholes position on screen after map rotation
+	bool imagen_previa_dentro_de_wormhole = false;		// (28/9/2021) En la imagen previa estaba dentro de un wormhole --- On the previous frame, the coin was inside a wormhole
+	bool imagen_actual_dentro_de_wormhole = false;		// (28/9/2021) En la imagen actual está dentro de un wormhole --- On the current wormhole, the coin is inside a wormhole
 
 	enum tipo_interseccion_circulo_segmento* tipo_interferencia_segmento;
 
@@ -832,6 +915,92 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		exit(-1);
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////
+	// Carga de datos de tipos de enemigos (17/9/2021) --- Load enemy types data
+	if ( mapa_original.NumeroEnemigosRuta != 0 )
+	{
+		int tipos_encontrados;
+
+		Inicializar_Tipos_Enemigos_En_Mapa( gTiposEnemigosMapaActual );
+
+		tipos_encontrados = Clasificar_Tipos_Unicos_Enemigos( gTiposEnemigosMapaActual, mapa_original.EnemigosRuta, mapa_original.NumeroEnemigosRuta );
+		#ifdef DEBUG_INFO
+		printf( "Se han encontrado %d tipos de enemigos en el mapa actual.\n", tipos_encontrados );
+		Lista_Tipos_Enemigos_Unicos( gTiposEnemigosMapaActual );
+		#endif
+
+		Leer_Ficheros_Definicion_Tipos_Enemigos( gTiposEnemigosMapaActual );
+
+
+		// Reservamos memoria dinamica para las posiciones actuales de los enemigos (coordenadas mapa) --- Allocate dynamic memory for current enemy positions
+		pos_actual_enemigos_ruta = calloc(mapa_original.NumeroEnemigosRuta, sizeof(struct punto) );
+		if ( pos_actual_enemigos_ruta == NULL )
+		{
+			printf ( "Error: no se puede reservar memoria para posicion real de los enemigos tipo ruta girados\n");
+			exit(-1);
+		}
+
+		// Reservamos memoria dinamica para las posiciones rotadas de los enemigos --- Allocate dynamic memory for current enemy positions after map rotation
+		centros_enemigos_ruta_girados = calloc(mapa_original.NumeroEnemigosRuta, sizeof(struct punto) );
+		if ( centros_enemigos_ruta_girados == NULL )
+		{
+			printf ( "Error: no se puede reservar memoria para pos rotada de los enemigos tipo ruta girados\n");
+			exit(-1);
+		}
+
+		// Reservamos memoria dinamica para las posiciones rotadas de los enemigos (despues de aplicar la cámara) --- Allocate dynamic memory for current enemy positions on screen after map rotation
+		pos_pant_centros_enemigos_ruta_girados = calloc(mapa_original.NumeroEnemigosRuta, sizeof(struct punto) );
+		if ( pos_pant_centros_enemigos_ruta_girados == NULL )
+		{
+			printf ( "Error: no se puede reservar memoria para la posición en la pantalla de los enemigos tipo ruta\n");
+			exit(-1);
+		}
+
+		// Reservamos memoria para los waypoints destino de los enemigos tipo ruta --- Allocate dynamic memory for current destination waypoint
+		num_waypoint_destino = calloc(mapa_original.NumeroEnemigosRuta, sizeof(int) );
+		if ( num_waypoint_destino == NULL )
+		{
+			printf ( "Error: no se puede reservar memoria para los waypoints destino de los enemigos tipo ruta\n");
+			exit(-1);
+		}
+
+		// Reservamos memoria para los angulos actual de los enemigos tipo ruta --- Allocate dynamic memory for current enemy angles
+		angulos_actual_enemigos_ruta = calloc(mapa_original.NumeroEnemigosRuta, sizeof(float) );
+		if ( angulos_actual_enemigos_ruta == NULL )
+		{
+			printf ( "Error: no se puede reservar memoria para los angulos actuales de los enemigos tipo ruta\n");
+			exit(-1);
+		}
+
+		// Inicializamos posiciones iniciales enemigos (waypoint numero cero) --- Initialize current enemy position (waypoint number zero)
+		for ( enemigo_ruta_actual = 0 ; enemigo_ruta_actual < mapa_original.NumeroEnemigosRuta ; enemigo_ruta_actual++ )
+		{
+			pos_actual_enemigos_ruta[enemigo_ruta_actual] = mapa_original.EnemigosRuta[enemigo_ruta_actual].waypoints[0].waypoint;
+		}
+
+	}
+	// Reservamos memoria dinamica para las posiciones rotadas de los wormholes (27/9/2021) --- Allocate dynamic memory for wormholes position after map rotation
+	if ( mapa_original.NumeroWormholes != 0 )
+	{
+		centros_wormholes_girados = calloc(mapa_original.NumeroWormholes, sizeof(struct wormhole) );
+		if ( centros_wormholes_girados == NULL )
+		{
+			printf ( "Error: no se puede reservar memoria las posiciones rotadas de los wormholes.\n");
+			exit(-1);
+		}
+	}
+
+	// Reservamos memoria dinamica para las posiciones rotadas de los wormholes (despues de aplicar la cámara) (27/9/2021) --- Allocate dynamic memory for wormholes position on screen after map rotation
+	if ( mapa_original.NumeroWormholes != 0 )
+	{
+		pos_pant_centros_wormholes_girados = calloc(mapa_original.NumeroWormholes, sizeof(struct wormhole) );
+		if ( pos_pant_centros_wormholes_girados == NULL )
+		{
+			printf ( "Error: no se puede reservar memoria la posicion en pantalla de las posiciones rotadas de los wormholes.\n");
+			exit(-1);
+		}
+	}
+
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Cargamos archivos del juego - Load Game media 
@@ -856,6 +1025,7 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		printf("Tiempo inicial se ajusta a %d TiempoActualCuentaAtras milisegundos ...\n");
 		#endif
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Inicializamos modo cámara --- Initialize camera mode
@@ -1066,12 +1236,12 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 				if ( e.button.button == SDL_BUTTON_LEFT )
 				{
 					pinball_flipper_L_activo = false;
-					flanco_desc_pinball_flipper_L = true;	// Nuevo 22/4/2020 (pruebas TODO)
+					flanco_desc_pinball_flipper_L = true;	// (22/4/2020)
 				}
 				if (e.button.button == SDL_BUTTON_RIGHT)
 				{
 					pinball_flipper_R_activo = false;
-					flanco_desc_pinball_flipper_R = true;	// Nuevo 22/4/2020 (pruebas TODO)
+					flanco_desc_pinball_flipper_R = true;	// (22/4/2020)
 				}
 			}	
 		}
@@ -1097,7 +1267,18 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		//////////////////////////////////////////////////////////////////////////////
 
 		if ( !pause && !intro_mapa && !win && !lose )
-		{                                          
+		{
+			/////////////////////////////////////////////////////////////////////////////////////
+			// Calculamos posiciones enemigos (17/9/2021) --- Calculate enemy positions
+			Calcula_Nueva_Posicion_Enemigos( /*numero_enemigos*/ mapa_original.NumeroEnemigosRuta, 
+							 /*lista_enemigos*/ mapa_original.EnemigosRuta, 
+							 /*lista_tipos*/ gTiposEnemigosMapaActual,
+							 /*posic_actual_enemigos*/ pos_actual_enemigos_ruta, 
+							 /*angulo_enemigos*/ angulos_actual_enemigos_ruta, 
+							 /*waypoint_destino*/ num_waypoint_destino,
+							 /*tiempo_imagen*/ tiempo_imagen );
+			
+
 			/////////////////////////////////////////////////////////////////////////////////////	
 			// Giramos el mapa --- Rotate the map
 			switch (mapa_original.TipoGiro)
@@ -1106,6 +1287,8 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroSegmentos, angulo );
 					GiraBumpers( mapa_original.Bumpers, centros_bumpers_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroPinballBumpers, angulo ); // Nuevo 9/2/2020
 					GiraZonasAcelCirc( mapa_original.ZonasAceleracionCircular, centros_zonaacelcirc_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroZonasAceleracionCircular, angulo );  // Nuevo 22/3/2020
+					GiraEnemigosRuta( pos_actual_enemigos_ruta, centros_enemigos_ruta_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroEnemigosRuta, angulo ); // (17/9/2021)
+					GiraWormholes( mapa_original.Wormholes, centros_wormholes_girados, mapa_original.PuntoGiroFijo, mapa_original.NumeroWormholes, angulo ); // (27/9/2021)
 					break;
 				case camara:
 					// (TODO)
@@ -1116,11 +1299,15 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, pos_real_moneda, mapa_original.NumeroSegmentos, angulo );
 					GiraBumpers( mapa_original.Bumpers, centros_bumpers_girados, pos_real_moneda, mapa_original.NumeroPinballBumpers, angulo ); // Nuevo 9/2/2020
 					GiraZonasAcelCirc( mapa_original.ZonasAceleracionCircular, centros_zonaacelcirc_girados, pos_real_moneda, mapa_original.NumeroZonasAceleracionCircular, angulo );  // Nuevo 22/3/2020
+					GiraEnemigosRuta( pos_actual_enemigos_ruta, centros_enemigos_ruta_girados, pos_real_moneda, mapa_original.NumeroEnemigosRuta, angulo ); // (17/9/2021)
+					GiraWormholes( mapa_original.Wormholes, centros_wormholes_girados, pos_real_moneda, mapa_original.NumeroWormholes, angulo ); // (27/9/2021)
 					break;
 				case origen:
 					GiraMapaCompleto( mapa_original.Mapa , segmentos_girados, punto_origen, mapa_original.NumeroSegmentos, angulo );
 					GiraBumpers( mapa_original.Bumpers, centros_bumpers_girados, punto_origen, mapa_original.NumeroPinballBumpers, angulo ); // Nuevo 9/2/2020
 					GiraZonasAcelCirc( mapa_original.ZonasAceleracionCircular, centros_zonaacelcirc_girados, punto_origen, mapa_original.NumeroZonasAceleracionCircular, angulo );  // Nuevo 22/3/2020
+					GiraEnemigosRuta( pos_actual_enemigos_ruta, centros_enemigos_ruta_girados, punto_origen, mapa_original.NumeroEnemigosRuta, angulo ); // (17/9/2021)
+					GiraWormholes( mapa_original.Wormholes, centros_wormholes_girados, punto_origen, mapa_original.NumeroWormholes, angulo ); // (27/9/2021)
 					// Arrastramos tambien a la moneda en el giro --- The map rotation drags the coin
 					if ( angulo != angulo_anterior )
 					{
@@ -1132,6 +1319,8 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					CopiaSegmentosSinGiro( mapa_original.Mapa, segmentos_girados, mapa_original.NumeroSegmentos );
 					CopiaBumpersSinGiro( mapa_original.Bumpers, centros_bumpers_girados, mapa_original.NumeroPinballBumpers );
 					CopiaZonasAcelCircSinGiro( mapa_original.ZonasAceleracionCircular, centros_zonaacelcirc_girados, mapa_original.NumeroZonasAceleracionCircular);  //Nuevo 22/3/2020
+					CopiaEnemigosRutaSinGiro( pos_actual_enemigos_ruta, centros_enemigos_ruta_girados, mapa_original.NumeroEnemigosRuta ); // (17/9/2021)
+					CopiaWormholesSinGiro( mapa_original.Wormholes, centros_wormholes_girados, mapa_original.NumeroWormholes );		// (27/9/2021)
 					angulo = angulo_anterior = 0;
 					break;
 				default:
@@ -1147,6 +1336,43 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 			// | |   / _` | |/ __| | | | |/ _` | '__| |_) / _ \/ __| |/ __| |/ _ \| '_ \ 
 			// | |__| (_| | | (__| |_| | | (_| | |  |  __/ (_) \__ \ | (__| | (_) | | | |
 			//  \____\__,_|_|\___|\__,_|_|\__,_|_|  |_|   \___/|___/_|\___|_|\___/|_| |_|
+			//
+			////////////////////////////////////////////////////////////////////////////////////
+
+			////////////////////////////////////////////////////////////////////////////////////
+			// Wormholes (29/9/2021)
+			// Verificar si está dentro y teletransporte a la otra posicion --- Check if coin is inside wormhole, and teleport to the other end
+			if (mapa_original.NumeroWormholes != 0 )
+			{
+				imagen_actual_dentro_de_wormhole = false;
+				for ( wormhole_actual = 0 ; wormhole_actual < mapa_original.NumeroWormholes ; wormhole_actual++ )
+				{
+					int radio_wormh_cuad = mapa_original.Wormholes[wormhole_actual].radio*mapa_original.Wormholes[wormhole_actual].radio;
+					// Miramos si moneda dentro de P1 --- Check if coin is inside P1
+					if ( LongitudVector_Cuadrado( pos_real_moneda , centros_wormholes_girados[wormhole_actual].p1 ) < radio_wormh_cuad )
+					{
+						if ( !imagen_previa_dentro_de_wormhole )
+						{
+							pos_real_moneda = centros_wormholes_girados[wormhole_actual].p2;
+							// Reproducir sonido teletransporte --- Play teleport sound
+							Mix_PlayChannel( -1, gSonidoTeletransporte, 0 );	
+						}
+						imagen_actual_dentro_de_wormhole = true;
+					}
+					// Miramos si moneda dentro de P2 --- Check if coin is inside P2
+					else if ( LongitudVector_Cuadrado( pos_real_moneda , centros_wormholes_girados[wormhole_actual].p2 ) < radio_wormh_cuad )
+					{
+						if ( !imagen_previa_dentro_de_wormhole )
+						{
+							pos_real_moneda = centros_wormholes_girados[wormhole_actual].p1;
+							// Reproducir sonido teletransporte --- Play teleport sound
+							Mix_PlayChannel( -1, gSonidoTeletransporte, 0 );	
+						}
+						imagen_actual_dentro_de_wormhole = true;
+					}
+				}
+				imagen_previa_dentro_de_wormhole = imagen_actual_dentro_de_wormhole;
+			}
 
 			//////////////////////////////////////////////////////////////////////////////////
 			// Calculo posiciones tras golpes con bumpers --- Calculate position after collision with pinball bumpers
@@ -1194,6 +1420,25 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 					}
 				}
 			}
+
+
+			/////////////////////////////////////////////////////////////////////////////////
+			// Enemigos tipo ruta (22/9/2021) --- Path type enemies
+			if ( mapa_original.NumeroEnemigosRuta != 0 )
+			{
+				for ( enemigo_ruta_actual = 0 ; enemigo_ruta_actual < mapa_original.NumeroEnemigosRuta ; enemigo_ruta_actual++ )
+				{
+					// Miramos si la moneda intersecta con el enemigo
+					if ( LongitudVector_Cuadrado( pos_real_moneda , centros_enemigos_ruta_girados[enemigo_ruta_actual] ) < 
+						( ( gRadioMoneda + gTiposEnemigosMapaActual[  mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo  ].radio  ) * 
+						( gRadioMoneda + gTiposEnemigosMapaActual[  mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo  ].radio ) ) )
+					{
+						// El enemigo "se come" a la moneda. Hemos perdido
+						lose = true;
+						resultado_final = derrota;
+					}
+				}
+			}	
 
 			/////////////////////////////////////////////////////////////////////////////////
 			// Aplica giro a los segmentos "flippers" --- Rotation is applied to flipper segments
@@ -1647,7 +1892,11 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 								mapa_original.NumeroPinballBumpers,
 								centros_bumpers_girados, pos_pant_centros_bumpers_girados,
 								mapa_original.NumeroZonasAceleracionCircular,
-								centros_zonaacelcirc_girados, pos_pant_centros_zonaacelcirc_girados   ); 		
+								centros_zonaacelcirc_girados, pos_pant_centros_zonaacelcirc_girados,
+								mapa_original.NumeroEnemigosRuta, /*(17/9/2021) */
+								centros_enemigos_ruta_girados, pos_pant_centros_enemigos_ruta_girados  /*(17/9/2021)*/,
+								mapa_original.NumeroWormholes, /*(27/9/2021)*/
+								centros_wormholes_girados, pos_pant_centros_wormholes_girados /*(27/9/2021)*/ ); 		
 
 		/////////////////////////////////////////////////////////////////////////////////////
 		//  ____  _ _            _       ____             _        _ _       		 ____                      ____                           
@@ -1698,6 +1947,44 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 				}
 			}
 		}
+
+		// Dibuja wormholes --- Draw wormholes (27/9/2021)
+		if ( mapa_original.NumeroWormholes != 0 )
+		{
+			for ( wormhole_actual = 0 ; wormhole_actual < mapa_original.NumeroWormholes ; wormhole_actual++ )
+			{
+				int animacion_actual;
+
+				animacion_actual =  (contador_frames / 2  ) % ( NUM_ANIMS_WORMHOLE ) ;
+
+				// Punto 1 del wormhole --- Wormhole point P1
+				renderQuad.x = pos_pant_centros_wormholes_girados[wormhole_actual].p1.x - mapa_original.Wormholes[wormhole_actual].radio;		// Coord X de esquina superior izquierda
+				renderQuad.y = pos_pant_centros_wormholes_girados[wormhole_actual].p1.y - mapa_original.Wormholes[wormhole_actual].radio;		// Coord Y de esquina superior izquierda
+				renderQuad.w = 2*mapa_original.Wormholes[wormhole_actual].radio;	// Ancho
+				renderQuad.h = renderQuad.w;	// Alto
+
+				SDL_RenderCopyEx( gRenderer, gTextureWormholeSpritesheet, 
+						/*Indica cuadro sprite actual*/ &( gCuadroSpriteWormhole[animacion_actual] ), 
+						&renderQuad, 
+						angulo, 
+						NULL /*Rota alrededor del centro*/, 
+						SDL_FLIP_NONE /* flip*/  );
+
+				// Punto 2 del wormhole --- Wormhole point P2
+				renderQuad.x = pos_pant_centros_wormholes_girados[wormhole_actual].p2.x - mapa_original.Wormholes[wormhole_actual].radio;		// Coord X de esquina superior izquierda
+				renderQuad.y = pos_pant_centros_wormholes_girados[wormhole_actual].p2.y - mapa_original.Wormholes[wormhole_actual].radio;		// Coord Y de esquina superior izquierda
+				renderQuad.w = 2*mapa_original.Wormholes[wormhole_actual].radio;	// Ancho
+				renderQuad.h = renderQuad.w;	// Alto
+
+				SDL_RenderCopyEx( gRenderer, gTextureWormholeSpritesheet, 
+						/*Indica cuadro sprite actual*/ &( gCuadroSpriteWormhole[animacion_actual] ), 
+						&renderQuad, 
+						angulo, 
+						NULL /*Rota alrededor del centro*/, 
+						SDL_FLIP_NONE /* flip*/  );
+			}
+		}
+
 
 		//Render texture to screen - Dibuja moneda
 		//Crea un rectangulo en la posicion desesada de la moneda --- Create a rectangle in the desired coin position 
@@ -1869,13 +2156,56 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 		{
 			for ( bumper_actual = 0 ; bumper_actual < mapa_original.NumeroPinballBumpers ; bumper_actual++ )
 			{
-				renderQuad.x = pos_pant_centros_bumpers_girados[bumper_actual].x - mapa_original.Bumpers[bumper_actual].radio;		// Coord X de esquina superior izquierda
-				renderQuad.y = pos_pant_centros_bumpers_girados[bumper_actual].y - mapa_original.Bumpers[bumper_actual].radio;		// Coord Y de esquina superior izquierda
-				renderQuad.w = 2*mapa_original.Bumpers[bumper_actual].radio;							// Ancho
-				renderQuad.h = 2*mapa_original.Bumpers[bumper_actual].radio;							// Alto
+				renderQuad.x = pos_pant_centros_bumpers_girados[bumper_actual].x - mapa_original.Bumpers[bumper_actual].radio;		// Coord X de esquina superior izquierda --- Upper left corner X coord
+				renderQuad.y = pos_pant_centros_bumpers_girados[bumper_actual].y - mapa_original.Bumpers[bumper_actual].radio;		// Coord Y de esquina superior izquierda --- Upper left corner Y coord
+				renderQuad.w = 2*mapa_original.Bumpers[bumper_actual].radio;							// Ancho --- Width
+				renderQuad.h = 2*mapa_original.Bumpers[bumper_actual].radio;							// Alto --- Height
 				//SDL_RenderCopy( gRenderer, gTexturaPinballBumper, NULL, &renderQuad ); 	// Version sin rotacion
 				SDL_RenderCopyEx( gRenderer, gTexturaPinballBumper, NULL, &renderQuad, angulo, NULL /*Rota alrededor del centro*/, SDL_FLIP_NONE );
 			}
+		}
+
+
+		// Dibuja enemigos de tipo ruta (17/9/2021) --- Draw path type enemies
+		if ( mapa_original.NumeroEnemigosRuta != 0 )
+		{
+			for ( enemigo_ruta_actual = 0 ; enemigo_ruta_actual < mapa_original.NumeroEnemigosRuta ; enemigo_ruta_actual++ )
+			{
+				int animacion_actual;
+				float angulo_representacion_enemigo;
+				SDL_RendererFlip flip_enemigo;
+
+				animacion_actual =  (contador_frames / gTiposEnemigosMapaActual[ mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo].frames_per_animation  ) % ( (gTiposEnemigosMapaActual[ mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo ].num_anim_sprites)   ) ;
+
+				angulo_representacion_enemigo = WrapAngle_0_360(  angulo + angulos_actual_enemigos_ruta[enemigo_ruta_actual]  );
+
+				// Hacemos que la textura del enemigo nunca esté invertida --- The enemy texture should never be drawn upside down
+				if ( angulo_representacion_enemigo > 90 && angulo_representacion_enemigo < 270 )
+				{
+					// El sprite estaría girado de tal forma que se representaría boca abajo. La invertimos.
+					// The sprite would be drawn upside down, therefore we flip it.
+					flip_enemigo = SDL_FLIP_VERTICAL;
+				}
+				else
+				{
+					// El sprite estaría girado de tal forma que se representaría boca arriba. La representamos tal cual está.
+					// No flipping will be needed.
+					flip_enemigo = SDL_FLIP_NONE;
+				}
+
+				renderQuad.x = pos_pant_centros_enemigos_ruta_girados[enemigo_ruta_actual].x - gTiposEnemigosMapaActual[  mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo  ].radio;		// Coord X de esquina superior izquierda
+				renderQuad.y = pos_pant_centros_enemigos_ruta_girados[enemigo_ruta_actual].y - gTiposEnemigosMapaActual[  mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo  ].radio;		// Coord Y de esquina superior izquierda
+				renderQuad.w = 2*gTiposEnemigosMapaActual[  mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo  ].radio;	// Ancho --- Width
+				renderQuad.h = renderQuad.w;	// Alto --- Height
+
+				SDL_RenderCopyEx( gRenderer, gTiposEnemigosMapaActual[ mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo ].sprite_sheet, 
+						/*Indica cuadro sprite actual*/ &( gTiposEnemigosMapaActual[ mapa_original.EnemigosRuta[enemigo_ruta_actual].ID_unico_tipo_enemigo ].cuadro_sprite[ animacion_actual ] ), 
+						&renderQuad, 
+						angulo_representacion_enemigo, 
+						NULL /*Rota alrededor del centro*/, 
+						flip_enemigo );
+			}
+
 		}
 
 
@@ -2103,6 +2433,25 @@ enum resultado bucle_principal_juego( char* ruta_mapa )
 	free(centros_zonaacelcirc_girados); centros_zonaacelcirc_girados = NULL;
 	free(pos_pant_centros_bumpers_girados); pos_pant_centros_bumpers_girados = NULL;
 	free(pos_pant_centros_zonaacelcirc_girados); pos_pant_centros_zonaacelcirc_girados = NULL;
+	if (mapa_original.NumeroZonasAceleracionCircular != 0)
+	{
+		free(mapa_original.ZonasAceleracionCircular); mapa_original.ZonasAceleracionCircular = NULL;
+	}
+	// Liberando posiciones enemigos (17/9/2021) --- Free enemy positions
+	if (mapa_original.NumeroEnemigosRuta != 0)
+	{
+		free(pos_actual_enemigos_ruta); pos_actual_enemigos_ruta = NULL;
+		free(centros_enemigos_ruta_girados); centros_enemigos_ruta_girados = NULL;
+		free(pos_pant_centros_enemigos_ruta_girados); pos_pant_centros_enemigos_ruta_girados = NULL;
+		free(num_waypoint_destino); num_waypoint_destino = NULL;
+		free(angulos_actual_enemigos_ruta); angulos_actual_enemigos_ruta = NULL;
+	}
+	if (mapa_original.NumeroWormholes != 0)
+	{
+		free(mapa_original.Wormholes); mapa_original.Wormholes = NULL;
+		free(centros_wormholes_girados); centros_wormholes_girados = NULL;
+		free(pos_pant_centros_wormholes_girados); pos_pant_centros_wormholes_girados = NULL;
+	}
 	// Liberamos texturas, imagenes, sonidos, etc --- Free textures, images, sounds, etc
 	freeMainGameLoopMedia();
 

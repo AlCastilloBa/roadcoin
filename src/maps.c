@@ -4,7 +4,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include "maps.h"
+#include "enemies.h"
 #include "geometry.h"
+
 
 
 // #define DEBUG_INFO
@@ -27,6 +29,16 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 	FILE *archivo;
 	int linea=0;
 	int segmento_actual, i, otro_segmento_actual, bumper_actual, zona_acel_circ_actual;
+
+	// Nuevas variables para enemigos (11/9/2021) --- New variables for enemies
+	bool num_enemigos_ruta_presente=false;
+	bool vector_enemigos_ruta_inicializado=false;
+	int enemigo_ruta_actual, waypoint_actual, j;
+
+	// Nuevas variables para wormholes (26/9/2021) --- New variables for wormholes
+	bool num_wormholes_presente=false;
+	bool vector_wormholes_inicializado=false;
+	int wormhole_actual;
 
 	archivo = fopen( nombre_archivo, "r" );
 	if (archivo == NULL)
@@ -550,7 +562,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 						mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].definido_OK = true;	// (TODO) Pruebas 17/5/2020
 						#ifdef DEBUG_INFO
 						printf("Linea %d, zona_acel_circ %d --> Centro x=%f, y=%f; Radio=%f, Angulo=%f, Aceleracion=%f, Invisible=%d \n", 	linea, 
-																	bumper_actual,
+																	zona_acel_circ_actual,
 																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].centro.x,
 																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].centro.y,
 																	mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].radio,
@@ -649,6 +661,203 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 				}
 			}
 
+			//  _____                      _
+			// | ____|_ __   ___ _ __ ___ (_) __ _  ___  ___
+			// |  _| | '_ \ / _ \ '_ ` _ \| |/ _` |/ _ \/ __|
+			// | |___| | | |  __/ | | | | | | (_| | (_) \__ \
+			// |_____|_| |_|\___|_| |_| |_|_|\__, |\___/|___/
+			//                               |___/
+			// (11/9/2021)
+			else if (strstr(linea_leida, "num_enemigos_ruta") != NULL )
+			{
+				sscanf(linea_leida, "num_enemigos_ruta=%d", &(mapa_a_cargar.NumeroEnemigosRuta));
+				num_enemigos_ruta_presente = true;
+				#ifdef DEBUG_INFO
+				printf("Linea %d, num_enemigos_ruta = %d\n", linea, mapa_a_cargar.NumeroEnemigosRuta);
+				#endif
+				// Reserva el vector de enemigos --- Allocate memory for array of enemies
+				if ( vector_enemigos_ruta_inicializado ==  true )
+				{
+					printf( "Error: ¿Dos declaraciones de enemigos (tipo ruta)?\n");
+					exit(-1);
+				}
+				else
+				{
+					mapa_a_cargar.EnemigosRuta = calloc(mapa_a_cargar.NumeroEnemigosRuta, sizeof(struct enemigo_ruta));
+					vector_enemigos_ruta_inicializado = true;
+					#ifdef DEBUG_INFO
+					printf("Memoria reservada para %d enemigos tipo ruta.\n", mapa_a_cargar.NumeroEnemigosRuta);
+					#endif
+					// Inicializamos todos los enemigo ruta OK a false --- Initialize all "path enemies" to false
+					for (i=0; i<mapa_a_cargar.NumeroEnemigosRuta; i++)
+					{
+						mapa_a_cargar.EnemigosRuta[i].definido_OK = false;
+						// Inicializamos todos los definidos de los waypoints a false --- Initialize all "waypoints defined" to false
+						for(j=0; j<MAX_WAYPOINTS_POR_ENEMIGO; j++)
+						{
+							mapa_a_cargar.EnemigosRuta[i].waypoints[j].definido = false;
+						}
+
+					}
+				}
+			}
+			else if (strstr(linea_leida, "enemigo_ruta") != NULL )
+			{
+				if (vector_enemigos_ruta_inicializado==false)
+				{
+					printf("La declaracion de los enemigos (tipo ruta) debe ir después de especificar el numero de enemigos\n");
+					exit(-1);
+				}
+				else
+				{
+					sscanf(linea_leida, "enemigo_ruta[%d]",&enemigo_ruta_actual); // Leemos primero el numero actual de enemigo, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current enemy number first, in order to make the correct addressing on the following lines.
+					if ( enemigo_ruta_actual >= mapa_a_cargar.NumeroEnemigosRuta )
+					{
+						printf("Se ha declarado un enemigo ruta con numero %d, que no cabe en el numero de enemigos (tipo ruta) declarado %d.\n", enemigo_ruta_actual, mapa_a_cargar.NumeroEnemigosRuta );
+						printf("Nota: se empieza a contar desde el indice 0\n");
+						exit(-1);
+					} 
+					if ( sscanf(linea_leida, "enemigo_ruta[%d]=%f,%s", 	&enemigo_ruta_actual, 
+												&(mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].speed_multiplier),
+												mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].nombre_tipo       ) == 3 )
+					{
+						mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].definido_OK = true;
+						#ifdef DEBUG_INFO
+						printf("Linea %d, enemigo_ruta %d --> Tipo =%s, speed_multiplier=%f \n", 	linea, 
+																enemigo_ruta_actual,
+																mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].nombre_tipo,
+																mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].speed_multiplier );
+
+						#endif  
+					}
+					else
+					{	
+						printf("Linea %d, enemigo_ruta --> No se han podido leer todos los valores.\n", linea);
+						exit(-1);
+					}
+				}
+			}
+			else if (strstr(linea_leida, "waypoint_enemigo") != NULL )
+			{
+				if (vector_enemigos_ruta_inicializado==false)
+				{
+					printf("La declaracion de los enemigos (tipo ruta) debe ir después de especificar algun waypoint\n");
+					exit(-1);
+				}
+				else
+				{
+					sscanf(linea_leida, "waypoint_enemigo[%d,%d]",&enemigo_ruta_actual, &waypoint_actual); // Leemos primero el numero actual de enemigo y waypoint, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current enemy and waypoint first, in order to make the correct addressing on the following lines.
+					if ( enemigo_ruta_actual >= mapa_a_cargar.NumeroEnemigosRuta )
+					{
+						printf("Se ha declarado un waypoint de un enemigo %d, que no cabe en el numero de enemigos (tipo ruta) declarado %d.\n", enemigo_ruta_actual, mapa_a_cargar.NumeroEnemigosRuta );
+						printf("Nota: se empieza a contar desde el indice 0\n");
+						exit(-1);
+					} 
+					if ( waypoint_actual >= MAX_WAYPOINTS_POR_ENEMIGO )
+					{
+						printf("Se ha declarado un waypoint numero %d, que supera el numero maximo de waypoins por enemigo (%d).\n", waypoint_actual, MAX_WAYPOINTS_POR_ENEMIGO );
+
+					}
+
+					if ( sscanf(linea_leida, "waypoint_enemigo[%d,%d]=(%lf,%lf)", 	&enemigo_ruta_actual, &waypoint_actual,
+												&(mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].waypoints[waypoint_actual].waypoint.x),
+												&(mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].waypoints[waypoint_actual].waypoint.y)       ) == 4 )
+					{
+						mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].waypoints[waypoint_actual].definido = true;
+
+						
+						#ifdef DEBUG_INFO
+						printf("Linea %d, waypoint %d de enemigo_ruta %d --> x=%lf, y=%lf \n", 	linea, 
+																enemigo_ruta_actual, waypoint_actual,
+																mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].waypoints[waypoint_actual].waypoint.x,
+																mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].waypoints[waypoint_actual].waypoint.y );
+
+						#endif  
+					}
+					else
+					{	
+						printf("Linea %d, waypoint_enemigo_ruta --> No se han podido leer todos los valores.\n", linea);
+						exit(-1);
+					}
+				}
+			}
+			//  __        __                   _           _           
+			//  \ \      / /__  _ __ _ __ ___ | |__   ___ | | ___  ___ 
+			//   \ \ /\ / / _ \| '__| '_ ` _ \| '_ \ / _ \| |/ _ \/ __|
+			//    \ V  V / (_) | |  | | | | | | | | | (_) | |  __/\__ \
+			//     \_/\_/ \___/|_|  |_| |_| |_|_| |_|\___/|_|\___||___/
+			//    
+			// (26/9/2021)
+			else if (strstr(linea_leida, "num_wormh") != NULL )
+			{
+				sscanf(linea_leida, "num_wormh=%d", &(mapa_a_cargar.NumeroWormholes));
+				num_wormholes_presente = true;
+				#ifdef DEBUG_INFO
+				printf("Linea %d, num_wormh = %d\n", linea, mapa_a_cargar.NumeroWormholes);
+				#endif
+				// Reserva el vector de wormholes --- Allocate memory for array of worhmoles
+				if ( vector_wormholes_inicializado ==  true )
+				{
+					printf( "Error: ¿Dos declaraciones de numero de wormholes?\n");
+					exit(-1);
+				}
+				else
+				{
+					mapa_a_cargar.Wormholes = calloc(mapa_a_cargar.NumeroWormholes, sizeof(struct wormhole));
+					vector_wormholes_inicializado = true;
+					#ifdef DEBUG_INFO
+					printf("Memoria reservada para %d wormholes.\n", mapa_a_cargar.NumeroWormholes);
+					#endif
+					// Inicializamos todos los wormholes definido OK a false --- Initialize all "wormholes defined OK" to false
+					for (i=0; i<mapa_a_cargar.NumeroWormholes; i++)
+					{
+						mapa_a_cargar.Wormholes[i].definido_OK = false;
+					}
+				}
+			}
+			else if (strstr(linea_leida, "wormhole") != NULL )
+			{
+				if (vector_wormholes_inicializado==false)
+				{
+					printf("La declaracion de los wormholes debe ir después de especificar el numero de wormholes.\n");
+					exit(-1);
+				}
+				else
+				{
+					sscanf(linea_leida, "wormhole[%d]",&wormhole_actual); // Leemos primero el numero actual de wormhole, para poder hacer el direccionamiento en las siguientes instrucciones --- Read current wormhole first, in order to make the correct addressing on the following lines.
+					if ( wormhole_actual >= mapa_a_cargar.NumeroWormholes )
+					{
+						printf("Se ha declarado un wormhole con numero %d, que no cabe en el numero de wormholes declarado %d.\n", wormhole_actual, mapa_a_cargar.NumeroWormholes );
+						printf("Nota: se empieza a contar desde el indice 0\n");
+						exit(-1);
+					} 
+					if ( sscanf(linea_leida, "wormhole[%d]=(%f,(%lf,%lf),(%lf,%lf))", 	&wormhole_actual, 
+														&(mapa_a_cargar.Wormholes[wormhole_actual].radio),
+														&(mapa_a_cargar.Wormholes[wormhole_actual].p1.x),
+														&(mapa_a_cargar.Wormholes[wormhole_actual].p1.y),
+														&(mapa_a_cargar.Wormholes[wormhole_actual].p2.x),
+														&(mapa_a_cargar.Wormholes[wormhole_actual].p2.y)
+													) == 6 )
+					{
+						mapa_a_cargar.Wormholes[wormhole_actual].definido_OK = true;
+						#ifdef DEBUG_INFO
+						printf("Linea %d, wormhole %d --> Radio =%f, p1=(%lf,%lf), p2=(%lf,%lf) \n", 	linea, 
+																wormhole_actual,
+																mapa_a_cargar.Wormholes[wormhole_actual].radio,
+																mapa_a_cargar.Wormholes[wormhole_actual].p1.x,
+																mapa_a_cargar.Wormholes[wormhole_actual].p1.y,
+																mapa_a_cargar.Wormholes[wormhole_actual].p2.x,
+																mapa_a_cargar.Wormholes[wormhole_actual].p2.y      );
+
+						#endif  
+					}
+					else
+					{	
+						printf("Linea %d, wormhole --> No se han podido leer todos los valores.\n", linea);
+						exit(-1);
+					}
+				}
+			}
 			////////////////////////////////////////////////////////////////////////////////
 			// Seguir añadiendo nuevas opciones aqui --- New options must be added here
 			////////////////////////////////////////////////////////////////////////////////
@@ -771,8 +980,7 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 
 	for (i=0; i<mapa_a_cargar.NumeroSegmentos; i++)
 	{
-		//if (segmento_ok[i]==false) (TODO) BORRAR
-		if ( mapa_a_cargar.Mapa[i].definido_OK == false)	// (TODO) Pruebas 17/5/2020
+		if ( mapa_a_cargar.Mapa[i].definido_OK == false)	// 17/5/2020
 		{
 			printf("Segmento %d no definido\n",i);
 			exit(-1);
@@ -783,7 +991,6 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 	{
 		for (i=0; i<mapa_a_cargar.NumeroPinballBumpers; i++)
 		{
-			//if (bumper_ok[i]==false) (TODO) BORRAR
 			if (mapa_a_cargar.Bumpers[i].definido_OK == false)
 			{
 				printf("Bumper %d no definido\n", i);
@@ -796,11 +1003,10 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 		mapa_a_cargar.NumeroPinballBumpers=0;
 	}
 
-	if ( num_zonas_acel_circ_presente )	// TODO PRUEBAS 22/3/2020
+	if ( num_zonas_acel_circ_presente )	// 22/3/2020
 	{
 		for (i=0; i<mapa_a_cargar.NumeroZonasAceleracionCircular; i++)
 		{
-			// if (zona_acel_circ_ok[i]==false)  (TODO) BORRAR
 			if (mapa_a_cargar.ZonasAceleracionCircular[i].definido_OK == false)
 			{
 				printf("Zona circular de aceleración %d no definido\n", i);
@@ -812,6 +1018,48 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 	{
 		mapa_a_cargar.NumeroZonasAceleracionCircular=0;
 	}
+
+	if ( num_enemigos_ruta_presente )	// Nuevo, 17/9/2021, verificar datos de enemigos --- Check enemy data
+	{
+		for (i=0; i<mapa_a_cargar.NumeroEnemigosRuta; i++ )
+		{
+			if ( mapa_a_cargar.EnemigosRuta[i].definido_OK == false )
+			{
+				printf("Enemigo tipo ruta %d no definido\n", i);
+				exit(-1);
+			}
+		}
+
+		Calcular_Numero_Waypoints_Enemigos( mapa_a_cargar.EnemigosRuta, mapa_a_cargar.NumeroEnemigosRuta );
+
+		if ( !Verificar_Datos_Enemigos( mapa_a_cargar.EnemigosRuta, mapa_a_cargar.NumeroEnemigosRuta )  )
+		{
+			printf("Datos de enemigos son incorrectos.\n");
+			exit(-1);			
+		}
+
+	}
+	else
+	{
+		mapa_a_cargar.NumeroEnemigosRuta = 0;
+	}
+
+	if ( num_wormholes_presente )		// Nuevo 26/9/2021, Verificar datos de wormholes --- Check wormhole data
+	{
+		for( i=0; i<mapa_a_cargar.NumeroWormholes; i++ )
+		{
+			if ( mapa_a_cargar.Wormholes[i].definido_OK == false )
+			{
+				printf("Wormholes %d no definido.\n", i);
+				exit(-1);
+			}
+		}
+	}
+	else
+	{
+		mapa_a_cargar.NumeroWormholes = 0;
+	}
+
 
 	if ( (cuenta_atras_presente == true) && (mapa_a_cargar.SegundosCuentaAtras<=0) )
 	{
@@ -948,6 +1196,32 @@ struct mapa CargarMapaDesdeArchivo( char *nombre_archivo )	// load Map from file
 				mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].centro.y *= escala;
 				mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].radio *= escala; 
 				mapa_a_cargar.ZonasAceleracionCircular[zona_acel_circ_actual].aceleracion *= escala;
+			}
+		}
+		// Enemigos tipo ruta --- Path type enemies
+		if ( mapa_a_cargar.NumeroEnemigosRuta != 0 )
+		{
+			for ( enemigo_ruta_actual=0; enemigo_ruta_actual<mapa_a_cargar.NumeroEnemigosRuta; enemigo_ruta_actual++)
+			{
+				for ( waypoint_actual=0; waypoint_actual<MAX_WAYPOINTS_POR_ENEMIGO ; waypoint_actual++)
+				{
+					if ( mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].waypoints[waypoint_actual].definido )
+					{
+						mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].waypoints[waypoint_actual].waypoint.x *= escala;
+						mapa_a_cargar.EnemigosRuta[enemigo_ruta_actual].waypoints[waypoint_actual].waypoint.y *= escala;
+					}
+				}
+			}
+		}
+		// Wormholes (26/9/2021)
+		if ( mapa_a_cargar.NumeroWormholes != 0 )
+		{
+			for ( wormhole_actual = 0; wormhole_actual<mapa_a_cargar.NumeroWormholes; wormhole_actual++ )
+			{
+				mapa_a_cargar.Wormholes[wormhole_actual].p1.x *= escala;
+				mapa_a_cargar.Wormholes[wormhole_actual].p1.y *= escala;
+				mapa_a_cargar.Wormholes[wormhole_actual].p2.x *= escala;
+				mapa_a_cargar.Wormholes[wormhole_actual].p2.y *= escala;
 			}
 		}
 	}
