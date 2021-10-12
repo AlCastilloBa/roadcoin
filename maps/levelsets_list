@@ -1,4 +1,4 @@
-num_levelsets=3
+num_levelsets=4
 directorio[0]=TestMaps
 descripcion[0]=Niveles de prueba
 ruta_imagen[0]=images/level_desc/test.jpg
@@ -8,3 +8,6 @@ ruta_imagen[1]=images/level_desc/FirstMaps.png
 directorio[2]=Labyrinths
 descripcion[2]=Laberintos
 ruta_imagen[2]=images/level_desc/test.jpg
+directorio[3]=SpeedMaps
+descripcion[3]=Niveles de velocidad
+ruta_imagen[3]=images/level_desc/test.jpg
