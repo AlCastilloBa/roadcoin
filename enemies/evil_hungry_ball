@@ -1,0 +1,7 @@
+sprite_sheet=images/enemies/evil_hungry_ball.png
+num_anim_sprites=8
+radio=32
+sprite_size=64
+frames_per_animation=3
+move_speed=100
+rot_speed=100
