@@ -90,4 +90,10 @@ v0.2-beta.3
 - Added new maps in labyrinths section: hexmaze01, hexmaze02, piggybank, wood_holes_01.
 - Added credits screen.
 
+v0.2-beta.4
+---------------------
+- Added enemies that follow a path. This path is created using waypoints in the map file.
+- Added wormholes. They teleport the coin between two points.
+- New level: terror.
+
 

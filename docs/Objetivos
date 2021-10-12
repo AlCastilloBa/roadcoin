@@ -64,6 +64,7 @@ Relacionados con el motor/fisicas:
 	[ BOOM ] Pinball Pop Bumpers
 	[      ] Segmentos bumpers
 [      ] Enemigos que vayan recorriendo conjuntos de segmentos adyacentes.
+[ BOOM ] Enemigos que sigan una ruta con waypoints.
 [      ] Powerups que cambien el tamaño de la moneda temporalmente.
 [      ] Eliminar botes molestos que quitan realismo.
 [      ] Posibilidad de que los segmentos se puedan desactivar o borrar. Esto da mas estilos de juego:
@@ -98,7 +99,7 @@ Ideas de nuevos niveles:
 [ BOOM ] Cerdo hucha con un laberinto dentro.
 [      ] Bitcoin en un grafico de evolucion.
 [      ] Moneda que se va por el desague atravesando tuberias...
-[      ] Mapa basado en pacman, con comecocos que se intentan comer la moneda...
+[ BOOM ] Mapa basado en pacman, con comecocos que se intentan comer la moneda...
 
 
 
